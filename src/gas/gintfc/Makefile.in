@@ -1,0 +1,28 @@
+CC=@CC@
+F77=@F77@
+name = gintfc
+
+GAS_C_OBJECTS = gcheck3d.$(OBJEXT) \
+gintfcpert.$(OBJEXT) \
+gtop.$(OBJEXT) \
+gtypes.$(OBJEXT) \
+guserhooks.$(OBJEXT) \
+guserintfc.$(OBJEXT) \
+
+
+
+
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras =  
+
+@gasbuild@
+

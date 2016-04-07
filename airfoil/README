@@ -1,0 +1,16 @@
+Command line:
+
+airfoil -d dim -o output-name -c constraint-type -v veolcity_type
+
+dim: 2
+
+constraint-type:
+
+	0 ---- No constraint
+	1 ---- Implementation by Li Yan
+	2 ---- New implementation
+
+velocity-type:
+
+	v ---- Reversal velocity
+	d ---- double vortex velocity

@@ -1,0 +1,31 @@
+#
+#	Libraries needed to compile the gas code
+#
+#
+#	Copyright 1999 by The University at Stony Brook, All rights reserved.
+#
+
+gasincludelibs = gdecs
+gaslibs = ginit gprt gbifur gnode ghyp gprop gstate geos gintfc
+ftlibs = driver hyp tri front intfc
+liblibs = $(odepack) $(dierckx) linpak blas
+
+Hypre_Lib_Dir = /nfs/t4d1/ams530/shuwang/packages/hypre-1.6.0/src/hypre/lib
+SN_ELLIP = /nfs/t4d1/ams530/shuwang/sn_ellip
+
+ifeq "$(rage90)" "yes"
+
+ LINK_F90 = yes
+ export LINK_F90
+
+ OTHERLIBS = -L$(RAGE)/lib/$(OS) -$(LNK)rage90
+ export OTHERLIBS
+
+ gaslibs += c2rage
+
+ make-first = make-rage90
+
+ .PHONY: make-rage90
+endif #ifeq "$(rage90)" "yes"
+
+MYLIB= -L${SN_ELLIP} -lSN_ELLIP -L${Hypre_Lib_Dir} -lHYPRE_IJ_mv -lHYPRE_utilities -lHYPRE_LSI -lHYPRE_blas -lblas -L${MPI_LIB} -lmpich -lpmpich++ -lirc

@@ -1,0 +1,70 @@
+CC=mpicc -g
+CXX=mpicxx -g
+F77=mpif77 -g
+F77_LIBS=
+libext = 
+incs =   -I.. -I../util -g   -DDEBUG_CROSSING -DDEBUG_NODE_PROPAGATE -DDEBUG_TRI_GRID  -DONED -DTWOD -DTHREED  -DHAS_FENV    -D__MPI__   -I../hiprop/include
+libincs = 
+libs =  
+build_cpu = x86_64
+incsloc = -I. -I../include
+
+PETSC = yes
+PETSC_ARCH=linux-gnu-c-debug
+PETSC_DIR=/home/frankenstein/petsc-3.1-p7
+
+Petsc_Include=-I/home/frankenstein/petsc-3.1-p7/include -I/home/frankenstein/petsc-3.1-p7/linux-gnu-c-debug/include
+Petsc_Lib=-lblas -llapack -Llinux-gnu-c-debug/lib /home/frankenstein/petsc-3.1-p7/linux-gnu-c-debug/lib/libpetsc.so -ldl -lm -lX11
+
+all: ../lib/libiF.a iFluid
+
+iFluid : FT_libs
+
+iFbasic.o : iFluid.h iFbasic.cpp
+	${CXX} -c iFbasic.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFcartsn2d.o : iFluid.h iFcartsn2d.cpp
+	${CXX} -c iFcartsn2d.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFcartsn3d.o : iFluid.h iFcartsn3d.cpp
+	${CXX} -c iFcartsn3d.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFcylin3d.o : iFluid.h iFcylin3d.cpp
+	${CXX} -c iFcylin3d.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFdebug2d.o: iFluid_debug.h iFdebug2d.cpp
+	${CXX} -c iFdebug2d.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFdebug3d.o: iFluid_debug.h iFdebug3d.cpp
+	${CXX} -c iFdebug3d.cpp $(incsloc) $(incs) ${Petsc_Include}
+solver.o : solver.h solver.cpp
+	${CXX} -c solver.cpp $(incsloc) $(incs) ${Petsc_Include}
+ellip.o : solver.h ellip.cpp
+	${CXX} -c ellip.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFsub.o : iFluid.h ifluid_basic.h iFsub.cpp
+	${CXX} -c iFsub.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFinit.o : iFluid.h ifluid_basic.h iFinit.cpp
+	${CXX} -c iFinit.cpp $(incsloc) $(incs) ${Petsc_Include}
+
+
+iFluid: iFluid.h ifluid_basic.h iFluid.cpp iFsub.o iFinit.o ../lib/libiF.a
+	${CXX} -c iFluid.cpp -I../include $(incs) ${Petsc_Include}
+	$(CXX) -o iFluid iFluid.o iFsub.o iFinit.o -I../include -L../lib/${build_cpu} -liF  ${Petsc_Lib} -L../lib/${build_cpu} -lFronTier $(libincs)  $(libs) ${F77_LIBS} -L../hiprop -lhiprop -lrt
+
+../lib/libiF.a: solver.o ellip.o iFbasic.o iFcartsn2d.o iFcartsn3d.o iFcylin3d.o iFdebug2d.o iFdebug3d.o
+	$(AR) cru libiF.a $^
+	ranlib libiF.a; mv libiF.a ../lib/$(build_cpu)/libiF.a
+
+-include ../devel-deps.inc
+
+clean:
+	rm -rf *.o iFluid ../lib/$(build_cpu)/libiF.a
+output :
+	rm -rf out/*
+
+gif :
+	hdf2gif out/intfc.hdf out/intfc.gif
+
+TagsFile:
+	ctags *.h *.cpp ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch] ../src/hyp/*.[ch] ../src/tri/*.[ch] ../src/gas/*.[ch] ../hiprop/src/*.c ../hiprop/test/*.c ../hiprop/include/*.h
+
+tagsfile:
+	ctags *.h *.cpp ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch] ../src/hyp/*.[ch] ../src/tri/*.[ch] ../src/gas/*.[ch] ../hiprop/src/*.c ../hiprop/test/*.c ../hiprop/include/*.h
+
+etagsfile:
+	etags *.h *.cpp ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch] ../src/hyp/*.[ch] ../src/tri/*.[ch] ../src/gas/*.[ch] ../hiprop/src/*.c ../hiprop/test/*.c ../hiprop/include/*.h

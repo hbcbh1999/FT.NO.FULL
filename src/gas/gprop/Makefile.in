@@ -1,0 +1,24 @@
+CC=@CC@
+F77=@F77@
+name = gprop
+
+GAS_C_OBJECTS = griemann.$(OBJEXT) \
+griemcombst.$(OBJEXT) \
+gpolar.$(OBJEXT) \
+gipolar.$(OBJEXT) \
+gprop.$(OBJEXT) \
+gwspeed.$(OBJEXT) \
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras =  
+
+@gasbuild@
+

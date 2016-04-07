@@ -1,0 +1,65 @@
+Domain limit in 0-th dimension: 0 1
+Domain limit in 1-th dimension: 0 1
+Computational grid: 512 512
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+
+Are there seeds grow from floor: N
+Are there seeds grow from ceiling: N
+Are there seeds grow from space: Y
+Enter number of space seeds: 1
+Enter center coordinates of space seed 1: 0.5 0.5
+Enter yes to add perturbation: y
+Enter number of period: 6
+Enter amplitude: 0.0
+Enter phase shift: 0
+Enter radius of seeds: 0.03
+
+Diffusion coefficient: 1
+Growth rate: 500.0
+Equilibrium concentration: 1.0
+Ambient concentration: 2
+Crystal density: 10
+Choose numerical scheme
+        Unsplit explicit (EX)
+        Unsplit implicit (IM)
+        Crank-Nicolson (CN)
+Enter scheme: CN
+Choose point propagation scheme
+        Explicit Euler (EX)
+        Implicit Euler (IM)
+        Middle point (MP)
+Enter scheme: MP
+Enter yes to add curvature effect: n
+
+Max time: 5.0
+Max step: 1000000
+Print interval: 5
+Movie frame interval: 0.025
+CFL factor: 0.75
+Redistribution interval: 100
+
+For lower boundary in 0-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter solute concentration: 2.0
+For upper boundary in 0-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter solute concentration: 2.0
+For lower boundary in 1-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter solute concentration: 2.0
+For upper boundary in 1-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter solute concentration: 2.0
+
+Cannot find string Type y to make movie of solute: y
+
+************Debugging options*****************
+
+Enter yes for debugging: no
+Enter the debugging string: trace
+Enter the debugging string: CLOCK
+Enter the debugging string: step_size
+Enter the debugging string: sample_velocity

@@ -1,0 +1,26 @@
+CC=@CC@
+F77=@F77@
+name = gbifur
+
+GAS_C_OBJECTS = gbifur.$(OBJEXT) \
+gcapture.$(OBJEXT) \
+grefl.$(OBJEXT) \
+grp.$(OBJEXT) \
+gsc1.$(OBJEXT) \
+gsc2.$(OBJEXT)  \
+gsc3.$(OBJEXT) \
+guntan1d.$(OBJEXT) \
+guntan2d.$(OBJEXT) \
+gvecuntan.$(OBJEXT) \
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+
+@gasbuild@

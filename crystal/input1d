@@ -1,0 +1,21 @@
+Domain limit in 0-th dimension: 0 1
+Computational grid: 200
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Diffusion coefficient: 0.1
+Growth rate: 1.0
+Equilibrium concentration: 1.0
+Ambient concentration: 2
+Crystal density: 4
+Choose numerical scheme
+        Unsplit explicit (EX)
+        Unsplit implicit (IM)
+        Crank-Nicolson (CN)
+Enter scheme: EX
+Max time: 10.0
+Max step: 100000
+Print interval: 2
+Movie frame interval: 0.2
+CFL factor: 0.75
+Redistribution interval: 100
+

@@ -1,0 +1,69 @@
+############################################################
+############# Running Autotests in Batch Mode ##############
+############################################################
+
+To run in batch mode on galaxy or seawulf:
+
+> qsub autotest.run
+
+To run in batch mode on NCSA:
+
+> qsub autotest.ncsa.run
+
+
+############################################################
+########## Running Autotests in Interactive Mode ###########
+############################################################
+
+To run in interactive mode on galaxy or seawulf:
+
+> qsub -I -l nodes=2:ppn=2
+> cd ${PBS_O_WORKDIR}
+> ./run_autotests.sh
+
+To run in interactive mode on NCSA:
+
+> qsub -I -V -l walltime=08:00:00,nodes=2:ppn=2
+> bash
+> mpd &
+> cd ${PBS_O_WORKDIR}
+> ./run_autotests.sh 
+
+
+############################################################
+################## Explanation of Outputs ##################
+############################################################
+
+autotest*.out:     Reports execution and regression results 
+                   for the corresponding autotest.
+
+run_autotests.out: Reports start and finish times of 
+                   run_autotests.sh, as well as the 
+                   completion times of all autotests.
+
+
+############################################################
+################### Autotest Directories ###################
+############################################################
+
+Note: Please refer to README files in corresponding 
+      autotest*/ directories for further information.
+
+
+############################################################
+######################### Clean Up #########################
+############################################################
+
+Note: Run ./clean_up.sh before committing code to get rid
+      of all output, archived, .out and *~ files.
+
+
+############################################################
+########################### CGNS ###########################
+############################################################
+
+For CGNS: Use files with "_cgns" at the end of their names.
+
+
+############################################################
+############################################################

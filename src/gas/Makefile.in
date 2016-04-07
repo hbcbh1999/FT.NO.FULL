@@ -1,0 +1,230 @@
+CC=@CC@
+F77=@F77@
+libext = @libext@
+
+TARFLIST = $$ME/README \
+$$ME/build.sh \
+$$ME/advbuild.sh \
+$$ME/install-sh \
+$$ME/config.status \
+$$ME/config.sub \
+$$ME/config.guess \
+$$ME/devel-deps.inc.in \
+$$ME/iMesh-Defs.inc.in \
+$$ME/src/util/mkdep.pl \
+$$ME/src/util/mkfiles.pl \
+$$ME/src/util/ftrules \
+$$ME/src/util/gasrules \
+$$ME/src/pak/Makefile.in \
+$$ME/src/pak/odepack/Makefile.in \
+$$ME/src/pak/odepack/*.f \
+$$ME/src/pak/odepack/*.c \
+$$ME/src/pak/dierckx/Makefile.in \
+$$ME/src/pak/dierckx/*.f \
+$$ME/src/pak/linpak/Makefile.in \
+$$ME/src/pak/linpak/*.f \
+$$ME/src/pak/blas/Makefile.in \
+$$ME/src/pak/blas/*.f \
+$$ME/configure.in \
+$$ME/Makefile.in \
+$$ME/src/Makefile.in \
+$$ME/example/*.cpp \
+$$ME/example/Makefile.in \
+$$ME/example/README \
+$$ME/example3d/*.cpp \
+$$ME/example3d/Makefile.in \
+$$ME/curvature/*.cpp \
+$$ME/curvature/*.h \
+$$ME/curvature/Makefile.in \
+$$ME/example3d/README \
+$$ME/subsurf/*.cpp \
+$$ME/subsurf/*.h \
+$$ME/subsurf/Makefile.in \
+$$ME/airfoil/*.cpp \
+$$ME/airfoil/*.h \
+$$ME/airfoil/Makefile.in \
+$$ME/crystal/*.cpp \
+$$ME/crystal/*.h \
+$$ME/crystal/Makefile.in \
+$$ME/crystal/README \
+$$ME/melting/*.cpp \
+$$ME/melting/*.h \
+$$ME/melting/Makefile.in \
+$$ME/iFluid/*.cpp \
+$$ME/iFluid/*.h \
+$$ME/iFluid/Makefile.in \
+$$ME/iFluid/in-* \
+$$ME/cFluid/*.cpp \
+$$ME/cFluid/*.h \
+$$ME/cFluid/Makefile.in \
+$$ME/cFluid/in-* \
+$$ME/frgb/*.cpp \
+$$ME/frgb/*.h \
+$$ME/frgb/Makefile.in \
+$$ME/frgb/in-* \
+$$ME/README \
+$$ME/finance/*.cpp \
+$$ME/finance/*.h \
+$$ME/finance/Makefile.in \
+$$ME/cell/*.cpp \
+$$ME/cell/Makefile.in \
+$$ME/pde/*.cpp \
+$$ME/pde/in-* \
+$$ME/pde/Makefile.in \
+$$ME/poisson/*.cpp \
+$$ME/poisson/*.h \
+$$ME/poisson/Makefile.in \
+$$ME/iTaps/*.cpp \
+$$ME/iTaps/Makefile.in \
+$$ME/testfront/Makefile.in \
+$$ME/testfront/in/* \
+$$ME/testfront/README \
+$$ME/src/intfc/*.c \
+$$ME/src/intfc/*.h  \
+$$ME/src/intfc/in \
+$$ME/src/intfc/Makefile.in \
+$$ME/src/util/*.h \
+$$ME/src/util/*.c \
+$$ME/src/util/Makefile.in \
+$$ME/src/front/*.c \
+$$ME/src/front/*.h \
+$$ME/src/front/in \
+$$ME/src/front/Makefile.in \
+$$ME/src/front/README \
+$$ME/src/tri/*.c \
+$$ME/src/tri/*.h \
+$$ME/src/tri/Makefile.in \
+$$ME/src/driver/Makefile.in \
+$$ME/src/driver/*.c \
+$$ME/src/driver/*.h \
+$$ME/src/hyp/Makefile.in \
+$$ME/src/hyp/*.c \
+$$ME/src/hyp/*.h \
+$$ME/src/gas/Makefile.in \
+$$ME/src/gas/gbifur/Makefile.in \
+$$ME/src/gas/gbifur/*.c \
+$$ME/src/gas/gbifur/*.h \
+$$ME/src/gas/geos/Makefile.in \
+$$ME/src/gas/geos/*.F \
+$$ME/src/gas/geos/*.c \
+$$ME/src/gas/geos/*.h \
+$$ME/src/gas/geos/helm_table.dat \
+$$ME/src/gas/geos/vector_eos.dek \
+$$ME/src/gas/ginit/Makefile.in \
+$$ME/src/gas/ginit/*.c \
+$$ME/src/gas/ginit/*.h \
+$$ME/src/gas/gnode/Makefile.in \
+$$ME/src/gas/gnode/*.c \
+$$ME/src/gas/gnode/*.h \
+$$ME/src/gas/gprt/Makefile.in \
+$$ME/src/gas/gprt/*.c \
+$$ME/src/gas/gprt/*.h \
+$$ME/src/gas/gdecs/*.h \
+$$ME/src/gas/ghyp/Makefile.in \
+$$ME/src/gas/ghyp/*.c \
+$$ME/src/gas/ghyp/*.F \
+$$ME/src/gas/ghyp/*.h \
+$$ME/src/gas/gintfc/Makefile.in \
+$$ME/src/gas/gintfc/*.c \
+$$ME/src/gas/gintfc/*.h \
+$$ME/src/gas/gprop/Makefile.in \
+$$ME/src/gas/gprop/*.c \
+$$ME/src/gas/gprop/*.h \
+$$ME/src/gas/gstate/Makefile.in \
+$$ME/src/gas/gstate/*.c \
+$$ME/src/gas/gstate/*.h \
+$$ME/src/gas/gas-main.c \
+$$ME/src/gas/in/* \
+$$ME/src/pak/hypre-1.6.0.tar.gz \
+$$ME/src/pak/sn_ellip/*.C \
+$$ME/src/pak/sn_ellip/*.h \
+$$ME/src/pak/cgnslib_3.0/Makefile* \
+$$ME/src/pak/cgnslib_3.0/LICENSE* \
+$$ME/src/pak/cgnslib_3.0/adf*/*.[ch] \
+$$ME/src/pak/cgnslib_3.0/*.[ch] \
+$$ME/src/pak/sn_ellip/Makefile.in
+
+gas_all:
+	cd ../pak && $(MAKE)
+	cd ../front && $(MAKE)
+	cd ../util && $(MAKE)
+	cd ../intfc && $(MAKE)
+	cd ../tri && $(MAKE)
+	cd ../hyp && $(MAKE)
+	cd ../driver && $(MAKE)
+	cd gbifur && $(MAKE)
+	cd geos   && $(MAKE)
+	cd ghyp   && $(MAKE)
+	cd ginit  && $(MAKE)
+	cd gintfc && $(MAKE)
+	cd gnode  && $(MAKE)
+	cd gprop  && $(MAKE)
+	cd gprt   && $(MAKE)
+	cd gstate && $(MAKE)
+	$(MAKE) gas
+clean:
+	cd ../driver && $(MAKE) clean
+	cd ../front && $(MAKE) clean
+	cd ../intfc && $(MAKE) clean
+	cd ../tri && $(MAKE) clean
+	cd ../hyp && $(MAKE) clean
+	cd ../util && $(MAKE) clean
+	cd ../pak && $(MAKE) clean
+	cd gbifur && $(MAKE) clean
+	cd geos   && $(MAKE) clean
+	cd ghyp	  && $(MAKE) clean
+	cd ginit  && $(MAKE) clean
+	cd gintfc && $(MAKE) clean
+	cd gnode  && $(MAKE) clean
+	cd gprop  && $(MAKE) clean
+	cd gprt   && $(MAKE) clean
+	cd gstate  && $(MAKE) clean
+	rm -rf @build_cpu@/gas
+	rm -rf @build_cpu@/gas-main.o
+diff:
+	cd gbifur && $(MAKE) diff 
+	cd geos   && $(MAKE) diff
+	cd ghyp   && $(MAKE) diff
+	cd ginit  && $(MAKE) diff
+	cd gintfc && $(MAKE) diff
+	cd gnode  && $(MAKE) diff
+	cd gprop  && $(MAKE) diff
+	cd gprt   && $(MAKE) diff
+	cd gstate && $(MAKE) diff
+
+build_cpu = @build_cpu@
+
+gas@EXEEXT@: @build_cpu@/gas-main.o
+	$(F77)  @build_cpu@/gas-main.o  -L../../lib/@build_cpu@ -L../../lib/@build_cpu@/gas -L../others @otherlibsinc@  -lginit$(libext)  -lgprt$(libext)  -lgbifur$(libext)  -lgnode$(libext)  -lghyp$(libext)  -lgprop$(libext)  -lgstate$(libext)  -lgeos$(libext)  -lgintfc$(libext) -ldriver$(libext)  -lhyp$(libext)  -ltri$(libext)  -lfront$(libext)  -lintfc$(libext)  -lodepack  -ldierckx -lutil$(libext) -lm -llinpak -lblas -lstdc++ @otherlibs@ -o @build_cpu@/gas@EXEEXT@
+
+#make.dep.u:
+
+
+
+$(build_cpu)/gas-main.o: $(build_cpu) gas-main.c
+	$(CC) -I. -I../ -I../util @gasincs@ -c gas-main.c -o $(build_cpu)/gas-main.o
+
+$(build_cpu):
+	-mkdir $(build_cpu)
+tagsfile:
+	ctags ../driver/*.c ../driver/*.h ../hyp/*.c ../hyp/*.h ../intfc/*.c ../intfc/*.h ../util/*.c ../util/*.h ../tri/*.c ../tri/*.h ../front/*.c ../front/*.h gbifur/*.c gbifur/*.h geos/*.c geos/*.h ghyp/*.c ghyp/*.h ginit/*.c ginit/*.h gintfc/*.c gintfc/*.h gnode/*.c gnode/*.h gprop/*.c gprop/*.h gprt/*.c gprt/*.h gstate/*.c gstate/*.h gdecs/*.h 
+
+tar:
+	-echo "Making tarball with .hg included. To exclude .hg, use 'make export'."
+	-mkdir in
+	-cd ../intfc; mkdir in
+	-cd ../front; mkdir in
+	-rm -rf ../front/in/*.sc
+	-rm -rf ../../testfront/in/*.sc
+	cd ../../ && ME=`basename $$PWD` && cd .. && tar -cf "`date +FronTier.gas.%m_%d_%y.tar`" $$ME/.hg ${TARFLIST} && \
+	gzip "`date +FronTier.gas.%m_%d_%y.tar`" && mv `date +FronTier.gas.%m_%d_%y.tar.gz` $$ME/.
+
+export:
+	-mkdir in
+	-cd ../intfc; mkdir in
+	-cd ../front; mkdir in
+	-rm -rf ../front/in/*.sc
+	-rm -rf ../../testfront/in/*.sc
+	cd ../../ && ME=`basename $$PWD` && cd .. && tar -cf "`date +FronTier.gas.%m_%d_%y.tar`" ${TARFLIST} && \
+	gzip "`date +FronTier.gas.%m_%d_%y.tar`" && mv `date +FronTier.gas.%m_%d_%y.tar.gz` $$ME/.
+

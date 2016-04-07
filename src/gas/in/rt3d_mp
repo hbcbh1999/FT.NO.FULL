@@ -1,0 +1,575 @@
+
+#      153        -1
+#print version 1
+
+		WELCOME TO WIND TUNNEL CALCULATIONS
+		FronTier Gas version 20020808
+
+		DATE OF RUN  Tue Apr 28 18:45:08 2009
+
+
+
+#    22599         0
+##MACHINE PARAMETERS
+#	Hostname                 = p340010
+#	Operating System         = Linux
+#	OS Release               = 2.6.25sirius
+#	OS Version               = #4 SMP Wed May 28 14:15:27 EDT 2008
+#	CPU Type                 = x86_64
+#	Byte Ordering            = Little Endian
+#	Floating Point Word Size = 8
+
+
+Type 'p' to obtain prompting on input: 
+Type debug to Turn On Debugging: debug
+Specify Debugging Destination, screen or file: file
+List Functions to Debug - or all -  end  ends list
+Names following  all  will not be debugged - end ends
+	: bad_state
+	: end
+
+Enter the spatial dimension of the computation: 3
+
+Enter the remapping (Jacobian) converting the physical coordinate system to the
+	cartesian computational coordinate system.  The choices are
+		Identity Remap (default) (i)
+			Type Choice Here: I
+Enter the computational limits in the x direction, XL, XU: 0 1
+Enter the computational limits in the y direction, YL, YU: 0 1
+Enter the computational limits in the z direction, ZL, ZU: 0 4
+Enter the numbers of grid intervals of the
+	computational grid in the x, y, & z directions: 40 40 160
+The topological grid is a grid used for the construction of the tracked front
+	topology.  It is constrained to be a square grid.  You specify the grid
+	in one of two ways.  If you enter a single number, it will be used as a
+	coarseness factor for the topological grid relative to the
+	computational grid entered above.  In this case the length of a
+	topological grid block cell side is the nearest allowable multiple of
+	the shortest side of the computational grid by the coarseness factor. 
+	Otherwise the code will read the three integers input for the number of
+	grid cells in each coordinate direction of the topological grid.  If
+	your input values do not yield a square grid they will be corrected to
+	produce a square grid.  This correction will attempt to produce values
+	close to those input, but if the input values are highly rectangular,
+	the resulting values may differ considerably from those entered.  The
+	default for this input option is the nearest square grid that matches
+	the computational grid.  Generally the topological grid is coarser than
+	the computational grid.  Larger coarseness factors yield coarser grids,
+	a value one gives the nearest square grid to the computational grid.
+Enter your choice (cor_fac, three integers, or return)
+	(defaults are 40 40 160): 2
+The topological mesh used is  20 20 80
+
+		General run termination/pause conditions
+
+Enter limits on real time (max time), mesh time (max timesteps), an optional
+	initial time, and an optional stop time mode (exact or constant), (dflt
+	= inf 2147483647 0 constant): 20 3000 0
+Specify the pause time mode [exact, constant(dflt), mesh]: exact
+Enter the first Pause Time (dflt = inf): 
+Enter maximum number of time step modifications allowed
+	during a propagation step (default = 50): 5
+
+Construct tetragrid [dflt = n]: n
+Use least square [dflt = n]: n
+
+		Printing Control
+
+Request main output format(s). Options are
+		front_plots only (F)
+		front_plots plus interior_states (Restart format) (R)
+		SDS files (S)
+		VTK files (V)
+		PROSTAR plots (P)
+		suppress output (dflt)
+	Enter the choices as a space separated list: R
+Prompt for front_plots printing control.
+Specify the interval type for printing
+	[exact, constant, mesh (default)]: exact
+Enter the time interval and first time for printing
+	(default = 1 0): 1.0 0
+Request binary/non-binary output [b(dflt),n]: n
+
+Prompt for interior_states printing control.
+Specify the interval type for printing
+	[exact (default), constant, mesh]: exact
+Enter the time interval and first time for printing
+	(default = 1 0): 1.0 0
+Request binary/non-binary output [b,n(dflt)]: n
+
+To obtain geomview plots type y (default = no): y
+Enter a root name for the output directory: 
+geomview output directory is:out/gviewout
+Specify the interval type for printing geomview data
+	[exact (default), constant, mesh]: exact
+Enter the time interval and first time for printing
+	(default = 1 0): 100 0
+Request binary/non-binary output [b,n(dflt)]: n
+
+The user can request that restart dumps be printed at a specified wall
+	time interval.  These dumps will be named
+	out/tet.lastdump0-nd"node#" and out/tet.lastdump1-nd"node#"
+	and will be alternately overwritten as the run proceeds
+	The wall time dump frequency can be given in units of seconds,
+	minutes (default), or hours.  Indicate the units in the obvious way
+	such as 30 minutes,  2 hours, etc.
+To request this option enter the wall time print frequency: 6 hours
+Print wall time dumps in binary (default = no): 
+
+Request composition type of materials. Available types are
+		PURE_NON_REACTIVE (PNR, default)
+		MULTI_COMP_NON_REACTIVE (MCNR)
+	Enter choice here: MCNR
+Request for maximum number of composed materials: 2
+The maximum number of composed materials is 2
+
+Specify additional GAS printing variables.  The choices are,
+		VELOCITY (V),
+		RADIAL_COMPONENT_OF_VELOCITY (RV),
+		PRESSURE (P),
+		SPECIFIC_ENTROPY (SPECIFIC_ENTROPY),
+		SOUND_SPEED (SOUND_SPEED),
+		TEMPERATURE (TEMPERATURE).
+	Enter choices as a space separated list, using multiple lines if needed.
+	Terminate all lines EXCEPT THE LAST with a backslash '\'
+	Enter choices: 
+
+		Specify interior hyperbolic difference method.
+
+Select the difference method for solving the hyperbolic
+system in the interior regions away from the fronts.
+Choices are
+	Split Lax-Wendroff (LWS)
+	Split Lax-Friedrichs (LFS)
+	Split first order Godunov (G)
+	Vectorized split Lax-Wendroff (VLS)
+	Five point Vectorized split MUSCL (VM)
+	Colella Piecewise Linear Method (PLM)
+	Vectorized split TVD (TVD)
+	Vectorized pseudo unsplit Lax-Wendroff (PUSLW)
+	Vectorized pseudo unsplit MUSCL (PUSM)
+	Colella pseudo unsplit Piecewise Linear Method (PUSPLM)
+Enter choice here: VM
+
+Current values for MUSCL parameters
+	State reconstruction = Reconstruct density, energy, velocity
+	Riemann flux solver = Exact Riemann solver
+	No method of characteristic solver used
+	Irregular hyp stencil method = MUSCL
+	Tangential sweep method = MUSCL
+	Don't test for negative density and energies at half step
+	Enforce monotone reconstructions at cell edges = no
+	Link reconstructions (zero slope in one field implies
+	zero slope in all fields) = no
+End List of current values for MUSCL parameters
+
+Use all defaults for MUSCL code (dflt = y): n
+Choose the desired type of linear reconstruction, Choices are
+	Reconstruct density, energy, velocity (d, default)
+	Reconstruct eigen coordinates (e)
+	Bell-Colella-Trangenstein reconstruction (b)
+	First order Godunov reconstruction (zero slopes) (f)
+Enter choice: 
+Test for negative density and energies at half step (dflt=no): 
+
+Choose the desired Riemann solver, Choices are
+	Exact Riemann solver (e, default)
+	Linear approximate Riemann solver (l)
+	Colella-Glaz's approximate Riemann solver (c)
+	Linear US/UP fit (Dukowicz) (d)
+	Gamma Law fit (g)
+Enter choice: E
+
+Choose the irregular stencil method, Choices are
+	Lax_Wendroff (l)
+	MUSCL (m, default)
+Enter choice: 
+
+Choose the tangential sweep method, Choices are
+	Lax_Wendroff (l)
+	Lax-Friedrichs (lf)
+	First order godunov (g)
+	MUSCL (m, default)
+Enter choice: 
+
+Current defaults for artificial viscosity parameters---
+	Artificial Viscosities and Heat Conductions
+	Use nonlinear artificial viscosity = no
+	Coefficient of nonlinear artificial viscosity =                      0
+	Use linear artificial viscosity = no
+	Coefficient of linear artificial viscosity =                      0
+	Use upwind artificial viscosity = no
+	Coefficient of upwind artificial viscosity =                      0
+	Use MUSCL slope flattening = yes
+	Muscl slope flattening parameter eta inverse =                      2
+	Muscl slope flattening minimum shock strength =                   0.25
+	Muscl slope flattening minimum shock specific volume jump =                  1e-06
+	Coefficient of artificial heat conduction =                      0
+	Muscl slope flattening charateristic speed cutoff  =                      0
+	Coefficient of dynamic surface tension =                      0
+	Artificial viscosity stability coefficient =                      1
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): y
+
+The following choices are available for a gravitational acceleration
+	No gravity (N or default)
+	Constant gravity (C or Y)
+	Time dependent gravity (T)
+	Astrophysical (central force) gravity (A)
+	Generalized Astrophysical gravity (G)
+	Radial gravity with constant magnitude (R)
+Enter choice: y
+	Enter x component of gravity (dflt = 0): 
+	Enter y component of gravity (dflt = 0): 
+	Enter z component of gravity (dflt = 0): 0.14
+
+Dynamic tracking decision variables
+Tracking decisions on dynamically produced waves are based on a floating point
+	cutoff on the wave strength.  Strengths are normalized to zero for weak
+	waves, so a tolerance of 0.0 will always signal tracking, and a very
+	large tolerance will always signal not to track.  For each interaction
+	type, you will be asked to enter the cutoff tolerance and a tolerance
+	type for determining whether scattered waves of the indicated type
+	should be tracked when produced by a specific bifurcation type.
+The currently supported tolerance types are
+	Never track (Never)
+	Always track (Always)
+	Pressure ratio minus one across the wave (Pressure)
+	Absolute value of the Atwood number across the wave (Atwood)
+	Mach number minus one for the state ahead of the wave (Mach)
+End Dynamic tracking decision variables
+
+Use default settings for dynamic tracking (default = y): 
+
+Point propagation parameters have the current default values
+	Operator split normal/tangential update
+Current values for options for g_npt_w_speed
+	A wave is defined to be strong if |1 - (1/(rho*c)*|dp/du|| > Mach_tol or
+		|rhol - rhor|/(rhol+rhor) > A_tol
+	Mach_tol = 0.25
+	A_tol = 0.25
+	Neumann boundary states are computed by an average of a reflection
+		symmetry contact propagation and a method of characterics
+		calculation.  The weight of the symmetry contact result
+		is proportional to the flow gradient.  The wall limiter
+		value gives this proportionality constant.
+	Wall_limiter = 1
+	vector_moc = MOC_PLUS_RH
+	scalar_moc = RIEMANN without filtering of outgoing waves
+	vector_ahead_state_moc = 0x60762b shock_ahead_state_riem_inv_moc
+	neumann_moc = 0x609062 neumann_riem_inv_moc
+End current values for options for g_npt_w_speed
+
+Use defaults for point propagation operators (dflt = y): 
+The current defaults for the linear interpolation options are
+	Linear interpolation based on conserved variables
+Use current defaults for linear interpolation options
+	(default = y): 
+Enter an upper bound for the number of components (default = 100): 5
+
+Specify initial interface of tracked curves
+Choices are
+	Input interface by hand (type `screen')
+	Input interface from a file (restart option - enter filename)
+	Request default option(s) (hit `return')
+Enter choice: 
+
+		Curve Redistribution Control
+
+Enter the mode of curve redistribution --
+	`none', `expansion', or `full' (dflt): 
+Enter version of full curve redistribution
+	ordinary full curve redistribution [o]
+	equi-bond curve redistribution [e(default)]
+Enter choice: 
+
+		front spacing control
+
+Enter the spacing for general surfaces in dimensionless
+	length/mesh units (dflt = 0.75): 
+Enter the spacing for vector type surfaces in dimensionless
+	length/mesh units (dflt = 0.75): 
+
+		surface redistribution control
+
+Enter tracking algorithm, choices are:
+	Grid free tracking(F),
+	Grid based tracking (G),
+	Three component grid based tracking (T),
+	Mixed strategy tracking (M),
+	Hybrid strategy tracking (H),
+	Locally grid based tracking (L, dflt),
+Enter choice: L
+
+Enter the mode of surface redistribution --
+	`none', or `full' (dflt): 
+Enter the maximum and minimum triangle area factors
+	for general waves (dflt = 2 0.5): 
+Enter the maximum and minimum triangle area factors
+	for vector waves (dflt = 2 0.5): 
+Enter the minimum allowed angle (in degrees)
+	at a triangle vertex on a general surface (dflt = 15): 
+Enter the minimum allowed angle (in degrees)
+	at a triangle vertex on a vector surface (dflt=0.261799): 
+Enter the max_scaled_tri_side_length (dflt = 1.3): 
+
+		Redistribution Frequency Control
+
+Enter the frequency of redistribution for general curves (dflt = 5): 
+Enter the frequency of redistribution for vector curves (dlft = 5): 
+Enter the redistribute count (default = 0):  
+
+		time step size control
+
+
+The current defaults for the front time step control are
+	Time step factor = 0.75
+	Apply CFL at nodes = yes
+	Maximum node separation at untangle = 2
+	CFL increase factor = 1.1
+	Minimum time step modification factor = 0.75
+	Maximum time step modification factor = 1.25
+Use defaults for front time step control (default = y): n
+Enter the time step factor (fraction of CFL condition - default 0.75): 0.75
+Enter the CFL increase factor (default 1.1): 
+Enter the minimum time step modification factor (default 0.75): 
+Enter the maximum time step modification factor (default 1.25): 
+
+		flow specified state enforcement at fronts
+
+Enforce flow specified states at fronts (dflt=yes): 
+
+Type yes to propagate front in moving frame (dflt = no): 
+
+Select normal computation algorithm, choices are
+	Area weighted normals (AREA)
+	Sine weighted normals (SINE, default)
+	Least squares plane fit (PLANE)
+Enter choice: 
+To use curvature dependent limiting at scalar fronts
+	enter the curvature factor (dflt = 0): 
+
+Enter yes for adaptive partition (default is no): n
+Enter yes to re-partition the output at the end of run: n
+
+Request problem type.  Current choices are
+		an ambient state test (AM),
+		a random surface instability problem (RS),
+		a shocked thermal layer (STL),
+		a Richtmyer-Meshkov instability problem (RM),
+		a Rayleigh-Taylor instability problem (RT),
+		a bubbles and drops problem (BD),
+		an expanding shells (ES),
+		shock jet interaction (SJ),
+		a Radial Rayleigh-Taylor instability problem (Radial Rayleigh Taylor),
+		a Kelvin-Helmholtz instability problem (KH),
+		an imploding elliptical shock (IMP),
+		an injection inlet jet (IJ),
+		or a gas injection jet (FJ).
+	Enter choice here: RS
+
+Light fluid is above and heavy fluid below.
+Four types of random surface problems are supported:
+	Rayleigh-Taylor random surface with linearized initial states (RT)
+	Rayleigh-Taylor without linear analysis (RA)
+	Kelvin-Helmholtz random surface (KH).
+Enter choice: RA
+Enter the choice of initial front description
+Four types of descriptions are supported
+       Multiple mode description (M, default),
+       Multiple bubble description (B),
+       Multiple random bubble description (R),
+       Read initial amplitudes from a file (F).
+       Enter choice: R
+Enter the number of modes or the minimum and maximum mode
+	numbers in the initial interface (dflt = 1): 4 4
+Enter the mean position of the front above L[2]: 2
+Enter the amplitude standard deviation: 0.01
+Use sine weighting on amplitudes (dflt n): n
+Enter the average phase: 0
+Enter the bubble phase standard deviation: 90
+Enter an optional three short integers for
+	the amplitude random number generator seed: 82 1772 813
+Enter an optional three short integers for
+	the phase random number generator seed: 6362 88 183
+	number of modes::5
+	Amplitude for mode 0::0.0104029
+	Phase for mode 0::125.823
+	frequency for mode 0 direction 0::0
+	frequency for mode 0 direction 1::4
+	Amplitude for mode 1::0.000877952
+	Phase for mode 1::98.6908
+	frequency for mode 1 direction 0::1
+	frequency for mode 1 direction 1::3
+	Amplitude for mode 2::-0.00350366
+	Phase for mode 2::261.657
+	frequency for mode 2 direction 0::2
+	frequency for mode 2 direction 1::2
+	Amplitude for mode 3::-0.00524666
+	Phase for mode 3::8.21714
+	frequency for mode 3 direction 0::3
+	frequency for mode 3 direction 1::1
+	Amplitude for mode 4::-0.00944893
+	Phase for mode 4::2.95522
+	frequency for mode 4 direction 0::4
+	frequency for mode 4 direction 1::0
+Choices for the perturbation boundary type are
+	PERIODIC (p)
+	SYMMETRIC (s)
+	UNMODIFIED (u)
+Enter the boundary type of perturbation in direction 0 (dflt = u): PERIODIC
+Enter the boundary type of perturbation in direction 1 (dflt = u): PERIODIC
+Enter the density below, above: 2 1
+Type y to turn off tracking for the contact: 
+
+You will now be prompted for the number
+	of different equations of state models,  followed by prompts
+	for the parameters of each EOS.  The various equations
+	of state will then be referred to by the integer
+	that corresponds to the order in which they are prompted.
+Enter the number of EOS models to be used: 1
+
+Enter the equation of state type for the material with index 0.
+Current choices are
+		Obstacle (behind reflecting wall) (O),
+		Polytropic (gamma law) gas (P),
+		Stiffened polytropic gas (SP),
+		Stellar (helmholtz eos) gas (ST),
+		Multiple component polytropic gas (MP),
+		Sesame table lookup (SE),
+		JWL Equation of state (J),
+		Mie Gruneisen (M),
+		Isentropic two phase eos (S2PH),
+		or Generic Test (minimal SPOLY for GENERIC testing) (GT).
+	Enter choice here (dflt = P): MP
+Enter the number of components (< 10) for the gas with index 0 (default = 2): 2
+Enter the 1st component's polytropic exponent (gamma)  for the gas with index 0: 1.67
+Enter the 1st component's molecular weight (M)  for the gas with index 0: 100
+Enter the 2nd component's polytropic exponent (gamma)  for the gas with index 0: 1.67
+Enter the 2nd component's molecular weight (M)  for the gas with index 0: 100
+Enter the ideal gas constant (R, PV = (R/m)T, (m = molecular weight),
+default for R = 1)
+	for the gas with index 0: 100
+
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): y
+
+Use defaults for thermodynamic restrictions (dflt = yes): y
+Initialized params
+Gas_param = 1    
+	Equation of state = 19 MULTI_COMP_POLYTROPIC
+	number of components = 2
+	gamma =                   1.67                   1.67
+	M =                    100                    100
+, R =                    100
+	Artificial Viscosities and Heat Conductions
+	Use nonlinear artificial viscosity = no
+	Coefficient of nonlinear artificial viscosity =                      0
+	Use linear artificial viscosity = no
+	Coefficient of linear artificial viscosity =                      0
+	Use upwind artificial viscosity = no
+	Coefficient of upwind artificial viscosity =                      0
+	Use MUSCL slope flattening = yes
+	Muscl slope flattening parameter eta inverse =                      2
+	Muscl slope flattening minimum shock strength =                   0.25
+	Muscl slope flattening minimum shock specific volume jump =                  1e-06
+	Coefficient of artificial heat conduction =                      0
+	Muscl slope flattening charateristic speed cutoff  =                      0
+	Coefficient of dynamic surface tension =                      0
+	Artificial viscosity stability coefficient =                      1
+	composition_type = 0 PURE_NON_REACTIVE
+	min_energy =  2.220446049250313e-16
+	min_pressure =  2.220446049250313e-16
+	vacuum_dens =  2.220446049250313e-16
+	raref_press =     0.9999999999999998
+
+
+Enter the ambient pressure: 1
+Add velocity shear across interface? (dflt = no): 
+Enter the surface tension for the contact (dflt = 0): 0.0
+There are two ways of implementing Neumann boundary
+	conditions.  Half grid offset boundaries (H) or
+	reflecting boundary state (F, default).
+Enter choice here: F
+	END make_random_surface
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, No Slip Neumann, 
+                           Dirichlet, or Passive --
+	for the bottom boundary in the z direction: NEUMANN
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, No Slip Neumann, 
+                           Dirichlet, or Passive --
+	for the top boundary in the z direction: NEUMANN
+In first call to u_pp_send(), setting the buffer size to 8000000 bytes.
+Entering i_set_boundary3d()
+Calling make_bdry_surfaces()
+buffered[0][0] = 1
+buffered[0][1] = 1
+buffered[1][0] = 1
+buffered[1][1] = 1
+buffered[2][0] = 0
+buffered[2][1] = 1
+
+
+		Specify parabolic steps
+
+Type 'y' to have the Navier-Stokes terms computed for
+	several eos models, and this will turn on
+	parabolic driver parab_driver (y, n(dflt)): y
+Enter NS viscosity coefficient(dflt = 0): 0.00001
+Use Stokes hypothesis for viscosity term(y(dflt), n): y
+Enter NS mass diffusion coefficient(dflt = 0): 0.00000001
+Enter NS thermal conductivity coefficient(dflt = 0): 0.00000001
+Type 'y' to have the turbulence simulation for dynamic model (y, n(dflt)): y
+Enter the time to start turbulent simulation: 0
+Use planar average for subgrid model (y(dflt), n): y
+Use Subgrid model for viscosity (y, n(dflt)): y
+Use Subgrid model for mass diffusion (y, n(dflt)): y
+Use Subgrid model for thermal conductivity (y, n(dflt)): y
+
+Current gas param list
+Number of params = 1
+
+Param[0]
+Gas_param = 1    
+	Equation of state = 19 MULTI_COMP_POLYTROPIC
+	number of components = 2
+	gamma =                   1.67                   1.67
+	M =                    100                    100
+, R =                    100
+	Artificial Viscosities and Heat Conductions
+	Use nonlinear artificial viscosity = no
+	Coefficient of nonlinear artificial viscosity =                      0
+	Use linear artificial viscosity = no
+	Coefficient of linear artificial viscosity =                      0
+	Use upwind artificial viscosity = no
+	Coefficient of upwind artificial viscosity =                      0
+	Use MUSCL slope flattening = yes
+	Muscl slope flattening parameter eta inverse =                      2
+	Muscl slope flattening minimum shock strength =                   0.25
+	Muscl slope flattening minimum shock specific volume jump =                  1e-06
+	Coefficient of artificial heat conduction =                      0
+	Muscl slope flattening charateristic speed cutoff  =                      0
+	Coefficient of dynamic surface tension =                      0
+	Artificial viscosity stability coefficient =                      1
+	composition_type = 0 PURE_NON_REACTIVE
+	min_energy =  2.220446049250313e-16
+	min_pressure =  2.220446049250313e-16
+	vacuum_dens =  2.220446049250313e-16
+	raref_press =     0.9999999999999998
+
+
+Enter indices of Param (less than 1) to use Navier-Stokes terms: 0 1
+
+
+
+Type 'y' to have local mesh refinement: 
+
+		Statistics Control
+
+Type 'y' to initiate prompting for statistics/diagnostics: n
+
+
+		--- End of Input ---

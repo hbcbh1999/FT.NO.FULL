@@ -1,0 +1,8 @@
+#PBS -N autotest
+#PBS -l nodes=2:ppn=2
+#PBS -l walltime=12:00:00
+#PBS -j oe
+#PBS -o run_autotests_cgns.out
+
+cd ${PBS_O_WORKDIR}
+./run_autotests_cgns.sh

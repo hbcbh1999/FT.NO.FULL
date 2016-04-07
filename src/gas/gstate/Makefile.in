@@ -1,0 +1,25 @@
+CC=@CC@
+F77=@F77@
+name = gstate
+
+GAS_C_OBJECTS = gintrp.$(OBJEXT) \
+gstate.$(OBJEXT) \
+gbstate.$(OBJEXT) \
+grstate.$(OBJEXT) \
+gstglobs.$(OBJEXT) \
+gparams.$(OBJEXT) \
+goverinterp.$(OBJEXT) \
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras =  
+
+@gasbuild@
+

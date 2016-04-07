@@ -1,0 +1,74 @@
+Domain limit in 0-th dimension: 0 1.0
+Domain limit in 1-th dimension: 0 1.0
+Domain limit in 2-th dimension: 0 4.0
+Computational grid: 10 10 40
+Lower boundary in 0-th dimension: PERIODIC_BOUNDARY
+Upper boundary in 0-th dimension: PERIODIC_BOUNDARY
+Lower boundary in 1-th dimension: PERIODIC_BOUNDARY
+Upper boundary in 1-th dimension: PERIODIC_BOUNDARY
+Lower boundary in 2-th dimension: NEUMANN_BOUNDARY
+Upper boundary in 2-th dimension: NEUMANN_BOUNDARY
+
+Max time: 10.0
+Max step: 10000000
+Print interval: 1.0
+Movie frame interval: 1.0
+CFL factor: 0.45
+Type y to use the Fast Merge Algorithm: n
+Type y to turn on turbulence model: n
+Type y to turn on the point propagation reduction in the thin film: n
+Point propagation reduction parameter: 0
+Thin film thickness parameter: 0
+Redistribution interval: 5
+Type yes to turn off auto-redistribution: n
+
+Problem type can be
+        TWO_FLUID_BUBBLE
+        TWO_FLUID_RT
+        TWO_FLUID_KH
+        TWO_FLUID_TC
+        TWO_FLUID_RS_RV
+        TWO_FLUID_RS_SY
+        FLUID_SOLID_CIRCLE
+Enter problem type: TWO_FLUID_RT
+Projection type can be
+        SIMPLE
+        BELL_COLELLA
+        KIM_MOIN
+        PEROT_BOTELLA
+Enter projection type: BELL_COLELLA
+Enter mean position of fluid interface: 2.0
+Enter number of sine modes: 2
+Enter frequency of mode 1: 1 0
+Enter amplitude of mode 1: 0.025
+Enter phase of mode 1: 270
+Enter frequency of mode 2: 0 1
+Enter amplitude of mode 2: 0.025
+Enter phase of mode 2: 270
+Enter density and viscosity of fluid 1: 1.0 0.0000101
+Enter density and viscosity of fluid 2: 1.89 0.0000101
+Enter concentration and binary diffusivity of fluid 1: 1.0 0.000000018
+Enter concentration and binary diffusivity of fluid 2: 0.0 0.000000018
+Enter gravity: 0.0 0.0 0.0981
+Enter surface tension: 0.0
+Enter factor of smoothing radius: 1
+Enter volume fraction threshold: 0.05
+
+Type y to make movie of pressure: y
+Type y to make movie of vorticity: n
+Type y to make movie of velocity: y
+Type y to make movie of density: y
+Type y to make movie of concentration: n
+Type y to make movie of component: n
+Type y to make yz cross section movie: n
+Type y to make xz cross section movie: n
+Type y to make xy cross section movie: n
+Type y to make cross sectional component movie: n
+Type y to make vector velocity field movie: n
+
+************Debugging options*****************
+
+Enter yes for debugging: yes
+Enter the debugging string: trace
+Enter the debugging string: step_size
+Enter the debugging string: CLOCK

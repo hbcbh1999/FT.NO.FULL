@@ -1,0 +1,11 @@
+#! /bin/bash
+#PBS -N autotest.ncsa
+#PBS -l nodes=2:ppn=2
+#PBS -l walltime=08:00:00
+#PBS -j oe
+#PBS -o run_autotests.out
+#PBS -V
+
+cd ${PBS_O_WORKDIR}
+mpd &
+./run_autotests.sh

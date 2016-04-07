@@ -1,0 +1,46 @@
+This directory contains code (wave.cpp) for testing of one dimensional 
+numerical schemes of wave equation:
+
+	u_t + a*u_x = 0.
+
+The schemes include:
+
+Upwind			(input file: in-uw, conditionally stable)
+Lax-Friedrich		(input file: in-lf, conditionally stable)
+Lax-Wendroff		(input file: in-lw, conditionally stable)
+MacCormack		(input file: in-mac, conditionally stable)
+Central-explicit	(input file: in-cex, unconditionally unstable)
+Central-implicit	(input file: in-cim, unconditionally stable)
+Crank-Nicolson		(input file: in-cn, unconditionally stable).
+
+It also contains code (heat.cpp) for testing of one dimensional numerical
+schemes for heat equation:
+
+	u_t = bu_xx.
+
+The schemes include:
+
+Central-explicit	(input file: in-heat-cex, conditionally unstable)
+Central-implicit	(input file: in-heat-cim, unconditionally stable)
+Crank-Nicolson		(input file: in-heat-cn, unconditionally stable).
+
+To compile and run code in this directory, FronTier must be configured with
+inclusion of the GD library:
+
+configure --with-gd=/usr/local/pkg/gd --with-devel
+
+To compile wave.cpp:
+
+make wave
+
+To run wave:
+
+wave -d 1 -i input-name -o output-name
+
+To compile heat.cpp:
+
+make heat
+
+To run heat:
+
+heat -d 1 -i input-name -o output-name

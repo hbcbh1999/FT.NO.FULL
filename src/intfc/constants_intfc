@@ -1,0 +1,8 @@
+comp3d.c:#define  MAX_ANG_COMP    50 --> 200
+imkcurve.c:#define		MAX_NUM_SEGMENTS		100
+imksurf.c:#define  MAX_NUM_CURVES   100
+imksurf.c:#define  MAX_CURVE   50
+iredist_o2.c:#define         MAX_RING_PTS            100 --> 1000
+isub.c:#define   MAX_PTS    50
+itrisset.c:#define      MAX_TANGLED_TRIS                800
+itrisset.c:#define      MAX_OUT_TRIS    1000

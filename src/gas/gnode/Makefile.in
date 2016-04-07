@@ -1,0 +1,32 @@
+CC=@CC@
+F77=@F77@
+name = gnode
+
+GAS_C_OBJECTS = gRP.$(OBJEXT) \
+ganom.$(OBJEXT) \
+gbnode.$(OBJEXT) \
+gccnode.$(OBJEXT) \
+gcurve.$(OBJEXT) \
+gmdnode.$(OBJEXT) \
+gnode.$(OBJEXT) \
+gnodesub.$(OBJEXT) \
+gpcnode.$(OBJEXT) \
+gscnode.$(OBJEXT) \
+gsndnode.$(OBJEXT) \
+gscnsts.$(OBJEXT) \
+gssnode.$(OBJEXT) \
+gssnsts.$(OBJEXT) \
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras =  
+
+@gasbuild@
+

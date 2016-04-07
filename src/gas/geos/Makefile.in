@@ -1,0 +1,45 @@
+CC=@CC@
+F77=@F77@
+name= geos
+GAS_C_OBJECTS = eosplot.$(OBJEXT) \
+generic-eos.$(OBJEXT) \
+geosvec.$(OBJEXT) \
+giniteos.$(OBJEXT) \
+gphriem.$(OBJEXT) \
+gseshyp.$(OBJEXT) \
+gsesintrp.$(OBJEXT) \
+gsesphase.$(OBJEXT) \
+gsesspline.$(OBJEXT) \
+gsesprint.$(OBJEXT) \
+gsesinout.$(OBJEXT) \
+mpoly-eos.$(OBJEXT) \
+poly-eos.$(OBJEXT) \
+sesame-eos.$(OBJEXT) \
+spoly-eos.$(OBJEXT) \
+sesinv.$(OBJEXT) \
+sesspln.$(OBJEXT) \
+sesstate.$(OBJEXT) \
+jwl-eos.$(OBJEXT) \
+mg-eos.$(OBJEXT) \
+gentest-eos.$(OBJEXT) \
+s2phase-eos.$(OBJEXT) \
+stellar-eos.$(OBJEXT) \
+
+GAS_F_OBJECTS = gpertsub.$(OBJEXT) \
+gsestoc.$(OBJEXT) \
+sesadd.$(OBJEXT) \
+sesame.$(OBJEXT) \
+helm_eos.$(OBJEXT)\
+#stellar_nados.$(OBJEXT) \
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras =  -DSESAME_CODE
+
+@gasbuild@

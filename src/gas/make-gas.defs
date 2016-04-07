@@ -1,0 +1,96 @@
+#
+#		USER DEFINED OPTIONS FOR GAS MAKEFILE
+#
+#	Copyright 1999 by The University at Stony Brook, All rights reserved.
+#
+
+ifndef useCC
+ useCC = yes
+endif #ifndef useCC
+export useCC
+
+ifndef physlib
+ physlib = gas
+endif #ifndef physlib
+
+ifndef UTIL
+ UTIL := $(shell pwd | sed -e "s/\/$(physlib).*//")/util
+endif #ifndef UTIL
+export UTIL
+
+ifeq "$(rage90)" "yes"
+ RAGE = $(libsrcdir)/rage90
+ export RAGE
+
+ RAGEDEFS = -DRAGE90
+ CPPFLAGS += -I$(RAGE)/src
+endif #ifeq "$(rage90)" "yes"
+
+include $(UTIL)/make.machid
+
+#
+#		Gas dynamics specific definitions
+#
+
+#
+#	Gas dynamics User defined compiler options
+#
+
+HDF = yes
+export HDF
+
+INCLUDE += -I. -I/nfs/t4d1/ams530/shuwang/packages/hypre-1.6.0/src/hypre/include
+INCLUDE += -I/usr/lib/impich/include
+INCLUDE += -I/nfs/t4d1/ams530/shuwang/sn_ellip
+export INCLUDE
+
+
+ifndef PRECISION
+ ifneq "$(unix)" "UNICOS"
+  PRECISION = double
+ else #ifneq "$(unix)" "UNICOS"
+  PRECISION = single
+ endif #ifneq "$(unix)" "UNICOS"
+endif #ifndef PRECISION
+export PRECISION
+
+ifndef DIMENSION
+ DIMENSION = -DONED -DTWOD -DTHREED
+endif #ifndef DIMENSION
+export DIMENSION
+
+USEROPTIONS = $(DIMENSION)
+export USEROPTIONS
+
+# Non-physics debug options here.
+DEBUG = -DDEBUG_NODE_PROPAGATE -DDEBUG_CROSSING -DDEBUG_TRI_GRID
+export DEBUG
+
+ifeq "$(combustion)" "yes"
+ COMBUSTION_CODE = -DCOMBUSTION_CODE
+endif #ifeq "$(combustion)" "yes"
+
+#
+#	Gas Dynamics specific options
+#
+PHYS_DEBUG = -DDEBUG_GRIEMANN -DCHECK_FOR_BAD_STATES -DDEBUG_W_SPEED -DDEBUG_POINT_PROPAGATE -DDEBUG_MUSCL
+PHYSOPTS = $(RAGEDEFS) -DFULL_PHYSICS -DROTATIONAL_SYMMETRY -DMULTI_COMPONENT $(PHYS_DEBUG) $(COMBUSTION_CODE)
+ifeq "$(findstring -DTWOD,$(DIMENSION))" "-DTWOD"
+ PHYSOPTS += -DPHASE_CODE
+endif #ifeq "$(findstring -DTWOD,$(DIMENSION))" "-DTWOD"
+
+ifeq "$(PRECISION)" "double"
+ odepack = odepack
+ dierckx = dierckx
+else #ifeq "$(PRECISION)" "double",  ie single precision
+ odepack = sodepack
+ dierckx = sdierckx
+endif #ifeq "$(PRECISION)" "double"
+
+ifeq "$(physlib)" "gas"
+ ifeq "$(lib)" "$(physlib)"
+  include $(UTIL)/make.master
+ else #ifeq "$(lib)" "$(physlib)"
+  include $(UTIL)/make.defs
+ endif #ifeq "$(lib)" "$(physlib)"
+endif #ifeq "$(physlib)" "gas"

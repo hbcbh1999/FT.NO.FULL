@@ -1,0 +1,63 @@
+#PBS -N autotest
+#PBS -l nodes=2:ppn=2
+#PBS -l walltime=08:00:00
+#PBS -j oe
+#PBS -o run_autotests.out
+
+cd ${PBS_O_WORKDIR}
+./run_autotests.sh
+
+
+#! /bin/bash
+
+rm -f FAILED
+rm -f WARNING
+rm -f SUCCESS
+
+# Check for failures in autotest2d
+output1=`cat autotest2d.out | grep FAILED`
+goodresult1="FAILED  = test crashed.
+FAILED  = diff found differences
+Number FAILED  = 0              Number FAILED  = 0"
+success2d="no"
+if [ "$output1" == "$goodresult1" ]
+then
+    success2d="yes"
+fi
+
+# # Check for warnings in autotest2d                          
+# output2=`cat autotest2d.out | grep warning`
+# goodresult2="warning = passed but warnings found in output.
+# Number warning = 0              Number skipped = 0"
+# if [ "$output2" != "$goodresult2" ]
+# then
+#     touch WARNING
+# fi
+
+# Check for failures in autotest3d                                
+output3=`cat autotest3d.out | grep FAILED`
+goodresult3="FAILED  = test crashed.
+FAILED  = diff found differences
+Number FAILED  = 0              Number FAILED  = 0"
+success3d="no"
+if [ "$output3" == "$goodresult3" ]
+then
+    success3d="yes"
+fi
+
+# # Check for warnings in autotest3d                        
+# output4=`cat autotest3d.out | grep warning`
+# goodresult4="warning = passed but warnings found in output.
+# Number warning = 0              Number skipped = 0"
+# if [ "$output4" != "$goodresult4" ]
+# then
+#     touch WARNING
+# fi
+
+# Check if test was a success
+if [ "${success2d}" == "yes" ] && [ "${success3d}" == "yes" ]
+then
+    touch SUCCESS
+else
+    touch FAILED
+fi

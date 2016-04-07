@@ -1,0 +1,31 @@
+CC=@CC@
+F77=@F77@
+name = gprt
+
+GAS_C_OBJECTS =  gdiagnostic.$(OBJEXT) \
+gintext.$(OBJEXT) \
+glayeravg.$(OBJEXT) \
+g2dprint.$(OBJEXT) \
+gdriverstat.$(OBJEXT) \
+gintstat.$(OBJEXT) \
+grgbdata.$(OBJEXT) \
+glpdiff.$(OBJEXT) \
+gprcur.$(OBJEXT) \
+gprint.$(OBJEXT) \
+gprstate.$(OBJEXT) \
+grectstat.$(OBJEXT) \
+grmdata.$(OBJEXT) \
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras =  
+
+@gasbuild@
+

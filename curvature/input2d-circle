@@ -1,0 +1,17 @@
+Domain limit in 0-th dimension: 0 1
+Domain limit in 1-th dimension: 0 1
+Computational grid: 400 400
+Lower boundary in 0-th dimension: NEUMANN_BOUNDARY
+Upper boundary in 0-th dimension: NEUMANN_BOUNDARY
+Lower boundary in 1-th dimension: NEUMANN_BOUNDARY
+Upper boundary in 1-th dimension: NEUMANN_BOUNDARY
+
+Available test cases are:
+	CIRCLE
+	ELLIPSE
+	SPHERE
+	TORUS
+        ELLIPSOID
+Enter test case: CIRCLE
+Enter center: 0.5 0.5
+Enter radius: 0.3

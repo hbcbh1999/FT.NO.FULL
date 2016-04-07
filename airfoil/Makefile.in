@@ -1,0 +1,62 @@
+CC=@CXX@
+CXX=@CXX@
+F77=@F77@
+F77_LIBS=@F77_LIBS@
+
+libext = @libext@
+incs =  @ftlibincs@
+libincs = @otherlibsinc@
+libs = @otherlibs@
+build_cpu = @build_cpu@
+incsloc = -I. -I../iFluid -I../include
+
+PETSC = yes
+PETSC_ARCH=@PETSC_ARCH@
+PETSC_DIR=@PETSC_DIR@
+
+
+Petsc_Include=@PETSC_INCLUDE@ 
+Petsc_Lib=@PETSC_LIB@ 
+
+airfoil : @devel@ ../lib/libiF.a
+
+iFbasic.o  : ../iFluid/iFluid.h ../iFluid/iFbasic.cpp
+	${CXX} -c ../iFluid/iFbasic.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFcartsn2d.o : ../iFluid/iFluid.h ../iFluid/iFcartsn2d.cpp
+	${CXX} -c ../iFluid/iFcartsn2d.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFcartsn3d.o : ../iFluid/iFluid.h ../iFluid/iFcartsn3d.cpp
+	${CXX} -c ../iFluid/iFcartsn3d.cpp $(incsloc) $(incs) ${Petsc_Include}
+solver.o : ../iFluid/solver.h ../iFluid/solver.cpp
+	${CXX} -c ../iFluid/solver.cpp $(incsloc) $(incs) ${Petsc_Include}
+ellip.o : ../iFluid/solver.h ../iFluid/ellip.cpp
+	${CXX} -c ../iFluid/ellip.cpp $(incsloc) $(incs) ${Petsc_Include}
+iFsub.o : ../iFluid/iFluid.h ../iFluid/ifluid_basic.h ../iFluid/iFsub.cpp
+	${CXX} -c ../iFluid/iFsub.cpp $(incsloc) $(incs) ${Petsc_Include}
+afinit.o : airfoil.h ../iFluid/iFluid.h afinit.cpp
+	${CXX} -c afinit.cpp $(incsloc) $(incs) ${Petsc_Include}
+airfoil: ../iFluid/iFluid.h airfoil.h airfoil.cpp afinit.o iFsub.o ../lib/libiF.a
+	${CXX} -c airfoil.cpp $(incsloc) $(incs) ${Petsc_Include}
+	$(CXX) -o airfoil airfoil.o afinit.o iFsub.o -I../include -L../lib/${build_cpu} -liF ${Petsc_Lib} -L../lib/${build_cpu} -lFronTier $(libincs)  $(libs) ${F77_LIBS}
+
+../lib/libiF.a: solver.o ellip.o iFbasic.o iFcartsn2d.o iFcartsn3d.o iFcylin3d.o iFdebug2d.o iFdebug3d.o
+	$(AR) cru libiF.a $^
+	ranlib libiF.a; mv libiF.a ../lib/$(build_cpu)/libiF.a
+
+-include ../devel-deps.inc
+
+clean:
+	rm -rf *.o airfoil 
+output :
+	rm -rf out/*
+
+gif :
+	hdf2gif out/intfc.hdf out/intfc.gif
+
+TagsFile:
+	ctags *.h *.cpp ../iFluid/{iFluid.h,solver.h,solver.cpp,ellip.cpp,iFcartsn2d.cpp,iFsub.cpp,iFcartsn3d.cpp,iFbasic.cpp,iFcylin3d.cpp} ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
+
+tagsfile:
+	ctags *.h *.cpp ../iFluid/{iFluid.h,solver.h,solver.cpp,ellip.cpp,iFcartsn2d.cpp,iFsub.cpp,iFcartsn3d.cpp,iFbasic.cpp,iFcylin3d.cpp} ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
+
+etagsfile:
+	etags *.h *.cpp ../iFluid/{iFluid.h,solver.h,solver.cpp,ellip.cpp,iFcartsn2d.cpp,iFsub.cpp,iFcartsn3d.cpp,iFbasic.cpp,iFcylin3d.cpp} ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]

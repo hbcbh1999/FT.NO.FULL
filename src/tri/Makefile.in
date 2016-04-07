@@ -1,0 +1,39 @@
+CC=@CC@
+F77=@F77@
+name = tri
+
+FT_C_OBJECTS = overture_trigrid1.$(OBJEXT) \
+tricpy.$(OBJEXT) \
+trigrid1.$(OBJEXT) \
+tri1d.$(OBJEXT) \
+trigrid2.$(OBJEXT) \
+triuserintfc.$(OBJEXT) \
+tri2d.$(OBJEXT) \
+triel1.$(OBJEXT) \
+triloc.$(OBJEXT) \
+tri3d.$(OBJEXT) \
+triel2.$(OBJEXT) \
+tripcs.$(OBJEXT) \
+tri3dutils.$(OBJEXT) \
+triel3.$(OBJEXT) \
+triprint.$(OBJEXT) \
+
+########################################################################################
+# DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO 
+########################################################################################
+
+
+libext = @libext@
+OBJEXT = @OBJEXT@
+ftlibincs = @ftlibincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+
+all:  ../../lib/$(build_cpu)/lib$(name)$(libext).a
+
+@ftbuild@
+
+clean:
+	cd  $(build_cpu)/; rm -rf *.o
+
+

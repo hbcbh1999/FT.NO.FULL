@@ -1,0 +1,405 @@
+Type 'p' to obtain prompting on input: 
+
+Type `debug' to Turn On Debugging: debug
+: file
+: CLOCK
+: end
+
+Type 't' to obtain traceback of debug lines upon error termination:
+Enter the spatial dimension of the computation: 3
+
+Enter the remapping (Jacobian) converting the physical coordinate system
+to the cartesian computational coordinate system.
+The choices are
+		Identity Remap (i or I) (default),
+			Type Choice Here: I
+Enter the computational limits in the x direction, XL, XU: 0 1
+Enter the computational limits in the y direction, YL, YU: 0 1
+Enter the computational limits in the z direction, ZL, ZU: 0 4
+Enter the Numbers of Grid Intervals of the
+	Computational grid in the x, y, & z directions: 20 20 80
+The topological grid is a grid used for the construction of the tracked front
+	topology.  It is constrained to be a square grid.  You specify the grid
+	in one of two ways.  If you enter a single number,  it will be used as
+	a coarseness factor for the topological grid relative to the 
+	computational grid entered above.  In this case the length of a
+	topological grid block cell side is the nearest allowable multiple of
+	the shortest side of the computational grid by the coarseness factor.
+	Otherwise the code will read the three integers input for the number
+	of grid cells in each coordinate direction of the topological grid.
+	If your input values do not yield a square grid they will be corrected
+	to produce a square grid.  This correction will attempt to produce
+	values close to those input, but if the input values are highly 
+	rectangular, the resulting values may differ considerably
+	from those entered.  The default for this input option is the nearest
+	square grid that matches the computational grid.  Generally the
+	topological grid is coarser than the computational grid.  Larger
+	coarseness factors yield coarser grids,  a value one gives the
+	nearest square grid to the computational grid.
+Enter your choice (cor_fac, three integers, or return)
+	(defaults are 10 10 60): 1
+
+		General run termination/pause conditions
+
+Enter limits on real time (max time), mesh time (max timesteps),
+	and an optional initial time: 15 1000 0
+Specify the pause time mode [exact(dflt), constant, mesh]: exact
+Enter the first Pause Time (dflt = Inf): 
+Enter maximum number of time step reductions allowed during
+	a propagation (default = 0): 5
+
+Construct tetragrid [dflt = n]: n
+Use least square [dflt = n]: n
+
+		Printing Control
+
+Request main output format(s). Options are
+                front_plots only (F)
+                front_plots plus interior_states (Restart format) (R)
+                SDS files (S)
+                VTK files (V)
+                PROSTAR plots (P)
+                suppress output (dflt)
+	Enter the list as a string of characters: R V
+
+Prompt for front_plots printing control.
+Specify the interval type for printing 
+	[exact, constant, mesh(dflt)]: exact
+Enter the step interval and first step for printing 
+	(default = 1 0): 5 0
+Request binary/non-binary output [b(dflt),n]: b
+
+Prompt for interior_states printing control.
+Specify the interval type for printing
+	[exact(default), constant, mesh]: exact
+Enter the time interval and first time for printing
+	(default = 2 0): 5 0
+Request binary/non-binary output [b(dflt),n]: b
+
+Prompt for VTK_plots printing control.
+Specify the interval type for printing
+        [exact (default), constant, mesh]: exact
+Enter the time interval and first time for printing
+        (default = 1 0): 1 0
+Request binary/non-binary output [b,n(dflt)]: b
+
+To obtain geomview plots type y (default = no): y
+Enter a root name for the output directory: 
+Specify the interval type for printing
+        [exact (default), constant, mesh]: exact
+Enter the time interval and first time for printing
+        (default = 2 2): 1 0
+Request binary/non-binary output [b,n(dflt)]: n
+
+The user can request that restart dumps be printed at a specified wall
+	time interval.  These dumps will be named
+	out/rt3d.lastdump0 and out/rt3d.lastdump1
+	and will be alternately overwritten as the run proceeds
+	The wall time dump frequency can be given in units of seconds,
+	minutes (default), or hours.  Indicate the units in the obvious way
+	such as 30 minutes,  2 hours, etc.
+To request this option enter the wall time print frequency: 6 hours
+Print wall time dumps in binary (default = no): 
+
+Request composition type of materials. Available types are:
+		PURE_NON_REACTIVE (PNR, default)
+		MULTI_COMP_NON_REACTIVE (MCNR)
+	Enter choice here: 
+
+                VTK plotting initialization
+
+Specify variables to be plotted (VTK).The choices are --
+                x-velocity (X), y-velocity (Y), z-velocity (Z),
+                flow speed (U), kinetic energy density (K), momentum (M),
+                density (D), energy density (E),
+                divergence of velocity (W), pressure (P),
+                specific internal energy (I), temperature (T),
+                specific enthalpy (H), entropy (S),
+                radial component of velocity (RV), or Mach number (N).
+        Enter choices as a space separated list, using multiple lines if needed.        Terminate all lines EXCEPT THE LAST with a backslash '\'
+        Enter choices: D
+
+From the above vtk variables choosen, specify in an ordered list the
+varibles which you would like to be put in a vector file.  For example,
+if you would like a velocity vector your would type "VX VY". Please
+remember that you MUST INCLUDE THE VARIBLES THAT YOU WANT PRINTED AS
+VECTORS IN THE ABOVE LIST AS WELL.
+        Enter choices as a space separated list, using multiple lines if needed.        Terminate all lines EXCEPT THE LAST with a backslash '\'
+        Enter choices: 
+
+You may specify a sub-sampling factor (a factor of 2 would sample half
+        the data points in each dimension uniformly). Your sub-sampling factor must
+        divide evenly into the number of data points contained in each dimension of
+        each processor. Failing this criteria will cause the program to exit.
+        If you do not want to sub-sample, enter 1.
+        Specify a sub-sampling factor: 1
+
+You will now be prompted for a base file name and optional directory for the
+        VTK output.  Output for each variable is to a separate file whose name
+        contains the base name, and the prompt string for that variable.
+Enter a file name for the output
+        for VTK data (default = out/vtk/rt3d1/rt3d1): 
+
+Specify additional GAS printing variables.  The choices are,
+	VELOCITY (V),
+	RADIAL COMPONENT OF VELOCITY (RV),
+	PRESSURE (P),
+	SPECIFIC ENTROPY (S).
+Enter the list as a string of characters: 
+
+		Specify interior hyperbolic difference method
+
+Select the difference method for solving the hyperbolic
+system in the interior regions away from the fronts
+Choices are
+	Advance fronts only (AF)
+	Split Lax-Wendroff (LS,default)
+	Vectorized split Lax-Wendroff (VLS)
+	Vectorized split MUSCL (VM)
+	Unsplit Lax-Wendroff (LWU)
+Enter choice here: VM
+
+Current values for MUSCL parameters
+	State reconstruction = Reconstruct density, energy, velocity
+	Riemann solver = Colella-Glaz's approximate Riemann solver
+
+	Current values of the Colella-Glaz Riemann solver parameters
+	Maximum number of iterations for Riemann solver        4 
+	Minimum pressure jump below which mass flux            1e-06
+		is replaced by acoustic impedance
+	Velocity convergence tolerance                         1e-06
+	The strong wave tolerance above which approximate      100
+		Riemann solver is replaced by an exact solver
+	Minimum allowed mass flux                              1e-12
+	End List of Colella-Glaz Riemann solver parameters
+
+	Irregular hyp stencil method = MUSCL
+	Tangential sweep method = MUSCL
+	Don't test for negative density and energies at half step
+End List of current values for MUSCL parameters
+
+Use all defaults for MUSCL code (dflt = y): n
+Choose the desired type of linear reconstruction, Choices are
+	Reconstruct density, energy, velocity (D, default)
+	Reconstruct eigen coordinates (E)
+	Bell-Colella-Trangenstein reconstruction (B)
+	First order Godunov reconstruction (zero slopes) (F)
+Enter choice: 
+Test for negative density and energies at half step (dflt=no): 
+Choose the desired Riemann solver, Choices are
+	Exact Riemann solver (E)
+	Linear approximate Riemann solver (L)
+	Colella-Glaz's approximate Riemann solver (C, default)
+Enter choice: L
+Choose the irregular stencil method, Choices are
+	Lax_Wendroff (L)
+	MUSCL (M, default)
+Enter choice: 
+Choose the tangential sweep method, Choices are
+	Lax_Wendroff (L)
+	MUSCL (M, default)
+	First order godunov (G)
+Enter choice: 
+
+Current defaults for artificial viscosity parameters---
+	Artificial Viscosities and Heat Conductions
+	Use nonlinear artificial viscosity = no
+	Coefficient of nonlinear artificial viscosity = 0
+	Use linear artificial viscosity = no
+	Coefficient of linear artificial viscosity = 0
+	Use upwind artificial viscosity = no
+	Coefficient of upwind artificial viscosity = 0
+	Use MUSCL slope flattening = yes
+	Muscl slope flattening parameter eta inverse = 2
+	Muscl slope flattening minimum shock strength = 0.25
+	Coefficient of artificial heat conduction = 0
+	Muscl slope flattening charateristic speed cutoff  = 0
+	Coefficient of dynamic surface tension = 0
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): y
+
+To initialize gravitational acceleration, type 'y': y
+	Enter x component of gravity (dflt = 0): 
+	Enter y component of gravity (dflt = 0): 
+	Enter z component of gravity (dflt = 0): 0.14
+Use default settings for dynamic tracking (default = y): 
+Point propagation parameters have the current default values
+	Operator split normal/tangential update
+Use defaults for point propagation operators (dflt = y): 
+Use defaults for linear interpolation options,
+	answer yes or no or print defaults [yes]: 
+Enter an upper bound for the number of components (default = 10): 5
+
+Specify initial interface of tracked curves
+Choices are
+	Input interface by hand (type `screen')
+	Input interface from a file (restart option - enter filename)
+	Request default option(s) (hit `return')
+Enter choice: 
+
+		curve redistribution control
+
+Enter the mode of curve redistribution --
+	`none', `expansion', or `full' (dflt): 
+Enter version of full curve redistribution
+	ordinary full curve redistribution [o]
+	equi-bond curve redistribution [e(default)]
+Enter choice: 
+
+                front spacing control
+
+Enter the spacing for general surfaces in dimensionless
+	length/mesh units (dflt = 0.75): 
+Enter the spacing for vector type surfaces in dimensionless
+	length/mesh units (dflt = 0.75): 
+
+                surface redistribution control
+
+Enter tracking algorithm, choices are:
+        Grid free tracking(F),
+        Grid based tracking (G),
+        Mixed strategy tracking (M),
+	Locally grid based tracking (L),
+Enter choice: G
+
+		time step size control
+
+Use defaults for front time step control (y dflt, p prints defaults): n
+Enter the time step factor (fraction of CFL condition - default 0.75): 0.75
+Enter the CFL increase factor (default 1.1): 
+Enter the minimum time step modification factor (default 0.75): 
+Enter the maximum time step modification factor (default 1.25): 
+
+                flow specified state enforcement at fronts
+
+Enforce flow specified states at fronts (dflt=yes): 
+
+Type yes to propagate front in moving frame (dflt = no): 
+
+Select normal computation algorithm, choices are
+        Area weighted normals (AREA, default)
+        Least squares plane fit (PLANE)
+Enter choice: 
+
+To use curvature dependent limiting at scalar fronts
+        enter the curvature factor (dflt = 0): 
+Enter yes for adaptive partition (default is no): n
+Enter yes to re-partition the output at the end of run: n
+Request problem type.  Current choices are:
+		an astrophysical jet (AJ),
+		a plane front (P),
+		a elliptical Riemann problem (ERP),
+		a Kelvin-Helmholtz instability problem (KH),
+		a random surface instability problem (RS),
+		a Meshkov instability problem (M),
+		a shock diffraction (D),
+		a shock transmission (T),
+		a contact-contact interaction (CC),
+		a Richtmyer-Meshkov instability problem (RM),
+		a Richtmyer linear theory (RL),
+		a bowshock (B),
+		a ramp reflection problem (R),
+		a shock running over an expanding wedge (X),
+		an ambient state test (AM),
+		a Rayleigh-Taylor instability problem (RT),
+		a bubbles and drops problem (BD),
+		a expanding shells (ES),
+		shock jet interaction (SJ),
+		or a trigrid test (TRI).
+	Enter choice here: RS
+
+Light fluid is above and heavy fluid below.
+Four types of random surface problems are supported:
+	Accelerated random surface (AS)
+	Rayleigh-Taylor random surface with linearized initial states (RT)
+	Rayleigh-Taylor without linear analysis (RA)
+	Kelvin-Helmholtz random surface (KH).
+Enter choice: RA
+Enter the choice of initial front description:
+Three types of descriptions are supported:
+       Multiple mode description (M, default),
+       Multiple bubble description (B),
+       Multiple random bubble description (R).
+       Enter choice: M
+Enter the number of modes in the initial interface: 2
+Enter the mean position of the front above L[2]: 2.0001
+Enter the amplitude of mode 0: 0.05
+Enter the phase of mode 0: 270
+For coordinate direction 0, enter the frequency of mode 0: 0
+For coordinate direction 1, enter the frequency of mode 0: 1
+Enter the amplitude of mode 1: 0.05
+Enter the phase of mode 1: 270
+For coordinate direction 0, enter the frequency of mode 1: 1
+For coordinate direction 1, enter the frequency of mode 1: 0
+
+Enter the boundary type of perturbation in direction 0: PERIODIC
+Enter the boundary type of perturbation in direction 1: PERIODIC
+Enter the density below, above: 2 1
+Type y to turn off tracking for the contact: 
+
+Enter the number of EOS models to be used: 2
+Enter the equation of state type for the material with index 0.
+Current choices are:
+	Obstacle (behind reflecting wall) (O).
+	Vacuum (V).
+	Polytropic (gamma law) gas (P).
+	Stiffened polytropic gas (SP).
+		Enter choice here: P
+Enter the polytropic exponent (gamma)
+	for the gas for the fluid below: 1.4
+
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): y
+
+Use defaults for thermodynamic restrictions (dflt = yes): y
+
+Enter the equation of state type for the material with index 1.
+Current choices are:
+	Obstacle (behind reflecting wall) (O).
+	Vacuum (V).
+	Polytropic (gamma law) gas (P).
+	Stiffened polytropic gas (SP).
+		Enter choice here: P
+Enter the polytropic exponent (gamma)
+	for the gas for the fluid below: 1.4
+
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): 
+
+Use defaults for thermodynamic restrictions (dflt = yes): y
+
+Input the EOS model (0 <= an integer <= 1, p prints available options)  for the fluid below: 0
+
+Input the EOS model (0 <= an integer <= 1, p prints available options)  for the fluid above: 1
+
+Enter the ambient pressure: 1
+Add velocity shear across interface? (dflt = no): 
+Enter the surface tension for the contact (dflt = 0): 0.0
+There are two ways of implementing Neumann boundary
+	conditions.  Half grid offset boundaries (H) or
+	reflecting boundary state (F, default).
+Enter choice here: F
+
+Enter the data type -- Passive, Neumann, Dirichlet, Periodic, or Unknown --
+	for the bottom boundary in the z direction: NEUMANN
+Enter the data type -- Passive, Neumann, Dirichlet, Periodic, or Unknown --
+	for the top boundary in the z direction: NEUMANN
+
+Type 'y' to have the Navier-Stokes terms computed for
+        several eos models, and this will turn on
+	        parabolic driver parab_driver (y, n(dflt)): 
+
+Type 'y' to have local mesh refinement: 
+
+		Statistics Control
+
+Type 'y' to initiate prompting for statistics/diagnostics: y
+Type 'y' to request grid statistics for conserved variables: 
+Type 'y' to request a periodic glimpse of the solution
+	via a plot of the component regions: 
+Type 'y' to request interface extrema data: n
+Type 'y' to request layer statistics: n
+Type 'y' to request interface statistics: n
+Type 'y' to request rect state statistics: n
+Type 'y' if you wish to compute the Lp norm of the         
+	difference between the linearized and nonlinear solutions: n

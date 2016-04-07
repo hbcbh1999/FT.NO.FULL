@@ -1,0 +1,54 @@
+CC=@CC@
+F77=@F77@
+name = ginit
+
+GAS_C_OBJECTS = testsolver.$(OBJEXT) \
+gibifur.$(OBJEXT) \
+gijet.$(OBJEXT) \
+giphysprompt.$(OBJEXT) \
+gicc.$(OBJEXT) \
+gielrp.$(OBJEXT) \
+giglobs.$(OBJEXT) \
+gihypinit.$(OBJEXT) \
+gilayer.$(OBJEXT) \
+girgb.$(OBJEXT) \
+gictype.$(OBJEXT) \
+gimkcur.$(OBJEXT) \
+gimksurf.$(OBJEXT) \
+ginitintfc.$(OBJEXT) \
+ginitphys.$(OBJEXT) \
+giparams.$(OBJEXT) \
+gipert.$(OBJEXT) \
+girt.$(OBJEXT) \
+girpregion.$(OBJEXT) \
+gipppert.$(OBJEXT) \
+giprt.$(OBJEXT) \
+gireadstate.$(OBJEXT) \
+girefl.$(OBJEXT) \
+girestrt.$(OBJEXT) \
+girm_linear.$(OBJEXT) \
+girstate.$(OBJEXT) \
+gisc.$(OBJEXT) \
+gistate.$(OBJEXT) \
+gitabregion.$(OBJEXT) \
+giboone.$(OBJEXT) \
+spolars.$(OBJEXT) \
+gimkbub3d.$(OBJEXT) \
+gi3comp.$(OBJEXT) \
+gcauchy.$(OBJEXT) \
+giplasma_liner.$(OBJEXT) \
+
+
+###########################################################################
+#DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO
+###########################################################################
+libext = @libext@
+
+OBJEXT = @OBJEXT@
+gasincs = @gasincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+extras = 
+
+@gasbuild@
+

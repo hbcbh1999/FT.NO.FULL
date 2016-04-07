@@ -1,0 +1,54 @@
+Domain limit in 0-th dimension: 0 1
+Domain limit in 1-th dimension: 0 1
+Computational grid: 128 128
+Lower boundary in 0-th dimension: PERIODIC_BOUNDARY
+Upper boundary in 0-th dimension: PERIODIC_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+
+Are there seeds grow from floor: Y
+Enter floor level: 0.1
+Enter number of floor seeds: 5
+Enter center coordinates of floor seed 1: 0.1
+Enter center coordinates of floor seed 2: 0.3
+Enter center coordinates of floor seed 3: 0.5
+Enter center coordinates of floor seed 4: 0.7
+Enter center coordinates of floor seed 5: 0.9
+Are there seeds grow from ceiling: Y
+Enter ceiling level: 0.9
+Enter number of ceiling seeds: 5
+Enter center coordinates of ceiling seed 1: 0.1
+Enter center coordinates of ceiling seed 2: 0.3
+Enter center coordinates of ceiling seed 3: 0.5
+Enter center coordinates of ceiling seed 4: 0.7
+Enter center coordinates of ceiling seed 5: 0.9
+Are there seeds grow from space: Y
+Enter number of space seeds: 3
+Enter center coordinates of space seed 1: 0.5 0.5
+Enter center coordinates of space seed 2: 0.1667 0.5
+Enter center coordinates of space seed 3: 0.8333 0.5
+Enter radius of seeds: 0.015
+
+Diffusion coefficient: 0.1
+Growth rate: 500.0
+Equilibrium concentration: 1.0
+Ambient concentration: 2
+Crystal density: 10
+Choose numerical scheme
+        Unsplit explicit (EX)
+        Unsplit implicit (IM)
+        Crank-Nicolson (CN)
+Enter scheme: CN
+Choose point propagation scheme
+        Explicit Euler (EX)
+        Implicit Euler (IM)
+        Middle point (MP)
+Enter scheme: MP
+Enter yes to add curvature effect: y
+
+Max time: 20.0
+Max step: 100000
+Print interval: 0.25
+Movie frame interval: 0.1
+CFL factor: 0.75
+Redistribution interval: 100

@@ -1,0 +1,35 @@
+#!/bin/sh 
+
+files=`find . -name "*.[hcC]"`;
+
+knownfiles="    ./src/front/fprint.c
+    ./src/util/vtk.c
+    ./src/util/cdecs.h
+    ./src/util/uprotos.h
+    ./src/driver/dinit.c
+    ./src/driver/dprint.c
+    ./src/driver/dprotos.h
+    ./src/intfc/igview.c
+    ./poisson/test_ebm2d.c
+    ./poisson/poisson.c";
+occurs=`grep -l "[^a-zA-Z_0-9]float[^a-zA-Z_0-9\.\\]" ${files}`;
+nl=`echo $occurs | wc -w`;
+
+if [ $nl -eq 10 ]; then
+  echo "Good! There does not seem to be any new file with 'float'."
+  echo
+  echo "The following files were known to contain valid float:"
+  echo "$knownfiles"
+  exit;
+fi
+
+echo "The following files appear to have introduced 'float'. Please check:"
+echo 
+for file in $occurs ; 
+do
+    match=`echo $knownfiles | grep $file`;
+
+    if [ -z "$match" ]; then
+        grep -nH "[^a-zA-Z_0-9]float[^a-zA-Z_0-9\.\\]" ${file}
+    fi
+done

@@ -1,0 +1,35 @@
+############################################################
+############### Explanation of Directories #################
+############################################################
+
+archive/: Stores archived "correct" results, to be compared
+          with results produced in the out/ directory.
+
+in/:      Stores the input files of autotest2d.sh.
+
+out/:     Stores the output files of autotest2d.sh. 
+
+
+############################################################
+################## Running autotest2d.sh ###################
+############################################################
+
+Note: autotest2d.sh is not meant to be run individually.  
+      Please refer to README file in ../ directory for 
+      explanation of running all autotests at once.
+
+
+############################################################
+################### Running archive.sh #####################
+############################################################
+
+To Run:
+> ./archive.sh 
+
+Note: archive.sh will move test results in out/ directory to 
+      archive/ directory.  Doing so will provide "correct" 
+      resultsto compare to outputted results in later tests.
+
+
+############################################################
+############################################################

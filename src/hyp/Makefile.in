@@ -1,0 +1,34 @@
+CC=@CC@
+F77=@F77@
+name = hyp
+
+FT_C_OBJECTS = hdriver.$(OBJEXT) \
+hinit.$(OBJEXT) \
+hsub.$(OBJEXT) \
+hsrc.$(OBJEXT) \
+hscatter.$(OBJEXT) \
+hwave.$(OBJEXT) \
+hnpt.$(OBJEXT) \
+hvec.$(OBJEXT) \
+hprint.$(OBJEXT) \
+hpseudo.$(OBJEXT) \
+hsoln.$(OBJEXT) \
+hoverture_driver.$(OBJEXT) \
+
+########################################################################################
+# DO NOT MODIFY BELOW THIS LINE UNLESS YOUR POSITIVE YOU KNOW WHAT YOU WANT TO DO 
+########################################################################################
+
+libext = @libext@
+OBJEXT = @OBJEXT@
+ftlibincs = @ftlibincs@
+build_cpu = @build_cpu@
+RANLIB = @RANLIB@
+
+all:  ../../lib/$(build_cpu)/lib$(name)$(libext).a
+
+@ftbuild@
+
+clean:
+	cd  $(build_cpu)/; rm -rf *.o
+

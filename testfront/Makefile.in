@@ -1,0 +1,22 @@
+CC=@CXX@
+F77=@F77@
+libext=@libext@
+incs=@exampleincs@
+libincs=@otherlibsinc@
+libs=@otherlibs@
+build_cpu=@build_cpu@
+
+all:
+	cd ../;make
+	make testfront 
+
+
+
+testfront: testfront.cpp
+	rm -f testfront
+	$(CC) -c -I../include $(incs) testfront.cpp
+	$(CC) testfront.o -L../lib/$(build_cpu) $(libincs) -lFronTier -lm $(libs) -o testfront
+clean:
+	rm -rf *.o testfront 
+tagsfile:
+	ctags *.cpp ../src/*/*.[chf]

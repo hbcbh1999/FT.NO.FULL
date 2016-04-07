@@ -1,0 +1,7 @@
+fgb3comp.c:#define  MAX_CURVE_CRX_SORT    100
+fgb3comp.c:#define  MAX_3_COMP_CURV  10
+fgb3d.c:#define		MAX_NUM_UNPHY_IP		4500
+fgb3d.c:#define		MAX_NULL_SIDE_LOOP		1000
+fprop3d.c:#define  MAX_TRIS   50
+fpatrecon.h:#define     TABFACTOR       1000
+fgb3dutil.c:enum { MAX_EDGE_CRX = 20 --> 200 };

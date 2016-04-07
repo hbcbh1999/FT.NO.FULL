@@ -1,0 +1,30 @@
+
+Liquid code is an incompressible code, still under development.
+The current version is for 2D only. To compile the code, the FronTier
+must be configured with PETSc, linpak and blas and openmpi. An additional 
+option is to link with HDF which will produce 2D hdf movies on component,
+vorticity, pressure, x, and y velocities.
+
+For example, to compile on galaxy:
+
+configure --with-gas --with-hdf=/usr/local/pkg/HDF4 --with-openmpi=/usr/local/pkg/openmpi --with-petsc=/usr/local/pkg/petsc-2.3.3/petsc-2.3.3-p11 --with-devel
+
+First make the FronTier library under FronTier directory, and then
+cd liquid
+make
+
+Five sample input files are provided:
+
+in-drop
+in-bubble
+in-rt
+in-turbulence
+in-laminar
+
+Command line must include dimension, for example:
+
+mpirun -np 1 liquid -d 2 -p 1 1 -i input-name -o output-name
+
+Restart the run from step t:
+
+mpirun -np 1 liquid -d 2 -p 1 1 -i input-name -o output-name -r restart-name -t step

@@ -1,0 +1,505 @@
+Type 'p' to obtain prompting on input: 
+Type debug to Turn On Debugging: debug
+Specify Debugging Destination, screen or file: FILE
+List Functions to Debug - or all -  end  ends list
+Names following  all  will not be debugged - end ends
+	: bad_state
+	: end
+
+Enter the spatial dimension of the computation: 1
+
+Enter the remapping (Jacobian) converting the physical coordinate system to the
+	cartesian computational coordinate system.  The choices are
+		Identity Remap (default) (i)
+		Cylindrical Geometry (c)
+			Type Choice Here: I
+Enter the computational limits in the x direction, XL, XU: 0 1.0
+Enter the numbers of grid intervals of the
+	computational grid in the x & y directions: 200
+The topological grid is a grid used for the construction of the tracked front
+	topology.  It is constrained to be a square grid.  You specify the grid
+	in one of two ways.  If you enter a single number, it will be used as a
+	coarseness factor for the topological grid relative to the
+	computational grid entered above.  In this case the length of a
+	topological grid block cell side is the nearest allowable multiple of
+	the shortest side of the computational grid by the coarseness factor. 
+	Otherwise the code will read the two integers input for the number of
+	grid cells in each coordinate direction of the topological grid.  If
+	your input values do not yield a square grid they will be corrected to
+	produce a square grid.  This correction will attempt to produce values
+	close to those input, but if the input values are highly rectangular,
+	the resulting values may differ considerably from those entered.  The
+	default for this input option is the nearest square grid that matches
+	the computational grid.  Generally the topological grid is coarser than
+	the computational grid.  Larger coarseness factors yield coarser grids,
+	a value one gives the nearest square grid to the computational grid.
+Enter your choice (cor_fac, two integers, or return)
+	(defaults are 100): 
+
+		General run termination/pause conditions
+
+Enter limits on real time (max time), mesh time (max timesteps), an optional
+	initial time, and an optional stop time mode (exact or constant), (dflt
+	= inf 2147483647 0 constant): 1.0 100000
+Specify the pause time mode [exact, constant(dflt), mesh]: exact
+Enter the first Pause Time (dflt = inf): 
+Enter maximum number of time step modifications allowed
+	during a propagation step (default = 50): 25
+
+
+		Printing Control
+
+Request main output format(s). Options are
+		front_plots only (F)
+		front_plots plus interior_states (Restart format) (R)
+		front_plots plus tri_plots (T)
+		front_plots, interior_states, and tri_plots (A)
+		HDF raster plots (H)
+		SDS files (S)
+		VTK files (V)
+		PROSTAR plots (P)
+		GD 1-D Movie (G)
+		suppress output (dflt)
+	Enter the choices as a space separated list: G R
+Prompt for front_plots printing control.
+Specify the interval type for printing
+	[exact, constant, mesh (default)]: exact
+Enter the time interval and first time for printing
+	(default = 1 0): 0.01 0
+Request binary/non-binary output [b(dflt),n]: n
+
+Prompt for interior_states printing control.
+Specify the interval type for printing
+	[exact (default), constant, mesh]: exact 
+Enter the time interval and first time for printing
+	(default = 4 0): 0.01 0 
+Request binary/non-binary output [b(dflt),n]: n
+Prompt for GD_movie_plots printing control.
+Specify the interval type for printing
+        [exact, constant, mesh (default)]: exact
+Enter the time interval and first time for printing
+        (default = 1 0): 0.01 0
+Request binary/non-binary output [b(dflt),n]: n
+
+
+The user can request that restart dumps be printed at a specified wall
+	time interval.  These dumps will be named
+	out/200_rd/200_rd.lastdump0 and out/200_rd/200_rd.lastdump1
+	and will be alternately overwritten as the run proceeds
+	The wall time dump frequency can be given in units of seconds,
+	minutes (default), or hours.  Indicate the units in the obvious way
+	such as 30 minutes,  2 hours, etc.
+To request this option enter the wall time print frequency: 
+
+
+Request composition type of materials. Available types are
+		PURE_NON_REACTIVE (PNR, default)
+		MULTI_COMP_NON_REACTIVE (MCNR)
+	Enter choice here:   
+
+                GD Movie plotting initialization
+
+Specify variables to be plotted . The choices are --
+                r-velocity (VR), flow speed (U),
+                kinetic energy density (K), momentum (M), density (D),
+                energy density (E), divergence of velocity (W),
+                pressure (P), specific internal energy (I),
+                temperature (T), specific enthalpy (H), entropy (S),
+                radial component of velocity (RV), or Mach number (N).
+        Enter choices as a space separated list, using multiple lines if needed.        Terminate all lines EXCEPT THE LAST with a backslash '\'
+        Enter choices: D P
+Enter a file name for the output
+        for GD_MOVIE data (default = out/gd_movie/riem1d/riem1d): 
+
+	
+Specify additional GAS printing variables.  The choices are,
+		VELOCITY (V),
+		RADIAL_COMPONENT_OF_VELOCITY (RV),
+		PRESSURE (P),
+		SPECIFIC_ENTROPY (SPECIFIC_ENTROPY),
+		SOUND_SPEED (SOUND_SPEED),
+		TEMPERATURE (TEMPERATURE),
+		TANGENTIAL_COMPONENT_OF_XY_VELOCITY (TV).
+	Enter choices as a space separated list, using multiple lines if needed.
+	Terminate all lines EXCEPT THE LAST with a backslash '\'
+	Enter choices: V P
+
+		Specify interior hyperbolic difference method.
+
+Select the difference method for solving the hyperbolic
+system in the interior regions away from the fronts.
+Choices are
+	Split Lax-Wendroff (LWS)
+	Split Lax-Friedrichs (LFS)
+	Split first order Godunov (G)
+	Vectorized split Lax-Wendroff (VLS)
+	Five point Vectorized split MUSCL (VM)
+	Colella Piecewise Linear Method (PLM)
+	Curvlinear Five point Vectorized split MUSCL (CVM)
+	Vectorized pseudo unsplit Lax-Wendroff (PUSLW)
+	Vectorized pseudo unsplit MUSCL (PUSM)
+	Colella pseudo unsplit Piecewise Linear Method (PUSPLM)
+Enter choice here: VM
+
+Current values for MUSCL parameters
+	State reconstruction = Reconstruct density, energy, velocity
+	Riemann flux solver = Exact Riemann solver
+	No method of characteristic solver used
+	Irregular hyp stencil method = MUSCL
+	Tangential sweep method = MUSCL
+	Don't test for negative density and energies at half step
+	Enforce monotone reconstructions at cell edges = no
+	Link reconstructions (zero slope in one field implies
+	zero slope in all fields) = no
+End List of current values for MUSCL parameters
+
+Use all defaults for MUSCL code (dflt = y): y
+
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): y
+
+The following choices are available for a gravitational acceleration
+	No gravity (N or default)
+	Constant gravity (C or Y)
+	Time dependent gravity (T)
+	Astrophysical (central force) gravity (A)
+	Radial gravity with constant magnitude (R)
+Enter choice: 
+
+Dynamic tracking decision variables
+Tracking decisions on dynamically produced waves are based on a floating point
+	cutoff on the wave strength.  Strengths are normalized to zero for weak
+	waves, so a tolerance of 0.0 will always signal tracking, and a very
+	large tolerance will always signal not to track.  For each interaction
+	type, you will be asked to enter the cutoff tolerance and a tolerance
+	type for determining whether scattered waves of the indicated type
+	should be tracked when produced by a specific bifurcation type.
+The currently supported tolerance types are
+	Never track (Never)
+	Always track (Always)
+	Pressure ratio minus one across the wave (Pressure)
+	Absolute value of the Atwood number across the wave (Atwood)
+	Mach number minus one for the state ahead of the wave (Mach)
+Wave strength tolerance for tracking contacts at one dimensional wave
+	interactions = 0.1 Atwood number across wave
+Wave strength tolerance for tracking shocks at one dimensional wave
+	interactions = 0.1 shock ahead Mach number minus one
+Wave strength tolerance for tracking rarefaction leading edges at one
+	dimensional wave interactions = never track
+Wave strength tolerance for tracking rarefaction trailing edges at one
+	dimensional wave interactions = never track
+End Dynamic tracking decision variables
+
+Use default settings for dynamic tracking (default = y): n
+Wave strength tolerance for tracking shocks at one dimensional wave
+	interactions, yes = always track, no = never track, otherwise enter the
+	tolerance and tolerance type (default = 0.1 shock ahead Mach number
+	minus one): 0.1 Mach number
+Wave strength tolerance for tracking rarefaction leading edges at one
+	dimensional wave interactions, yes = always track, no = never track,
+	otherwise enter the tolerance and tolerance type (default = no): 0.1 pressure ratio
+Wave strength tolerance for tracking rarefaction trailing edges at one
+	dimensional wave interactions, yes = always track, no = never track,
+	otherwise enter the tolerance and tolerance type (default = no): 0.1 pressure ratio
+Wave strength tolerance for tracking contacts at one dimensional wave
+	interactions, yes = always track, no = never track, otherwise enter the
+	tolerance and tolerance type (default = 0.1 Atwood number across wave): 0.1 Atwood number
+
+Dynamic tracking decision variables
+Tracking decisions on dynamically produced waves are based on a floating point
+	cutoff on the wave strength.  Strengths are normalized to zero for weak
+	waves, so a tolerance of 0.0 will always signal tracking, and a very
+	large tolerance will always signal not to track.  For each interaction
+	type, you will be asked to enter the cutoff tolerance and a tolerance
+	type for determining whether scattered waves of the indicated type
+	should be tracked when produced by a specific bifurcation type.
+The currently supported tolerance types are
+	Never track (Never)
+	Always track (Always)
+	Pressure ratio minus one across the wave (Pressure)
+	Absolute value of the Atwood number across the wave (Atwood)
+	Mach number minus one for the state ahead of the wave (Mach)
+Wave strength tolerance for tracking contacts at one dimensional wave
+	interactions = 0.1 Atwood number across wave
+Wave strength tolerance for tracking shocks at one dimensional wave
+	interactions = 0.1 shock ahead Mach number minus one
+Wave strength tolerance for tracking rarefaction leading edges at one
+	dimensional wave interactions = never track
+Wave strength tolerance for tracking rarefaction trailing edges at one
+	dimensional wave interactions = never track
+End Dynamic tracking decision variables
+
+This completes the prompting for dynamical tracking decisions.
+
+Point propagation parameters have the current default values
+	Operator split normal/tangential update
+Current values for options for g_npt_w_speed
+	A wave is defined to be strong if |1 - (1/(rho*c)*|dp/du|| > Mach_tol or
+		|rhol - rhor|/(rhol+rhor) > A_tol
+	Mach_tol = 0.25
+	A_tol = 0.25
+	Neumann boundary states are computed by an average of a reflection
+		symmetry contact propagation and a method of characterics
+		calculation.  The weight of the symmetry contact result
+		is proportional to the flow gradient.  The wall limiter
+		value gives this proportionality constant.
+	Wall_limiter = 1
+	vector_moc = MOC_PLUS_RH
+	scalar_moc = RIEMANN without filtering of outgoing waves
+	vector_ahead_state_moc = 0x81b18ec shock_ahead_state_riem_inv_moc
+	neumann_moc = 0x81b1240 neumann_riem_inv_moc
+End current values for options for g_npt_w_speed
+
+Use defaults for point propagation operators (dflt = y): n
+Use defaults for three point wave speed (dflt = y): n
+Enter the Mach number tolerance for strong waves (dflt = 0.25): 
+Enter the Wall limter for strong waves at Neumann boundaries (dflt = 1):   
+Enter the Atwood number tolerance for strong waves (dflt = 0.25): 
+Use the cheap method of characteristics for ahead states? (dflt = no): 
+Use the cheap method of characteristics at Neumann boundaries? (dflt = no): 
+Enter choice for method of characteristics type across vector waves
+	Choices are
+		Riemann problems (R)
+		Method of Characteristics plus Riemann problems (M)
+		Method of characteristics plus Rankine-Hugoniot (H)
+Enter choice (dflt = H): 
+Enter choice for method of characteristics type across scalar waves
+	Choices are
+		Riemann problems (R)
+		Method of Characteristics plus Riemann problems (M)
+		Method of characteristics plus Rankine-Hugoniot (H)
+Enter choice (dflt = R): R 
+Use filtering for outgoing waves at contact? (dflt = no):  
+
+Point propagation parameters have the current default values
+	Operator split normal/tangential update
+Current values for options for g_npt_w_speed
+	A wave is defined to be strong if |1 - (1/(rho*c)*|dp/du|| > Mach_tol or
+		|rhol - rhor|/(rhol+rhor) > A_tol
+	Mach_tol = 0.25
+	A_tol = 0.25
+	Neumann boundary states are computed by an average of a reflection
+		symmetry contact propagation and a method of characterics
+		calculation.  The weight of the symmetry contact result
+		is proportional to the flow gradient.  The wall limiter
+		value gives this proportionality constant.
+	Wall_limiter = 1
+	vector_moc = MOC_PLUS_RH
+	scalar_moc = RIEMANN without filtering of outgoing waves
+	vector_ahead_state_moc = 0x81b4e78 shock_ahead_state_riem_inv_moc
+	neumann_moc = 0x81b5c9c neumann_riem_inv_moc
+End current values for options for g_npt_w_speed
+
+The current defaults for the linear interpolation options are
+	Linear interpolation based on conserved variables
+Use current defaults for linear interpolation options
+	(default = y): n
+State interpolation is based on linear interpolation of the conserved variables
+	[C] or on the logarithms of the density and temperature [T].
+Enter choice for state interpolators [C]:  
+
+Enter an upper bound for the number of components (default = 100): 
+
+Specify initial interface of tracked curves
+Choices are
+	Input interface by hand (type `screen')
+	Input interface from a file (restart option - enter filename)
+	Request default option(s) (hit `return')
+Enter choice: 
+
+
+
+		time step size control
+
+
+The current defaults for the front time step control are
+	Time step factor = 0.75
+	Apply CFL at nodes = yes
+	Maximum node separation at untangle = 2
+	CFL increase factor = 1.1
+	Minimum time step modification factor = 0.75
+	Maximum time step modification factor = 1.25
+Use defaults for front time step control (default = y): n
+Enter the time step factor (fraction of CFL condition - default 0.75): 
+Enter the CFL increase factor (default 1.1):  
+Enter the minimum time step modification factor (default 0.75):  
+Enter the maximum time step modification factor (default 1.25):  
+
+		flow specified state enforcement at fronts
+
+Enforce flow specified states at fronts (dflt=yes): 
+
+Type yes to propagate front in moving frame (dflt = no):  
+
+
+Request problem type.  Current choices are
+		an ambient state test (AM),
+		a oned test (ONED),
+		or a density step (DS).
+	Enter choice here: ONED
+
+Request Neumann Wall to cut off zero radius  [y,n(dflt)]: 
+
+Enter number of layers: 2
+
+The system consists of 2 layer(s) and 1 interface(s), both the layer 
+label and the interface label increase in the positive x direction.
+
+Enter the component label for layer 1 (default = 2): 
+Layer 1 has component label 2
+Input either the average height  for the 1st surface
+	or the coordinates of a point on this surface: 0.5
+Possible choices for wave types are
+	 Forward shock wave (f), 
+	 Forward sound wave leading edge (fl), 
+	 Forward sound wave trailing edge (ft), 
+	 Backward shock wave (b), 
+	 Backward sound wave leading edge (bl), 
+	 Backward sound wave trailing edge (bt), 
+	 Contact (c), 
+	 Neumann boundary (n), 
+	 Dirichlet boundary (d), 
+	 Periodic boundary (p), 
+	 Passive boundary (pa), 
+	 Unspecified wave type (u, default), 
+Enter the wave type for the inner ellipse (normal/forward direction = outward): c
+Enter the surface tension  for the 1st surface(dflt = 0): 
+Type y to turn off tracking  for the 1st surface: 
+
+Enter the component label for layer 2 (default = 3): 
+Layer 2 has component label 3
+You will now be prompted for the number
+        of different equations of state models,  followed by prompts
+        for the parameters of each EOS.  The various equations
+        of state will then be referred to by the integer
+        that corresponds to the order in which they are prompted.
+Enter the number of EOS models to be used: 1
+
+Enter the equation of state type for the material with index 0.
+Current choices are
+		Obstacle (behind reflecting wall) (O),
+		Polytropic (gamma law) gas (P),
+		Stiffened polytropic gas (SP),
+		Multiple component polytropic gas (MP),
+		Sesame table lookup (SE),
+		JWL Equation of state (J),
+		Mie Gruneisen (M),
+		Isentropic two phase eos (S2PH),
+		or Generic Test (minimal SPOLY for GENERIC testing) (GT).
+	Enter choice here (dflt = P): P
+Enter the Grueisen exponent plus one (gamma),
+	the stiffened gas constant p infinity,
+	the specific heat at constant volume Cv = R/(gamma-1),
+	the energy translation e_infinity,
+	and the thermal energy factor 
+	for the gas with index 0: 1.67
+
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): 
+
+Use defaults for thermodynamic restrictions (dflt = yes): 
+
+Please enter a layer label for prompting: 2
+
+Enter the component type for the 1st layer
+Choices are
+	Ambient region, (AR)
+	Random perturbation region, (RA)
+	Rayleigh-Taylor, (RT)
+	Kelvin-Helmholtz, (KH)
+	One dimensional rarefaction, (RW1D)
+	One dimensional overlay, (1DO)
+	Transitional Layer, (TL)
+	Elliptical region, (EL)
+	Stretching, (ST)
+	Tabulated region, (TR)
+	Obstacle, (obstacle)
+No default available,  component type unset
+Default = none
+Enter choice: AR
+
+Prompting for the state for the material of the 2nd layer at point
+Enter the gas state
+		rho, pr, vx: 1 1 0
+Is the flow in this region constant in time? (default = no): 
+
+Please enter a layer label for prompting: 1
+
+Enter the component type for the 2nd layer
+Choices are
+	Ambient region, (AR)
+	Random perturbation region, (RA)
+	Rayleigh-Taylor, (RT)
+	Kelvin-Helmholtz, (KH)
+	One dimensional rarefaction, (RW1D)
+	One dimensional overlay, (1DO)
+	Transitional Layer, (TL)
+	Elliptical region, (EL)
+	Stretching, (ST)
+	Obstacle, (obstacle)
+Enter choice: AR
+Type 'y' to input an independent behind state: y
+	
+Enter the gas state behind the contact
+                rho, pr, vx: 1 5 0
+
+Is the flow in this region constant in time? (default = no): 
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, Dirichlet, 
+                           or Passive --
+	for the left boundary in the x direction: Dirichlet
+Specify the Dirichlet boundary state
+	time-independent boundary state set by ambient state (A, default),
+	flow-through boundary conditions (FT),
+	random velocity inlet (R),
+	preset boundary state (P), or
+	time-independent state specified by the user (U).
+Enter choice here: FT
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, Dirichlet, 
+                           or Passive --
+	for the right boundary in the x direction: Dirichlet
+Specify the Dirichlet boundary state
+	time-independent boundary state set by ambient state (A, default),
+	flow-through boundary conditions (FT),
+	random velocity inlet (R),
+	preset boundary state (P), or
+	time-independent state specified by the user (U).
+Enter choice here: FT
+
+                Specify parabolic steps
+
+Type 'y' to have the Navier-Stokes terms computed for
+        several eos models, and this will turn on
+        parabolic driver parab_driver (y, n(dflt)): 
+
+
+Type 'y' to have local mesh refinement: 
+
+		Statistics Control
+
+Type 'y' to initiate prompting for statistics/diagnostics: y
+Type 'y' to request grid statistics for conserved variables: y
+Specify the interval type for printing
+	[exact, constant, mesh]: constant
+Enter the time interval and first time for printing
+	(default = 0 0): 
+Request binary/non-binary output [b,n(dflt)]: 
+Enter a file name for the output
+ 	for the grid stats data (default = stdout): statx
+Enter a directory name for the output
+	for the grid stats data(default = /nfs/t1g2/yung/FronTier/src/gas): 
+
+Request printout of conserved variable statistical data
+	in a separate output file in columnar form (y,n(dflt): 
+Type 'y' to request a periodic glimpse of the solution
+	via a plot of the component regions: 
+WARNING in init_cross_sections(),  3D not implemented.Type 'y' to request rect state statistics: 
+
+
+
+
+		--- End of Input ---
+

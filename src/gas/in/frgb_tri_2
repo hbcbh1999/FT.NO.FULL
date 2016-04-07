@@ -1,0 +1,772 @@
+
+#      153        -1
+#print version 1
+
+		WELCOME TO WIND TUNNEL CALCULATIONS
+		FronTier Gas version 20020808
+
+		DATE OF RUN  Fri Apr 14 10:28:25 2006
+
+
+
+#    37635         0
+##MACHINE PARAMETERS
+#	Hostname                 = starzero
+#	Operating System         = Linux
+#	OS Release               = 2.6.11.3starzero
+#	OS Version               = #2 SMP Tue Mar 15 13:40:18 EST 2005
+#	CPU Type                 = i686
+#	Byte Ordering            = Little Endian
+#	Floating Point Word Size = 8
+
+
+Type 'p' to obtain prompting on input: 
+Type debug to Turn On Debugging: debug
+Specify Debugging Destination, screen or file: file
+List Functions to Debug - or all -  end  ends list
+Names following  all  will not be debugged - end ends
+	: bad_state
+	: verbose
+	: fft
+	: end
+
+Enter the spatial dimension of the computation: 2
+
+Enter the remapping (Jacobian) converting the physical coordinate system to the
+	cartesian computational coordinate system.  The choices are
+		Identity Remap (default) (i)
+		Cylindrical Geometry (c)
+			Type Choice Here: 
+Enter the computational limits in the X direction, XL, XU: 0 2
+Enter the computational limits in the Y direction, YL, YU: 0 4
+Enter the numbers of grid intervals of the
+	computational grid in the r & z directions: 128 256
+The topological grid is a grid used for the construction of the tracked front
+	topology.  It is constrained to be a square grid.  You specify the grid
+	in one of two ways.  If you enter a single number, it will be used as a
+	coarseness factor for the topological grid relative to the
+	computational grid entered above.  In this case the length of a
+	topological grid block cell side is the nearest allowable multiple of
+	the shortest side of the computational grid by the coarseness factor. 
+	Otherwise the code will read the two integers input for the number of
+	grid cells in each coordinate direction of the topological grid.  If
+	your input values do not yield a square grid they will be corrected to
+	produce a square grid.  This correction will attempt to produce values
+	close to those input, but if the input values are highly rectangular,
+	the resulting values may differ considerably from those entered.  The
+	default for this input option is the nearest square grid that matches
+	the computational grid.  Generally the topological grid is coarser than
+	the computational grid.  Larger coarseness factors yield coarser grids,
+	a value one gives the nearest square grid to the computational grid.
+Enter your choice (cor_fac, two integers, or return)
+	(defaults are 100 100): 
+The topological mesh used is  100 100
+
+		General run termination/pause conditions
+
+Enter limits on real time (max time), mesh time (max timesteps), an optional
+	initial time, and an optional stop time mode (exact or constant), (dflt
+	= inf 2147483647 0 constant): 5 10000
+Specify the pause time mode [exact, constant(dflt), mesh]: 
+Enter the first Pause Time (dflt = inf): 
+Enter maximum number of time step modifications allowed
+	during a propagation step (default = 50): 
+
+Select triangulation option, exact [e], fast [f], or pcs [p, dflt]: p
+
+		Printing Control
+
+Request main output format(s). Options are
+		front_plots only (F)
+		front_plots plus interior_states (Restart format) (R)
+		front_plots plus tri_plots (T)
+		front_plots, interior_states, and tri_plots (A)
+		HDF raster plots (H)
+		SDS files (S)
+		VTK files (V)
+		PROSTAR plots (P)
+		suppress output (dflt)
+	Enter the choices as a space separated list: R H V
+Prompt for front_plots printing control.
+Specify the interval type for printing
+	[exact, constant, mesh (default)]: exact
+Enter the time interval and first time for printing
+	(default = 1 0): 0.5
+Request binary/non-binary output [b(dflt),n]: b
+
+Prompt for interior_states printing control.
+Specify the interval type for printing
+	[exact (default), constant, mesh]: exact
+Enter the time interval and first time for printing
+	(default = 0.05 0): 0.5
+Request binary/non-binary output [b,n(dflt)]: 
+
+Prompt for HDF_plots printing control.
+Specify the interval type for printing
+	[exact (default), constant, mesh]: exact
+Enter the time interval and first time for printing
+	(default = 0.05 0): 0.05
+Request binary/non-binary output [b,n(dflt)]: 
+
+Prompt for VTK_plots printing control.
+Specify the interval type for printing
+	[exact (default), constant, mesh]: 
+Enter the time interval and first time for printing
+	(default = 0.05 0): 0.5
+Request binary/non-binary output [b,n(dflt)]: 
+
+To obtain geomview plots type y (default = no): y
+Enter a root name for the output directory: 
+Specify the interval type for printing geomview data
+	[exact (default), constant, mesh]: 
+Enter the time interval and first time for printing
+	(default = 0.05 0): 
+Request binary/non-binary output [b,n(dflt)]: 
+
+The user can request that restart dumps be printed at a specified wall
+	time interval.  These dumps will be named
+	out/test.lastdump0 and out/test.lastdump1
+	and will be alternately overwritten as the run proceeds
+	The wall time dump frequency can be given in units of seconds,
+	minutes (default), or hours.  Indicate the units in the obvious way
+	such as 30 minutes,  2 hours, etc.
+To request this option enter the wall time print frequency: 
+
+Request composition type of materials. Available types are
+		PURE_NON_REACTIVE (PNR, default)
+		MULTI_COMP_NON_REACTIVE (MCNR)
+		PTFLAME (PTF)
+		ZND (ZND)
+		TWO_CONSTITUENT_REACTIVE (TCR)
+		THINFLAME (THF)
+	Enter choice here: PNR
+
+		HDF plotting initialization
+
+Specify variables to be plotted (HDF). The choices are --
+		r-velocity (VR), z-velocity (VZ), flow speed (U), 
+		kinetic energy density (K), momentum (M), density (D), 
+		energy density (E), vorticity (VORTICITY), 
+		divergence of velocity (W), pressure (P), 
+		specific internal energy (I), temperature (T), 
+		specific enthalpy (H), entropy (S), 
+		radial component of velocity (RV), 
+		tangential component of xy velocity (TV), 
+		self similar Mach number (L), Mach number (N), 
+		reaction product density (Q), reaction progress (R), or 
+		density of first constituent (C).
+	Enter choices as a space separated list, using multiple lines if needed.
+	Terminate all lines EXCEPT THE LAST with a backslash '\'
+	Enter choices: D P E
+
+Enter the coordinates of lower corner
+	of the initial view box (dflt = 0.01 0): 
+Enter the coordinates of upper corner
+	of the initial view box (dflt = 3.01 3): 
+Enter the velocity of the view box (dflt = 0 0): 
+Specify the number of pixels in the x and y directions (dflt 600 600): 
+
+Enter an optional plotting filter for DENSITY, choices are
+	Identity filter (none, default)
+	Log filter (log)
+	Log1p filter (log1p)
+	Exp filter (exp)
+	Expm1 filter (expm1)
+	Atan filter (atan)
+	Tan filter (tan)
+Enter choice: log
+Enter optional scaling factors for LOG_DENSITY: 
+Color palelette data for LOG_DENSITY can be entered as either an HDF
+	color palette file, or as a raw color palette consisting of a binary list of
+	unsigned chars in the form of 256 red values, followed by 256 green
+	values, followed by 256 blue values.  A raw format file is indicated by
+	appending a blank and the indicator raw after the file name.  Otherwise
+	any file entered will be assumes to be in HDF palette format.
+Enter an optional color palette file: 
+
+Enter an optional plotting filter for PRESSURE, choices are
+	Identity filter (none, default)
+	Log filter (log)
+	Log1p filter (log1p)
+	Exp filter (exp)
+	Expm1 filter (expm1)
+	Atan filter (atan)
+	Tan filter (tan)
+Enter choice: log
+Enter optional scaling factors for LOG_PRESSURE: 
+Color palelette data for LOG_PRESSURE can be entered as either an HDF
+	color palette file, or as a raw color palette consisting of a binary list of
+	unsigned chars in the form of 256 red values, followed by 256 green
+	values, followed by 256 blue values.  A raw format file is indicated by
+	appending a blank and the indicator raw after the file name.  Otherwise
+	any file entered will be assumes to be in HDF palette format.
+Enter an optional color palette file: 
+
+Enter an optional plotting filter for ENERGY, choices are
+	Identity filter (none, default)
+	Log filter (log)
+	Log1p filter (log1p)
+	Exp filter (exp)
+	Expm1 filter (expm1)
+	Atan filter (atan)
+	Tan filter (tan)
+Enter choice: log
+Enter optional scaling factors for LOG_ENERGY: 
+Color palelette data for LOG_ENERGY can be entered as either an HDF
+	color palette file, or as a raw color palette consisting of a binary list of
+	unsigned chars in the form of 256 red values, followed by 256 green
+	values, followed by 256 blue values.  A raw format file is indicated by
+	appending a blank and the indicator raw after the file name.  Otherwise
+	any file entered will be assumes to be in HDF palette format.
+Enter an optional color palette file: 
+
+You will now be prompted for a base file name and optional directory for the
+	HDF output.  Output for each variable is to a separate file whose name
+	contains the base name, and the prompt string for that variable.
+Enter a file name for the output
+ 	for HDF data (default = out/hdf/test/test): 
+Enter the compression type, choices are
+	None (N)
+	Run length encoding, no data loss (R, default)
+	JPEG, some data loss (J)
+Enter choice: N
+
+Enter yes to show subdomain partition in the frame: n
+
+		End HDF plotting initialization
+
+
+		VTK plotting initialization
+
+Specify variables to be plotted (VTK). The choices are --
+		r-velocity (VR), z-velocity (VZ), flow speed (U), 
+		kinetic energy density (K), momentum (M), density (D), 
+		energy density (E), vorticity (VORTICITY), 
+		divergence of velocity (W), pressure (P), 
+		specific internal energy (I), temperature (T), 
+		specific enthalpy (H), entropy (S), 
+		radial component of velocity (RV), 
+		tangential component of xy velocity (TV), 
+		self similar Mach number (L), Mach number (N), 
+		reaction product density (Q), reaction progress (R), or 
+		density of first constituent (C).
+	Enter choices as a space separated list, using multiple lines if needed.
+	Terminate all lines EXCEPT THE LAST with a backslash '\'
+	Enter choices: D
+
+From the above vtk variables choosen, specify in an ordered list the 
+varibles which you would like to be put in a vector file.  For example,
+if you would like a velocity vector your would type "VX VY". Please 
+remember that you MUST INCLUDE THE VARIBLES THAT YOU WANT PRINTED AS
+VECTORS IN THE ABOVE LIST AS WELL.
+	Enter choices as a space separated list, using multiple lines if needed.
+	Terminate all lines EXCEPT THE LAST with a backslash '\'
+	Enter choices: D
+
+You may specify a sub-sampling factor (a factor of 2 would sample half
+the data points in each dimension uniformly). Your sub-sampling factor must
+divide evenly into the number of data points contained in each dimension of
+each processor. Failing this criteria will cause the program to exit.
+If you do not want to sub-sample, enter 1.
+Specify a sub-sampling factor: 1
+
+You will now be prompted for a base file name and optional directory for the
+	VTK output.  Output for each variable is to a separate file whose name
+	contains the base name, and the prompt string for that variable.
+Enter a file name for the output
+ 	for VTK data (default = out/vtk/test/test): 
+
+		End VTK plotting initialization
+
+Specify additional GAS printing variables.  The choices are,
+		VELOCITY (V),
+		RADIAL_COMPONENT_OF_VELOCITY (RV),
+		PRESSURE (P),
+		SPECIFIC_ENTROPY (SPECIFIC_ENTROPY),
+		SOUND_SPEED (SOUND_SPEED),
+		TEMPERATURE (TEMPERATURE),
+		TANGENTIAL_COMPONENT_OF_XY_VELOCITY (TV).
+	Enter choices as a space separated list, using multiple lines if needed.
+	Terminate all lines EXCEPT THE LAST with a backslash '\'
+	Enter choices: N V RV TV P TEMPERATURE
+
+		Specify interior hyperbolic difference method.
+
+Select the difference method for solving the hyperbolic
+system in the interior regions away from the fronts.
+Choices are
+	Split Lax-Wendroff (LWS)
+	Split Lax-Friedrichs (LFS)
+	Split first order Godunov (G)
+	Vectorized split Lax-Wendroff (VLS)
+	Five point Vectorized split MUSCL (VM)
+	Colella Piecewise Linear Method (PLM)
+	Vectorized pseudo unsplit Lax-Wendroff (PUSLW)
+	Vectorized pseudo unsplit MUSCL (PUSM)
+	Colella pseudo unsplit Piecewise Linear Method (PUSPLM)
+Enter choice here: VM
+
+Current values for MUSCL parameters
+	State reconstruction = Reconstruct density, energy, velocity
+	Riemann flux solver = Exact Riemann solver
+	No method of characteristic solver used
+	Irregular hyp stencil method = MUSCL
+	Tangential sweep method = MUSCL
+	Don't test for negative density and energies at half step
+	Enforce monotone reconstructions at cell edges = no
+	Link reconstructions (zero slope in one field implies
+	zero slope in all fields) = no
+End List of current values for MUSCL parameters
+
+Use all defaults for MUSCL code (dflt = y): n
+Choose the desired type of linear reconstruction, Choices are
+	Reconstruct density, energy, velocity (d, default)
+	Reconstruct eigen coordinates (e)
+	Bell-Colella-Trangenstein reconstruction (b)
+	First order Godunov reconstruction (zero slopes) (f)
+Enter choice: 
+Test for negative density and energies at half step (dflt=no): 
+
+Choose the desired Riemann solver, Choices are
+	Exact Riemann solver (e, default)
+	Linear approximate Riemann solver (l)
+	Colella-Glaz's approximate Riemann solver (c)
+	Linear US/UP fit (Dukowicz) (d)
+	Gamma Law fit (g)
+Enter choice: e
+
+Current values of the Colella-Glaz Riemann solver parameters
+	Maximum number of iterations for Riemann solver        4
+	Minimum pressure jump below which mass flux            1e-06
+		is replaced by acoustic impedance
+	Velocity convergence tolerance                         1e-06
+	The strong wave tolerance above which approximate      100
+		Riemann solver is replaced by an exact solver
+	Minimum allowed mass flux                              1e-12
+End List of Colella-Glaz Riemann solver parameters
+
+Use all defaults for Colella-Glaz Riemann solver (dflt = y):
+
+Choose the irregular stencil method, Choices are
+	Lax_Wendroff (l)
+	MUSCL (m, default)
+Enter choice: m
+
+Choose the tangential sweep method, Choices are
+	Lax_Wendroff (l)
+	Lax-Friedrichs (lf)
+	First order godunov (g)
+	MUSCL (m, default)
+Enter choice: m
+
+Current defaults for artificial viscosity parameters---
+	Artificial Viscosities and Heat Conductions
+	Use nonlinear artificial viscosity = no
+	Coefficient of nonlinear artificial viscosity =                      0
+	Use linear artificial viscosity = no
+	Coefficient of linear artificial viscosity =                      0
+	Use upwind artificial viscosity = no
+	Coefficient of upwind artificial viscosity =                      0
+	Use MUSCL slope flattening = yes
+	Muscl slope flattening parameter eta inverse =                      2
+	Muscl slope flattening minimum shock strength =                   0.25
+	Muscl slope flattening minimum shock specific volume jump =                  1e-06
+	Coefficient of artificial heat conduction =                      0
+	Muscl slope flattening charateristic speed cutoff  =                      0
+	Coefficient of dynamic surface tension =                      0
+	Artificial viscosity stability coefficient =                      1
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): y
+
+The following choices are available for a gravitational acceleration
+	No gravity (N or default)
+	Constant gravity (C or Y)
+	Time dependent gravity (T)
+	Astrophysical (central force) gravity (A)
+	Generalized Astrophysical gravity (G)
+	Radial gravity with constant magnitude (R)
+Enter choice: N
+
+Dynamic tracking decision variables
+Tracking decisions on dynamically produced waves are based on a floating point
+	cutoff on the wave strength.  Strengths are normalized to zero for weak
+	waves, so a tolerance of 0.0 will always signal tracking, and a very
+	large tolerance will always signal not to track.  For each interaction
+	type, you will be asked to enter the cutoff tolerance and a tolerance
+	type for determining whether scattered waves of the indicated type
+	should be tracked when produced by a specific bifurcation type.
+The currently supported tolerance types are
+	Never track (Never)
+	Always track (Always)
+	Pressure ratio minus one across the wave (Pressure)
+	Absolute value of the Atwood number across the wave (Atwood)
+	Mach number minus one for the state ahead of the wave (Mach)
+Wave strength tolerance for tracking reflected shocks at regular reflections =
+	always track
+Wave strength tolerance for tracking reflected shocks at attached boundary
+	reflection nodes = always track
+Wave strength tolerance for tracking the slip line at Mach reflections = always
+	track
+Wave strength tolerance for tracking reflected shocks at Mach reflections =
+	always track
+Wave strength tolerance for tracking the Mach stem at Mach reflections = always
+	track
+Wave strength tolerance for tracking slip lines produced by shock crossings =
+	always track
+Wave strength tolerance for tracking reflected shocks at shock crossings =
+	always track
+Wave strength tolerance for tracking slip lines at shock overtakes = always
+	track
+Wave strength tolerance for tracking reflected shocks at shock overtakes =
+	always track
+Wave strength tolerance for tracking transmitted shocks at shock overtakes =
+	always track
+Wave strength tolerance for tracking reflected rarefaction leading edges at
+	shock overtakes = always track
+Wave strength tolerance for tracking reflected rarefaction trailing edges at
+	shock overtakes = always track
+Wave strength tolerance for tracking material interfaces at shock-contact
+	diffractions = always track
+Wave strength tolerance for tracking reflected shocks at shock-contact
+	diffractions = always track
+Wave strength tolerance for tracking transmitted shocks at shock-contact
+	diffractions = always track
+Wave strength tolerance for tracking reflected rarefaction leading edges at
+	shock-contact diffractions = always track
+Wave strength tolerance for tracking reflected rarefaction trailing edges at
+	shock-contact diffractions = always track
+Wave strength tolerance for tracking material interfaces at shock-contact
+	transmission nodes = always track
+Wave strength tolerance for tracking transmitted shocks at shock-contact
+	transmission nodes = always track
+Don't Turn off tracking of regular reflection node if node propagation fails
+Don't Turn off tracking of Mach node if node propagation fails
+Don't Turn off tracking of overtake node if node propagation fails
+Don't Turn off tracking of precursor rr diffraction (cluster) if node
+	propagation fails
+End Dynamic tracking decision variables
+
+Use default settings for dynamic tracking (default = y): 
+Type yes to request automatic wave capture: 
+
+		-------------------------
+		Point propagation control
+		-------------------------
+
+Point propagation parameters have the current default values
+	Operator split normal/tangential update
+Current values for options for g_npt_w_speed
+	A wave is defined to be strong if |1 - (1/(rho*c)*|dp/du|| > Mach_tol or
+		|rhol - rhor|/(rhol+rhor) > A_tol
+	Mach_tol = 0.25
+	A_tol = 0.25
+	Neumann boundary states are computed by an average of a reflection
+		symmetry contact propagation and a method of characterics
+		calculation.  The weight of the symmetry contact result
+		is proportional to the flow gradient.  The wall limiter
+		value gives this proportionality constant.
+	Wall_limiter = 1
+	vector_moc = MOC_PLUS_RH
+	scalar_moc = RIEMANN without filtering of outgoing waves
+	vector_ahead_state_moc = 0x815cc90 shock_ahead_state_riem_inv_moc
+	neumann_moc = 0x815c770 neumann_riem_inv_moc
+	geom_source_method = BACKWARD_EULER
+End current values for options for g_npt_w_speed
+
+Use defaults for point propagation operators (dflt = y): 
+
+The current defaults for the linear interpolation options are
+	Linear interpolation based on conserved variables
+	Volume interpolation coefficients
+Use current defaults for linear interpolation options
+	(default = y): y
+
+Enter an upper bound for the number of components (default = 100): 
+
+Specify initial interface of tracked curves
+Choices are
+	Input interface by hand (type `screen')
+	Input interface from a file (restart option - enter filename)
+	Request default option(s) (hit `return')
+Enter choice: 
+
+		----------------------------
+		Curve Redistribution Control
+		----------------------------
+
+Enter the mode of curve redistribution --
+	`none', `expansion', or `full' (dflt): 
+Enter version of full curve redistribution
+	ordinary full curve redistribution [o]
+	equi-bond curve redistribution [e(default)]
+Enter choice: 
+
+		--------------------------------
+		Redistribution Frequency Control
+		--------------------------------
+
+Enter the frequency of redistribution for general curves (dflt = 20): 10000
+Enter the frequency of redistribution for vector curves (dlft = 5): 
+Enter the frequency of node redistribution (dflt = 10): 
+Enter the redistribute count (default = 0): 
+Type 'y' for rect grid based redistribution of rectangular boundaries: 
+
+		---------------------
+		front spacing control
+		---------------------
+
+Enter the spacing for general curves in dimensionless
+	length/mesh units (dflt = 0.75): 
+Enter the spacing for vector type curves in dimensionless
+	length/mesh units (dflt = 0.75): 
+
+		------------------
+		Small loop control
+		------------------
+
+Reflect small loop shocks (dflt = no): 
+
+		----------------------
+		time step size control
+		----------------------
+
+The current defaults for the front time step control are
+	Time step factor = 0.75
+	Apply CFL at nodes = yes
+	Maximum node separation at untangle = 2
+	CFL increase factor = 1.1
+	Minimum time step modification factor = 0.75
+	Maximum time step modification factor = 1.25
+Use defaults for front time step control (default = y): 
+
+		flow specified state enforcement at fronts
+
+Enforce flow specified states at fronts (dflt=yes): 
+
+Type yes to propagate front in moving frame (dflt = no): 
+
+Select tangent computation algorithm, choices are
+	Linear centered SECANT vectors (SECANT, default)
+	Fourth order LANGRANGIAN interpolation (LANGRANGIAN)
+	Cubic SPLINE fit (SPLINE)
+Enter choice: 
+To use curvature dependent limiting at scalar fronts
+	enter the curvature factor (dflt = 0): 
+
+Enter yes for adaptive partition (default is no): n
+
+Request problem type.  Current choices are
+		an ambient state test (AM),
+		a trigrid test (TRI),
+		a plane front (P),
+		a bowshock (BO),
+		a Meshkov instability problem (M),
+		a shock diffraction (D),
+		a shock transmission (T),
+		a ramp reflection problem (RR),
+		a contact-contact interaction (CC),
+		a Richtmyer linear theory (RL),
+		an astrophysical jet (AJ),
+		an injection inlet jet (IJ),
+		a gas injection jet (FJ),
+		a neutrino booster colapse (NB),
+		a Supernova simulation (SN),
+		an imploding elliptical shock (IMP),
+		a shock running over an expanding ramp (X),
+		a random surface instability problem (RS),
+		a shocked thermal layer (STL),
+		a Richtmyer-Meshkov instability problem (RM),
+		a Rayleigh-Taylor instability problem (RT),
+		a bubbles and drops problem (BD),
+		a fluid rigid body interaction problem (RGB),
+		an expanding shells (ES),
+		shock jet interaction (SJ),
+		or a Kelvin-Helmholtz instability problem (KH).
+	Enter choice here: RGB
+
+Enter yes to initialize a shock in the region: y
+Enter the component label for layer 1 (default = 2): 
+Input either the average height  for the 1st surface
+        or the coordinates of a point on this surface: 3.2
+Enter either the angle (in degrees) that the
+        line makes with the x-axis (dflt = 0) or
+        the average normal to the surface [default = (0,1)]: 
+Enter the wave type  for the 1st surface: b
+Type y to turn off tracking  for the 1st surface: y
+Enter the width of the untracked wave in mesh units (dflt = 0): 
+
+Enter the component label for layer 2 (default = 4): 4
+Enter number of rigid bodys: 1
+Available geometrical shapes of rigid body are
+	Ellipse (E)
+        Tilt Ellipse (N)
+        Triangle (T)           
+        Rectangle (R)
+Enter the shape of rigid body 1: t
+Is the density of rigid body uniform?(yes/no): no
+Enter three points for triangle
+Enter the first point x0, and y0: 1 3.0
+Enter the second point x1, and y1: 0.5 2.6
+Enter the third point x2, and y2: 1.5 2.6
+
+Enter the total mass for the 1-th rigid body: 0.02
+Enter the center of mass for the 1-th rigid body: 1.3 2.7
+Enter the moment of inertial for the 1-th rigid body: 0.02
+
+You will now be prompted for the number
+	of different equations of state models,  followed by prompts
+	for the parameters of each EOS.  The various equations
+	of state will then be referred to by the integer
+	that corresponds to the order in which they are prompted.
+Enter the number of EOS models to be used: 2
+
+Enter the equation of state type for the burned material with index 0.
+Current choices are
+		Obstacle (behind reflecting wall) (O),
+		Polytropic (gamma law) gas (P),
+		Stiffened polytropic gas (SP),
+		Stellar (helmholtz eos) gas (ST),
+		Multiple component polytropic gas (MP),
+		Sesame table lookup (SE),
+		JWL Equation of state (J),
+		Mie Gruneisen (M),
+		Isentropic two phase eos (S2PH),
+		or Generic Test (minimal SPOLY for GENERIC testing) (GT).
+	Enter choice here (dflt = P): P
+Enter the ratio of specific heats (gamma), 
+	the ideal gas constant (R, PV = RT, default for R = 1)
+	the shear viscosity coefficient (default = 0), the
+	the bulk viscosity coefficient (default = 0), and the
+	the thermal conductivity (default = 0)
+	for the burned gas with index 0: 1.333333
+
+
+Use current defaults for artificial viscosity parameters
+	(dflt = y,  type p to print defaults): 
+
+Use defaults for thermodynamic restrictions (dflt = yes): 
+
+Enter the equation of state type for the material with index 1. 
+Current choices are
+                Obstacle (behind reflecting wall) (O),                 
+		Polytropic (gamma law) gas (P),
+	        Stiffened polytropic gas (SP),
+		Stellar (helmholtz eos) gas (ST),
+		Multiple component polytropic gas (MP),                 
+		Sesame table lookup (SE),
+	        JWL Equation of state (J),                 
+		Mie Gruneisen (M),                 
+		Isentropic two phase eos (S2PH),
+	        or Generic Test (minimal SPOLY for GENERIC testing) (GT).
+Enter choice here (dflt = P): O
+
+Please enter a layer label for prompting: 2
+Enter the component type for the 1st layer
+Choices are
+        Ambient region, (AR)
+        Random perturbation region, (RA)
+        Rayleigh-Taylor, (RT)
+        Kelvin-Helmholtz, (KH)
+        One dimensional rarefaction, (RW1D)
+        One dimensional overlay, (1DO)
+        Transitional Layer, (TL)
+        Elliptical region, (EL)
+        Stretching, (ST)
+        Tabulated region, (TR)
+No default available,  component type unset
+Default = none
+Enter choice: AR
+Input the EOS model (0 <= an integer <= 1, p prints available options) for the material in the out most region of the 1st layer: 0
+Prompting for the state for the material in the out most region of 
+the 1st layer at point (1.5, 0.7999)
+Enter the gas state
+                rho, pr, vx, vy: 2 1 0 0
+Is the flow in this region constant in time? (default = no): 
+
+Please enter a layer label for prompting: 1
+Choices are
+        Ambient region, (AR)
+        Random perturbation region, (RA)
+        Rayleigh-Taylor, (RT)
+        Kelvin-Helmholtz, (KH)
+        One dimensional rarefaction, (RW1D)
+        One dimensional overlay, (1DO)
+        Transitional Layer, (TL)
+        Elliptical region, (EL)
+        Stretching, (ST)
+        Tabulated region, (TR)
+No default available,  component type unset
+Default = none
+Enter choice: AR
+Type 'y' to input an independent behind state: 
+
+In addition to the ahead state, one more parameter
+is needed to specify the shock wave configuration.
+The choices are
+        The pressure behind the shock (P)
+        The magnitude of the normal component of the gas velocity behind the shock (V)
+        The normal component of the shock speed (S)
+        The normal shock Mach number (M)
+Enter choice here: M
+Enter the normal shock Mach number of the wave: 1.5
+Is the flow in this region constant in time? (default = no): 
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, No Slip Neumann, 
+                           Dirichlet, or Passive --
+	for the left boundary in the x direction: Reflecting
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, No Slip Neumann, 
+                           Dirichlet, or Passive --
+	for the right boundary in the x direction: Reflecting
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, No Slip Neumann, 
+                           Dirichlet, or Passive --
+	for the lower boundary in the y direction: Dirichlet
+Specify the Dirichlet boundary state
+        time-independent boundary state set by ambient state (A, default),
+        flow-through boundary conditions (FT),
+        flow-through boundary with constant pressure (FP), or
+        flow-through boundary with time dependent pressure (FD), or
+        random velocity inlet (R),
+        time dependent state read from file (TDBS).
+        preset boundary state (P), or
+        time-independent state specified by the user (U).
+Enter choice here: FT
+
+Enter the boundary type -- Unknown, Periodic, Reflecting, 
+                           Mixed, Neumann, No Slip Neumann, 
+                           Dirichlet, or Passive --
+	for the upper boundary in the y direction: Dirichlet
+Specify the Dirichlet boundary state
+        time-independent boundary state set by ambient state (A, default),
+        flow-through boundary conditions (FT),
+        flow-through boundary with constant pressure (FP), or
+        flow-through boundary with time dependent pressure (FD), or
+        random velocity inlet (R),
+        time dependent state read from file (TDBS).
+        preset boundary state (P), or
+        time-independent state specified by the user (U).
+Enter choice here: FT
+
+
+		Specify parabolic steps
+
+Type 'y' to have the Navier-Stokes terms computed for
+	several eos models, and this will turn on
+	parabolic driver parab_driver (y, n(dflt)): 
+
+
+
+Type 'y' to have local mesh refinement: no
+
+		Statistics Control
+
+Type 'y' to initiate prompting for statistics/diagnostics: n
+
+
+		--- End of Input ---
+
+
