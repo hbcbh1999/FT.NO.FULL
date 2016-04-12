@@ -11988,8 +11988,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         double **vel = iFparams->field->vel;
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
 
-        depth_diff_layer = top_h[MAXD-1];
-        //depth_diff_layer = 0.174;
+        //depth_diff_layer = top_h[MAXD-1];
+        depth_diff_layer = iFparams->width_idl;
         printf("\nThe width of initial diffusion layer for RSSY case is: %.16g\n",depth_diff_layer);
 
         FT_MakeGridIntfc(front);
@@ -16274,6 +16274,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
         FT_ParallelExchGridArrayBuffer(vel[0],front);
         FT_ParallelExchGridArrayBuffer(vel[1],front);
         FT_ParallelExchGridArrayBuffer(vel[2],front);
+        // Update Reflection Boundary Condition TODO && FIXME:
+        //Solute_Reflect(0, vel[0]);
+        //Solute_Reflect(1, vel[1]);
+        //Solute_Reflect(2, vel[2]);
 //        FT_ParallelExchGridArrayBuffer(vort3d[0],front);
 //        FT_ParallelExchGridArrayBuffer(vort3d[1],front);
 //        FT_ParallelExchGridArrayBuffer(vort3d[2],front);
@@ -20938,3 +20942,134 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     FT_FreeThese(3,vel_u,vel_v,vel_w);
     FT_FreeThese(7,s,s11,s12,s13,s22,s23,s33);
 }       /* end computeSubgridModel_vd */
+
+/*
+ *
+ *      Smeeton Youngs Experiment 105
+ *      with Reflecting Boundary Condition
+ *      with Contact Angle
+ *      with Meniscus
+ *
+ * */
+
+void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
+        int dim,
+        int dir,
+        int side,
+        int *gmax,
+        int *lbuf,
+        int *ubuf,
+        double *solute)
+{
+    if (dim != 3)
+    {
+        printf("The function %s is for dim = %d ONLY. ERROR!", __func__, dim);
+        exit(1);
+    }
+
+    int i, j, k;
+    int isend, irecv;
+
+    // This is where the code takes care of Reflecting Boundary Condition.
+    if (side == 0)
+    {
+        switch (dir)
+        {
+            case 0:
+                for (k = 0; k <= gmax[2]; ++k)
+                    for (j = 0; j <= gmax[1]; ++j)
+                        for (i = 0; i < lbuf[0]; ++i)
+                        {
+                            isend = d_index3d(lbuf[0]+i,j,k,gmax);
+                            irecv = d_index3d(lbuf[0]-1-i,j,k,gmax);
+                            solute[irecv] = -solute[isend];
+                        }
+                break;
+            case 1:
+                for (k = 0; k <= gmax[2]; ++k)
+                    for (i = 0; i <= gmax[0]; ++i)
+                        for (j = 0; j < lbuf[1]; ++j)
+                        {
+                            isend = d_index3d(i,lbuf[1]+j,k,gmax);
+                            irecv = d_index3d(i,lbuf[1]-1-j,k,gmax);
+                            solute[irecv] = -solute[isend];
+                        }
+                break;
+            case 2:
+                for (i = 0; i <= gmax[0]; ++i)
+                    for (j = 0; j <= gmax[1]; ++j)
+                        for (k = 0; k < lbuf[2]; ++k)
+                        {
+                            isend = d_index3d(i,j,lbuf[2]+k,gmax);
+                            irecv = d_index3d(i,j,lbuf[2]-1-k,gmax);
+                            solute[irecv] = -solute[isend];
+                        }
+                break;
+        }
+    }
+    else
+    {
+        switch (dir)
+        {
+            case 0:
+                for (k = 0; k <= gmax[2]; ++k)
+                    for (j = 0; j <= gmax[1]; ++j)
+                        for (i = 0; i < ubuf[0]; ++i)
+                        {
+                            isend = d_index3d(gmax[0]-ubuf[0]-i,j,k,gmax);
+                            irecv = d_index3d(gmax[0]-ubuf[0]+1+i,j,k,gmax);
+                            solute[irecv] = -solute[isend];
+                        }
+                break;
+            case 1:
+                for (k = 0; k <= gmax[2]; ++k)
+                    for (i = 0; i <= gmax[0]; ++i)
+                        for (j = 0; j < ubuf[1]; ++j)
+                        {
+                            isend = d_index3d(i,gmax[1]-ubuf[1]-j,k,gmax);
+                            irecv = d_index3d(i,gmax[1]-ubuf[1]+1+j,k,gmax);
+                            solute[irecv] = -solute[isend];
+                        }
+                break;
+            case 2:
+                for (i = 0; i <= gmax[0]; ++i)
+                    for (j = 0; j <= gmax[1]; ++j)
+                        for (k = 0; k < ubuf[2]; ++k)
+                        {
+                            isend = d_index3d(i,j,gmax[2]-ubuf[2]-k,gmax);
+                            irecv = d_index3d(i,j,gmax[2]-ubuf[2]+1+k,gmax);
+                            solute[irecv] = -solute[isend];
+                        }
+                break;
+        }
+    }
+}
+
+void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
+        int dir,
+        double *solute)
+{
+     int side, i;
+     INTERFACE *intfc = front->grid_intfc;
+     RECT_GRID *comp_grid, *top_grid;
+     int lbuf[MAXD], ubuf[MAXD], *gmax;
+
+     comp_grid = computational_grid(intfc);
+     top_grid = &topological_grid(intfc);
+     gmax = top_grid->gmax;
+
+
+     for (i = 0; i < dim; i++)
+     {
+          lbuf[i] = comp_grid->lbuf[i];
+          ubuf[i] = comp_grid->ubuf[i];
+     }
+
+     for (side = 0; side < 2; side++)
+     {
+         if (rect_boundary_type(intfc,dir,side) == REFLECTION_BOUNDARY)
+         {
+              ReflectBC(dim, dir, side, gmax, lbuf, ubuf, solute);
+         }
+     }
+}

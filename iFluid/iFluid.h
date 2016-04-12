@@ -90,6 +90,7 @@ typedef struct {
         double Dcoef2;
         double vol_frac_threshold;
 	double width_idl; //width of initial diffusion layer
+    double contact_angle; // value of contact angle for Smeeton Youngs' Experiment 105
 } IF_PARAMS;
 
 struct _FLOW_THROUGH_PARAMS {
@@ -101,7 +102,7 @@ typedef struct _FLOW_THROUGH_PARAMS FLOW_THROUGH_PARAMS;
 enum _TIME_FUNC_TYPE {
 	CONSTANT		=  1,
 	PULSE_FUNC,
-	SINE_FUNC	
+	SINE_FUNC
 };
 typedef enum _TIME_FUNC_TYPE TIME_FUNC_TYPE;
 
@@ -121,7 +122,7 @@ typedef struct _TIME_DEPENDENT_PARAMS TIME_DEPENDENT_PARAMS;
  * A simple incompressible flow solver using the ghost fluid method and the
  * projection method.
  *
- * the main function is 
+ * the main function is
  * 	L_CARTESIAN::solve().
  *
  * References:
@@ -135,7 +136,7 @@ class Incompress_Solver_Basis;
 //-------------------------------------------------
 //		STATES
 // NOTE:
-//      L_STATE/L_STATE_RECT_EDGE should be put into 
+//      L_STATE/L_STATE_RECT_EDGE should be put into
 // lcartsn.h. However, there are some trouble
 // to compile in that way.
 //-------------------------------------------------
@@ -152,8 +153,8 @@ public:
 	double m_q;
 	double m_adv[MAXD];
 
-	double m_mu;		        // smoothed 
-        double m_mu_old;                // smoothed 
+	double m_mu;		        // smoothed
+        double m_mu_old;                // smoothed
 	double m_rho;		        // smoothed
 	double div_U;			// Velocity divergence
 	double grad_q[MAXD];		// Gradient of q
@@ -194,24 +195,24 @@ public:
         double m_rho_bar[2*MAXD];       // for rho_bar
         double m_c_bar[2*MAXD];         // for c_bar
         double m_mu_turbulent[MAXD+1];    // SGS term
-        double m_Dcoef_turbulent[MAXD+1]; // SGS term 
+        double m_Dcoef_turbulent[MAXD+1]; // SGS term
 //        boolean isCutCell;              // is cut cell or not
 //        boolean isRegCell;              // is regular cell or not
 };
-//states on MAC grid 
+//states on MAC grid
 
 //------------------------------------------------------
 //		MESH
 //------------------------------------------------------
-// note that the following VERTEX2D/RECT_EDGE are different 
+// note that the following VERTEX2D/RECT_EDGE are different
 // from those defined in MESH2D.h
 
 class L_RECTANGLE {
 public:
 	int m_index;			// rectangle index
-	int comp;			 
+	int comp;
 	L_STATE m_state;
-	double m_coords[MAXD];	
+	double m_coords[MAXD];
 	int icoords[MAXD];
 
 	L_RECTANGLE();
@@ -249,17 +250,17 @@ public:
 	int dim;
         // for vd
         double max_density;
-        double min_density; 
+        double min_density;
         double max_concentration;
         double min_concentration;
         double max_phi;
         double min_phi;
-      
+
 	void initMesh(void);
         // for vd
         void initMesh_vd(void);
 
-	void setAdvectionDt(void); 
+	void setAdvectionDt(void);
 			//using max speed and hmin to determine max_dt, min_dt
         // for vd
         void setAdvectionDt_vd(void);
@@ -355,7 +356,7 @@ protected:
         double m_c[2];
         double m_rho_old[2];
         double m_Dcoef[2];
-        double c_min, c_max; 
+        double c_min, c_max;
         double Dcoef_min,Dcoef_max,rho_max,mu_max;
         double z0; // midplane position
         double zmin_intfc,zmax_intfc; //top/bottom of contact interface
@@ -379,7 +380,7 @@ protected:
 
 /*  These functions should be rewritten in 2D basis and 3D basis classes */
 	virtual double getSmoothingFunction(double r) = 0; //Heaviside function
-	virtual double getSmoothingFunctionD(double*, double*) = 0; 
+	virtual double getSmoothingFunctionD(double*, double*) = 0;
 		//Heaviside function
 	virtual double smoothedDeltaFunction(double*, double*) = 0;
 	virtual double smoothedStepFunction(double*, double*, int) = 0;
@@ -391,28 +392,28 @@ protected:
         virtual void   setSmoProOnePhase_vd(void) = 0;
         virtual void   setSmoothedProperties_vd(void) = 0;
                 //smooth discontinuous properties
-      	
+
 /****************  Functions related to solve() *********/
 
 	virtual void copyMeshStates(void) = 0;
         //for vd
         virtual void copyMeshStates_vd(void) = 0;
 
-	virtual void computeAdvection(void) = 0; 
+	virtual void computeAdvection(void) = 0;
 	//compute advection step in first order scheme
 
-	virtual void compAdvectionTerm_coupled(void) = 0; 
+	virtual void compAdvectionTerm_coupled(void) = 0;
 	//get 2nd order advection term for coupled system
-	virtual void compAdvectionTerm_coupled_upgraded(void) = 0; 
+	virtual void compAdvectionTerm_coupled_upgraded(void) = 0;
 	//Upgraded algorithm for getting 2nd order advection term for coupled system
         // for vd
         virtual void compAdvectionTerm_coupled_vd(int) = 0;
         virtual void compAdvectionTerm_decoupled_vd(int) = 0;
 
 	//The following 2 functions are for decoupled system
-	virtual void compAdvectionTerm_decoupled(void) = 0; 
+	virtual void compAdvectionTerm_decoupled(void) = 0;
 	//get 2nd order advection term
-	virtual void compAdvectionTerm_decoupled_upgraded(void) = 0; 
+	virtual void compAdvectionTerm_decoupled_upgraded(void) = 0;
 	//Upgraded algorithm for getting 2nd order advection term
 
 
@@ -445,7 +446,7 @@ protected:
         virtual void computeNewConcentration_vd(void) = 0;
 
 	virtual void computeSourceTerm(double *coords, L_STATE &state) = 0;
-	virtual void computeSourceTerm(double *coords, double t, L_STATE 
+	virtual void computeSourceTerm(double *coords, double t, L_STATE
 		&state) = 0;
         virtual void computeSourceTerm_Adv(double *coords, L_STATE &state) = 0;
 
@@ -454,11 +455,11 @@ protected:
         virtual void getExactSolution_vd(double *coords,double t,L_STATE &state) = 0;
 
 	virtual void surfaceTension(double*, HYPER_SURF_ELEMENT*,
-		HYPER_SURF*, double*, double) = 0; 
+		HYPER_SURF*, double*, double) = 0;
         virtual void surfaceTension_Peskin(void) = 0;
 
-	virtual void computeSubgridModel(void) = 0;    // subgrid model 
-	
+	virtual void computeSubgridModel(void) = 0;    // subgrid model
+
 /***********************  Utility functions  *******************/
 
 	void   computeExactSolution(double *coords, L_STATE &state);
@@ -467,14 +468,14 @@ protected:
 	int    getRectangleComponent(int index);	// the center component
 	void   getRectangleCenter(int index, double *coords);
 	double getDistance(double *coords0, double *coords1);
-	int    getComponent(int *icoords);	
-	int    getComponent(double *coords);	
+	int    getComponent(int *icoords);
+	int    getComponent(double *coords);
 	void   save(char *filename);
 
 /************* TMP Functions which are not implemented or used ***********/
 
 	void getNearestInterfacePoint(COMPONENT,double*,double*,double*,
-					double*); 
+					double*);
 };
 
 
@@ -517,7 +518,7 @@ public:
         virtual void setInitialCondition_RSSY_vd(LEVEL_FUNC_PACK*) = 0;
         virtual void setInitialDiffusionVelocity_vd(void) = 0;
 
-        virtual void solve(double dt) = 0;         
+        virtual void solve(double dt) = 0;
         // for vd
         virtual void solve_vd(double dt) = 0;
 
@@ -548,7 +549,7 @@ protected:
         virtual void compAdvectionTerm_coupled_vd(int) = 0;
         virtual void compAdvectionTerm_decoupled_vd(int) = 0;
 
-	virtual void compDiffWithSmoothProperty_1st_coupled(void) = 0; 
+	virtual void compDiffWithSmoothProperty_1st_coupled(void) = 0;
 	//1st order coupled diffusion solver
 	virtual void compDiffWithSmoothProperty_1st_decoupled(void) = 0;
 	virtual void compDiffWithSmoothProperty_2nd_coupled(void) = 0;
@@ -579,7 +580,7 @@ protected:
         virtual void computeNewConcentration_vd(void) = 0;
 
 	virtual void computeSourceTerm(double *coords, L_STATE &state) = 0;
-	virtual void computeSourceTerm(double *coords, double t, L_STATE 
+	virtual void computeSourceTerm(double *coords, double t, L_STATE
 		&state) = 0;
         virtual void computeSourceTerm_Adv(double *coords, L_STATE &state) = 0;
 
@@ -590,7 +591,7 @@ protected:
 		HYPER_SURF*, double*, double) = 0; // ?????????
         virtual void surfaceTension_Peskin(void) = 0;
 
-	virtual void computeSubgridModel(void) = 0;    // subgrid model 
+	virtual void computeSubgridModel(void) = 0;    // subgrid model
 };
 
 
@@ -644,7 +645,7 @@ protected:
         virtual void compAdvectionTerm_coupled_vd(int) = 0;
         virtual void compAdvectionTerm_decoupled_vd(int) = 0;
 
-	virtual void compDiffWithSmoothProperty_1st_coupled(void) = 0; 
+	virtual void compDiffWithSmoothProperty_1st_coupled(void) = 0;
 	//1st order coupled diffusion solver
 	virtual void compDiffWithSmoothProperty_1st_decoupled(void) = 0;
 	virtual void compDiffWithSmoothProperty_2nd_coupled(void) = 0;
@@ -675,7 +676,7 @@ protected:
         virtual void computeNewConcentration_vd(void) = 0;
 
 	virtual void computeSourceTerm(double *coords, L_STATE &state) = 0;
-	virtual void computeSourceTerm(double *coords, double t, L_STATE 
+	virtual void computeSourceTerm(double *coords, double t, L_STATE
 		&state) = 0;
         virtual void computeSourceTerm_Adv(double *coords, L_STATE &state) = 0;
 
@@ -684,10 +685,10 @@ protected:
         virtual void getExactSolution_vd(double *coords,double t,L_STATE &state) = 0;
 
 	virtual void surfaceTension(double*, HYPER_SURF_ELEMENT*,
-		HYPER_SURF*, double*, double) = 0; 
+		HYPER_SURF*, double*, double) = 0;
         virtual void surfaceTension_Peskin(void) = 0;
 
-	virtual void computeSubgridModel(void) = 0;  // subgrid model 
+	virtual void computeSubgridModel(void) = 0;  // subgrid model
 };
 
 class Incompress_Solver_Smooth_2D_Cartesian:
@@ -739,7 +740,7 @@ protected:
         // for vd
         void computeProjection_vd(void);
         void computeProjection_MAC_vd(void){};
-      
+
 	void computePressure(void);
 	void computePressurePmI(void);
 	void computePressurePmII(void);
@@ -767,7 +768,7 @@ protected:
         void surfaceTension_Peskin(void) {};
         //Not implemented
 
-	void computeSubgridModel(void);    // subgrid model 
+	void computeSubgridModel(void);    // subgrid model
 
 	/***************   Low level computation functions  *************/
 	double computeFieldPointDiv(int*, double**);
@@ -782,10 +783,10 @@ protected:
 	//---------------------------------------------------------------
 	//         utility functions for the advection step
 	//---------------------------------------------------------------
-	
-	void getAdvectionTerm_decoupled(int *icoords, double convectionTerm[2]);         
+
+	void getAdvectionTerm_decoupled(int *icoords, double convectionTerm[2]);
 	//get second-order advection term at each cell
-	void getAdvectionTerm_decoupled_upgraded(int *icoords, double convectionTerm[2]); 
+	void getAdvectionTerm_decoupled_upgraded(int *icoords, double convectionTerm[2]);
 	//Upgraded version of getAdvectionTerm
 	void getAdvectionTerm_coupled(int *icoords, double convectionTerm[2]);
 	//get second-order advection term at each cell with cross derivative terms
@@ -797,15 +798,15 @@ protected:
         void computeNewUbar_vd(double,int);
 
 	void getFaceVelocity_middleStep(int *icoords,GRID_DIRECTION dir, L_STATE &state_face);
-	void getFaceVelocity_middleStep_hat(int *icoords,GRID_DIRECTION dir,L_STATE &state_hat); 
+	void getFaceVelocity_middleStep_hat(int *icoords,GRID_DIRECTION dir,L_STATE &state_hat);
 	//For the upgraded algorithm
-	void getFaceVelocity_middleStep_bar(int *icoords,GRID_DIRECTION dir,L_STATE &state_bar, double transverseD[2], L_STATE state_hat); 
+	void getFaceVelocity_middleStep_bar(int *icoords,GRID_DIRECTION dir,L_STATE &state_bar, double transverseD[2], L_STATE state_hat);
 	//For the upgraded algorithm
 
 	void getFaceVelocity_middleStep_coupled(int *icoords,GRID_DIRECTION dir, L_STATE &state_face); //for variable mu
-	void getFaceVelocity_middleStep_coupled_hat(int *icoords,GRID_DIRECTION dir,L_STATE &state_hat) {}; 
+	void getFaceVelocity_middleStep_coupled_hat(int *icoords,GRID_DIRECTION dir,L_STATE &state_hat) {};
 	//For the upgraded algorithm with variable mu
-	void getFaceVelocity_middleStep_coupled_bar(int *icoords,GRID_DIRECTION dir,L_STATE &state_bar, double transverseD[2], L_STATE state_hat); 
+	void getFaceVelocity_middleStep_coupled_bar(int *icoords,GRID_DIRECTION dir,L_STATE &state_bar, double transverseD[2], L_STATE state_hat);
 	//For the upgraded algorithm with variable mu
         // for vd
         void getFaceState_middleStep_hat_vd(int *icoords,GRID_DIRECTION dir,L_STATE &state_hat);
@@ -817,18 +818,18 @@ protected:
         void getDiffusion_coupled_vd(int *icoords, double diffusion[4]);
         void getDivU_coupled_vd(int *icoords, double diffusion[4], int flag);
         void getDiffusionC_coupled_vd(int *icoords, double diffusion[4]);
-        
+
 	void getDU2(int *icoords,EBM_COORD xyz,double dU2[2]); //Get the U_xx, U_yy, U_zz
 	void getLimitedSlope(int *icoords,EBM_COORD xzy,double slope[2]); //mimmod slope limiter
 	void getLimitedSlope_Vanleer(int *icoords,EBM_COORD xyz, double slope[2]); //Van Leer slope limiter
         // for vd
-        void getLimitedSlope_vd(int *icoords,EBM_COORD xzy,double slope[4]); 
-      
+        void getLimitedSlope_vd(int *icoords,EBM_COORD xzy,double slope[4]);
+
 	double EBM_minmod(double x, double y); //minmod function
 
 	bool getNeighborOrBoundaryState(int icoords[2],GRID_DIRECTION dir,L_STATE &state,double t); //get the neighbor state or boundary state
         // for vd
-        bool getNeighborOrBoundaryState_vd(int icoords[2],GRID_DIRECTION dir,L_STATE &state,double t); 
+        bool getNeighborOrBoundaryState_vd(int icoords[2],GRID_DIRECTION dir,L_STATE &state,double t);
 
 	void getRiemannSolution(EBM_COORD xyz,L_STATE &u_left,L_STATE &state_right,L_STATE &ans); //Compute Riemann solution using left and right state
         // for vd
@@ -872,8 +873,8 @@ protected:
         void copyMeshStates_vd(void);
 
 	void computeAdvection(void);
-	void compAdvectionTerm_coupled(void); 
-	void compAdvectionTerm_coupled_upgraded(void); 
+	void compAdvectionTerm_coupled(void);
+	void compAdvectionTerm_coupled_upgraded(void);
 	void compAdvectionTerm_decoupled(void);
 	void compAdvectionTerm_decoupled_upgraded(void);
         // for vd
@@ -883,7 +884,7 @@ protected:
 
 	void compDiffWithSmoothProperty_1st_coupled(void);
 	void compDiffWithSmoothProperty_1st_decoupled(void);
-	void compDiffWithSmoothProperty_2nd_coupled(void); 
+	void compDiffWithSmoothProperty_2nd_coupled(void);
 	void compDiffWithSmoothProperty_2nd_decoupled(void);
         // for vd
         void compDiffWithSmoothProperty_velocity_decoupled_vd(void);
@@ -899,7 +900,7 @@ protected:
         void computeProjection_Expand_vd(void);
         void computeProjection_MAC_vd(void);
         void computeProjection_MAC_PPE_vd(void);
- 
+
 	void computePressure(void);
 	void computePressurePmI(void);
 	void computePressurePmII(void);
@@ -944,12 +945,12 @@ protected:
         // for vd
         void getExactSolution_vd(double *coords,double t,L_STATE &state){};
 
-	void surfaceTension(double*, HYPER_SURF_ELEMENT*, HYPER_SURF*, double*, double); 
+	void surfaceTension(double*, HYPER_SURF_ELEMENT*, HYPER_SURF*, double*, double);
         void surfaceTension_Peskin(void) {};
         //Not implemented
 
-	void computeSubgridModel(void) {};    // subgrid model 
-        void computeSubgridModel_vd(void);    // subgrid model 
+	void computeSubgridModel(void) {};    // subgrid model
+        void computeSubgridModel_vd(void);    // subgrid model
 
 	double computeFieldPointDiv(int*, double**);
         double computeFieldPointDiv_Neumann_vd(int*, double**);
@@ -979,7 +980,7 @@ protected:
 	void getAdvectionTerm_decoupled_upgraded(int *icoords, double convectionTerm[3]);
 	void getAdvectionTerm_coupled(int *icoords, double convectionTerm[3]);
 	void getAdvectionTerm_coupled_upgraded(int *icoords, double convectionTerm[3]);
-	//not implemented yet 
+	//not implemented yet
         // for vd
         void getVelocityBar_coupled_vd(int*, double);
         void getVelocityBar_decoupled_vd(int*, double);
@@ -1002,7 +1003,7 @@ protected:
 	void getFaceVelocity_middleStep(int *icoords,GRID_DIRECTION dir,L_STATE &state_face);
 	void getFaceVelocity_middleStep_hat(int *icoords,GRID_DIRECTION dir, L_STATE &state_hat);
 	void getFaceVelocity_middleStep_bar(int *icoords,GRID_DIRECTION dir, L_STATE &state_bar, double transverseD[3], L_STATE state_hat);
- 
+
 	void getFaceVelocity_middleStep_coupled(int *icoords,GRID_DIRECTION dir,L_STATE &state_face);
 	void getFaceVelocity_middleStep_coupled_hat(int *icoords,GRID_DIRECTION dir, L_STATE &state_hat) {};
 	void getFaceVelocity_middleStep_coupled_bar(int *icoords,GRID_DIRECTION dir, L_STATE &state_bar, double transverseD[3], L_STATE state_hat);
@@ -1068,6 +1069,9 @@ protected:
         void getRiemannSolution_MAC_CenterVelocity_vd(EBM_COORD xyz,L_STATE &u_left,L_STATE &u_right,L_STATE &ans, int *icoords);
         void getRiemannSolution_MAC_EdgeVelocity_vd(EBM_COORD xyz1,EBM_COORD xyz2,L_STATE &u_left,L_STATE &u_right,L_STATE &u_LEFT,L_STATE &u_RIGHT,L_STATE &ans);
         void getRiemannSolution_MAC_Scalar_vd(L_STATE &u_left,L_STATE &u_right,L_STATE &ans, int *icoords, GRID_DIRECTION dir);
+        //Reflection Boundary Condition
+        void Solute_Reflect(int, double*);
+        void ReflectBC(int, int, int, int*, int*, int*, double*);
 };
 
 
@@ -1121,16 +1125,16 @@ protected:
 	void compDiffWithSmoothProperty_1st_decoupled_source(void); //half Crank-Nicholson
 
 	void compDiffWithSmoothProperty_2nd_coupled(void); //no implemented
-	void compDiffWithSmoothProperty_2nd_decoupled(void); 
+	void compDiffWithSmoothProperty_2nd_decoupled(void);
 	//just adjusting coefficients, do not support complext B.C.
         // for vd
         void compDiffWithSmoothProperty_velocity_decoupled_vd(void){}; //no implemented
         void compDiffWithSmoothProperty_velocity_vd(void){}; //no implemented
 
 	//---------------------------------------------------------------------------
-	
+
 	//----------------------------------------------------------------------------
-	//   utility functions for diffusion and projection 
+	//   utility functions for diffusion and projection
 	//----------------------------------------------------------------------------
 
 	void compDiff_CellFace( //Set the coefficient for cell corners
@@ -1177,7 +1181,7 @@ protected:
 		L_STATE &U_nb,
 		L_STATE &U_nb_new,
 		L_STATE &U_center);
-	
+
 	void compDiffWithSmoothProperty_Dirichlet(
 		PETSc *pSolver,
 		int *icoords,
@@ -1239,7 +1243,7 @@ protected:
 	void surfaceTension(double*, HYPER_SURF_ELEMENT*, HYPER_SURF*, double*, double);
         void surfaceTension_Peskin(void){};
 
-	void computeSubgridModel(void);    // subgrid model 
+	void computeSubgridModel(void);    // subgrid model
 
 
 	double computeFieldPointDiv(int*, double**);
@@ -1259,12 +1263,12 @@ protected:
 
 	void getAdvectionTerm_coupled(int *icoords, double convectionTerm[3]);
 	void getAdvectionTerm_coupled_upgraded(int *icoords, double convectionTerm[3]) {};
-	//not implemented yet 
-	
+	//not implemented yet
+
 	void getFaceVelocity_middleStep(int *icoords,GRID_DIRECTION dir,L_STATE &state_face);
 	void getFaceVelocity_middleStep_hat(int *icoords,GRID_DIRECTION dir, L_STATE &state_hat) {}; //not implemented
 	void getFaceVelocity_middleStep_bar(int *icoords,GRID_DIRECTION dir, L_STATE &state_bar, double transverseD[3], L_STATE state_hat) {}; //not implemented
- 
+
 	void getFaceVelocity_middleStep_coupled(int *icoords,GRID_DIRECTION dir,L_STATE &state_face);
 	void getFaceVelocity_middleStep_coupled_hat(int *icoords,GRID_DIRECTION dir, L_STATE &state_hat) {}; //not implemented
 	void getFaceVelocity_middleStep_coupled_bar(int *icoords,GRID_DIRECTION dir, L_STATE &state_bar, double transverseD[3], L_STATE state_hat) {}; //not implemented

@@ -10,14 +10,14 @@ Lower boundary in 2-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 2-th dimension: REFLECTION_BOUNDARY
 
 Max time: 12000000
-Max step: 10000000
+Max step: 300
 Print interval: 1.0
 Movie frame interval: 1.0
-CFL factor: 0.2
+CFL factor: 0.75
 Type y to use the Fast Merge Algorithm: n
 Type y to turn on turbulence model: n
 Type y to turn on the point propagation reduction in the thin film: n
-Point propagation reduction parameter: 0
+Point propagation reduction parameter: 5
 Thin film thickness parameter: 0
 Redistribution interval: 5
 Type yes to turn off auto-redistribution: n
@@ -39,24 +39,26 @@ Enter projection type: BELL_COLELLA
 Enter mean position of fluid interface: 1.875
 Enter the minimum mode numbers: 4
 Enter the maximum mode numbers: 8
-Enter the amplitude standard deviation: 5e-04
+Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
+Enter the degree of Contact Angle: 0
+Enter the starting point of Meniscus: 0
 
 Choices for the perturbation boundary type are
         PERIODIC
         SYMMETRIC
         UNMODIFIED
-Enter the boundary type of perturbation in direction 0: SYMMETRIC
-Enter the boundary type of perturbation in direction 1: SYMMETRIC
-Enter density and viscosity of fluid 1: 1.89 0.0000101
-Enter density and viscosity of fluid 2: 1.0 0.0000101
-Enter concentration and binary diffusivity of fluid 1: 1.0 0.000000018
-Enter concentration and binary diffusivity of fluid 2: 0.0 0.000000018
-Enter gravity: 0 0 -0.037278
+Enter the boundary type of perturbation in direction 0: PERIODIC
+Enter the boundary type of perturbation in direction 1: PERIODIC
+Enter density and viscosity of fluid 1: 0.0739 0.00000363
+Enter density and viscosity of fluid 2: 0.626 0.00000363
+Enter concentration and binary diffusivity of fluid 1: 0.0 0.000000018
+Enter concentration and binary diffusivity of fluid 2: 1.0 0.000000018
+Enter gravity: 0 0 -0.014715
 Enter surface tension: 0.0000137
 Enter factor of smoothing radius: 1
-Enter width of initial diffusion layer: 0.35
+Enter width of initial diffusion layer: 0.174
 Enter volume fraction threshold: 0.05
 
 Type y to make movie of pressure: y

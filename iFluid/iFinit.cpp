@@ -169,7 +169,7 @@ static void initRSSYIntfc(
         static double L[MAXD],U[MAXD];
         FILE *infile = fopen(inname,"r");
         int i,j,dim,num_modes;
-        char mesg[100];
+        char mesg[100],s[Gets_BUF_SIZE],sbdry[200];
 
         if (debugging("trace"))
             (void) printf("Enter initRSSYIntfc()!\n");
@@ -232,6 +232,13 @@ static void initRSSYIntfc(
         fscanf(infile,"%lf",&iFparams->smoothing_radius);
         (void) printf("%12.8g\n",iFparams->smoothing_radius);
 
+        // Add Contact Angle for Smeeton Youngs Experiment 105
+        // iFparams->contact_angle == 0 => NO Mensicus
+        iFparams->contact_angle = 0.0;
+        CursorAfterString(infile,"Enter the degree of Contact Angle:");
+        fscanf(infile,"%lf",&iFparams->contact_angle);
+        (void) printf("%12.8g\n",iFparams->contact_angle);
+
         // TODO && FIXME: This was missing.
         iFparams->width_idl = 0;
         if (CursorAfterStringOpt(infile,"Enter width of initial diffusion layer:"))
@@ -245,6 +252,30 @@ static void initRSSYIntfc(
         {
             fscanf(infile,"%lf",&iFparams->vol_frac_threshold);
             (void) printf("%lf\n",iFparams->vol_frac_threshold);
+        }
+        // TODO && FIXME: This was missing.
+        for (i = 0; i < dim-1; ++i)
+        {
+            sprintf(mesg,"Enter the boundary type of perturbation in direction %d:",i);
+            CursorAfterString(infile,mesg);
+            fscanf(infile,"%s",sbdry);
+            (void) printf("%s\n",sbdry);
+            switch (sbdry[0])
+            {
+            case 'P':
+            case 'p':
+                level_func_params.pert_bdry_type[i] = PERIODIC;
+                break;
+            case 'S':
+            case 's':
+                level_func_params.pert_bdry_type[i] = SYMMETRIC;
+                break;
+            case 'U':
+            case 'u':
+            default:
+                level_func_params.pert_bdry_type[i] = UNMODIFIED;
+                break;
+            }
         }
 
         level_func_pack->func_params = (POINTER)&level_func_params;

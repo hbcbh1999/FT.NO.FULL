@@ -1,7 +1,7 @@
-Domain limit in 0-th dimension: 0 1.0
-Domain limit in 1-th dimension: 0 1.0
+Domain limit in 0-th dimension: 0 7.5
+Domain limit in 1-th dimension: 0 2.5
 Domain limit in 2-th dimension: 0 20.0
-Computational grid: 10 10 200
+Computational grid: 336 112 896
 Lower boundary in 0-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 0-th dimension: REFLECTION_BOUNDARY
 Lower boundary in 1-th dimension: REFLECTION_BOUNDARY
@@ -10,14 +10,14 @@ Lower boundary in 2-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 2-th dimension: REFLECTION_BOUNDARY
 
 Max time: 12000000
-Max step: 250000
-Print interval: 0.000000001
+Max step: 300
+Print interval: 1.0
 Movie frame interval: 1.0
-CFL factor: 0.45
+CFL factor: 0.75
 Type y to use the Fast Merge Algorithm: n
 Type y to turn on turbulence model: n
 Type y to turn on the point propagation reduction in the thin film: n
-Point propagation reduction parameter: 0
+Point propagation reduction parameter: 5
 Thin film thickness parameter: 0
 Redistribution interval: 5
 Type yes to turn off auto-redistribution: n
@@ -37,20 +37,22 @@ Projection type can be
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
 Enter mean position of fluid interface: 7.5
-Enter the minimum mode numbers: 4
-Enter the maximum mode numbers: 8
+Enter the minimum mode numbers: 12
+Enter the maximum mode numbers: 24
 Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
+Enter the degree of Contact Angle: 0
+Enter the starting point of Meniscus: 0
 
 Choices for the perturbation boundary type are
         PERIODIC
         SYMMETRIC
         UNMODIFIED
-Enter the boundary type of perturbation in direction 0: SYMMETRIC
-Enter the boundary type of perturbation in direction 1: SYMMETRIC
-Enter density and viscosity of fluid 1: 0.0739 0.0000101
-Enter density and viscosity of fluid 2: 0.626 0.0000101
+Enter the boundary type of perturbation in direction 0: PERIODIC
+Enter the boundary type of perturbation in direction 1: PERIODIC
+Enter density and viscosity of fluid 1: 0.0739 0.00000363
+Enter density and viscosity of fluid 2: 0.626 0.00000363
 Enter concentration and binary diffusivity of fluid 1: 0.0 0.000000018
 Enter concentration and binary diffusivity of fluid 2: 1.0 0.000000018
 Enter gravity: 0 0 -0.014715
