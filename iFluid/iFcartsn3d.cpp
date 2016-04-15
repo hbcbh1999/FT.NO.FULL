@@ -9736,7 +9736,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
         else if (flag==2)		t = m_t_new;
         else				assert(false);
 
-        if (!bGhostCell)
+        if (!bGhostCell) /*TODO and FIXME: bGhostCell = True for RSSY??? */
             bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_vd(icoords,dir[nb],statenb,t);
         else
             bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,dir[nb],statenb,t);
@@ -12051,7 +12051,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             cell_center[index].m_state.m_Dcoef = m_Dcoef[0];
 
             getRectangleCenter(index, coords);
-            dist = level_wave_func_cylindrical_init(level_func_pack->func_params, coords);
+            dist = level_wave_func_Meniscus(level_func_pack->func_params, coords);
 
             rho0 = std::min(m_rho[0], m_rho[1]);
             rho1 = std::max(m_rho[0], m_rho[1]);
@@ -12385,7 +12385,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             (void) printf("\n");
             max_value = 0;
         }
-
+//TEST INITIALIZE PRESSURE START
+//TEST INITIALIZE PRESSURE END
         computeGradientQ_MAC_vd();
         copyMeshStates_vd();
         setAdvectionDt_vd();

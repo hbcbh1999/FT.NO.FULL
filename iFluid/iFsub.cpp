@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -113,7 +113,7 @@ extern double getStateDens(POINTER state)
 
 // for vd
 extern double getStateDensOld(POINTER state)
-{           
+{
         STATE *fstate = (STATE*)state;
         return fstate->dens_old;
 }       /* end getStateDens */
@@ -293,10 +293,10 @@ extern void iF_timeDependBoundaryState(
 	    else if (time > T[0] && time <= T[1])
 	    {
 	    	for (i = 0; i < dim; ++i)
-	    	    iF_state->vel[i] = td_params->v_base[i] + 
+	    	    iF_state->vel[i] = td_params->v_base[i] +
 				(time - T[0])/(T[1] - T[0])*
 				(td_params->v_peak[i] - td_params->v_base[i]);
-	    	iF_state->pres = td_params->p_base + 
+	    	iF_state->pres = td_params->p_base +
 				(time - T[0])/(T[1] - T[0])*
 				(td_params->p_peak - td_params->p_base);
 	    }
@@ -309,10 +309,10 @@ extern void iF_timeDependBoundaryState(
 	    else if (time > T[2] && time <= T[3])
 	    {
 	    	for (i = 0; i < dim; ++i)
-	    	    iF_state->vel[i] = td_params->v_peak[i] + 
+	    	    iF_state->vel[i] = td_params->v_peak[i] +
 				(time - T[2])/(T[3] - T[2])*
 				(td_params->v_tail[i] - td_params->v_peak[i]);
-	    	iF_state->pres = td_params->p_peak + 
+	    	iF_state->pres = td_params->p_peak +
 				(time - T[2])/(T[3] - T[2])*
 				(td_params->p_tail - td_params->p_peak);
 	    }
@@ -396,9 +396,9 @@ static void iF_flowThroughBoundaryState3d(
 
 	FT_GetStatesAtPoint(oldp,oldp->hse,oldp->hs,&sl,&sr);
 	oldst = NULL;
-	if (comp == negative_component(hs))  
+	if (comp == negative_component(hs))
 	    oldst = (STATE*)sl;
-	else 
+	else
 	    oldst = (STATE*)sr;
 
 	nsten = FT_CreateNormalStencil(front,oldp,comp,nrad);
@@ -442,7 +442,7 @@ static void iF_flowThroughBoundaryState3d(
 	    (void) printf("new velocity after normal prop: %f %f %f\n",
 			newst->vel[0],newst->vel[1],newst->vel[2]);
 	}
-	
+
 	tsten = FrontGetTanStencils(front,oldp,nrad);
 	if (tsten == NULL) return;
 
@@ -452,9 +452,9 @@ static void iF_flowThroughBoundaryState3d(
 	    	dir[i] = tsten[k]->dir[i];
 	    dn = FT_GridSizeInDir(dir,front);
 
-	    if (comp == negative_component(hs))  
+	    if (comp == negative_component(hs))
 	    	sts = (STATE**)tsten[k]->leftst;
-	    else 
+	    else
 	    	sts = (STATE**)tsten[k]->rightst;
 
 	    if (debugging("flow_through"))
@@ -533,7 +533,7 @@ static void iF_flowThroughBoundaryState2d(
 	POINTER sl,sr;
 	int i,j,dim = front->rect_grid->dim;
 	int nrad = 2;
-	
+
 	if (debugging("flow_through"))
 	    printf("Entering iF_flowThroughBoundaryState2d()\n");
 
@@ -546,9 +546,9 @@ static void iF_flowThroughBoundaryState2d(
 	    (void) print_Nor_stencil(front,nsten);
 	}
 
-	if (comp == negative_component(hs))  
+	if (comp == negative_component(hs))
 	    oldst = (STATE*)sl;
-	else 
+	else
 	    oldst = (STATE*)sr;
 
 	u[1] = 0.0;
@@ -582,7 +582,7 @@ static void iF_flowThroughBoundaryState2d(
 
 	newst->vort = oldst->vort - dt/dn*f_vort;
 	newst->pres = oldst->pres - dt/dn*f_pres;
-	
+
 	tsten = FrontGetTanStencils(front,oldp,nrad);
 
 	if (debugging("flow_through"))
@@ -592,9 +592,9 @@ static void iF_flowThroughBoundaryState2d(
 	    (void) print_Tan_stencil(front,tsten[0]);
 	}
 
-	if (comp == negative_component(hs))  
+	if (comp == negative_component(hs))
 	    sts = (STATE**)tsten[0]->leftst;
-	else 
+	else
 	    sts = (STATE**)tsten[0]->rightst;
 
 	for (i = 0; i < dim; ++i)
@@ -627,7 +627,7 @@ static void iF_flowThroughBoundaryState2d(
 	    newst->vel[i] += - dt/dn*(f_u*dir[i] + f_v[i]) ;
 	newst->vort += - dt/dn*f_vort;
 	newst->pres += - dt/dn*f_pres;
-	
+
 	if (debugging("flow_through"))
 	{
 	    (void) printf("State after tangential sweep:\n");
@@ -675,8 +675,8 @@ extern void ifluid_point_propagate_vd(
         HYPER_SURF_ELEMENT *oldhse,
         HYPER_SURF         *oldhs,
         double              dt,
-        double              *V)         
-{           
+        double              *V)
+{
         switch(wave_type(oldhs))
         {
         case SUBDOMAIN_BOUNDARY:
@@ -686,10 +686,10 @@ extern void ifluid_point_propagate_vd(
                                         oldhs,dt,V);
         case NEUMANN_BOUNDARY:
         case GROWING_BODY_BOUNDARY:
-            return neumann_point_propagate_vd(front,wave,oldp,newp,oldhse,       
+            return neumann_point_propagate_vd(front,wave,oldp,newp,oldhse,
                                         oldhs,dt,V);
         case DIRICHLET_BOUNDARY:
-            return dirichlet_point_propagate(front,wave,oldp,newp,oldhse,     
+            return dirichlet_point_propagate(front,wave,oldp,newp,oldhse,
                                         oldhs,dt,V);
         default:
             return contact_point_propagate_vd(front,wave,oldp,newp,oldhse,
@@ -915,7 +915,7 @@ static  void dirichlet_point_propagate(
 	    	ft_params.oldp = oldp;
 	    	ft_params.comp = comp;
 	    	(*boundary_state_function(oldhs))(Coords(oldp),oldhs,front,
-			(POINTER)&ft_params,(POINTER)newst);	
+			(POINTER)&ft_params,(POINTER)newst);
 	    }
 	    else if (strcmp(boundary_state_function_name(oldhs),
 		       "iF_timeDependBoundaryState") == 0)
@@ -923,7 +923,7 @@ static  void dirichlet_point_propagate(
 		TIME_DEPENDENT_PARAMS *td_params = (TIME_DEPENDENT_PARAMS*)
 				boundary_state_function_params(oldhs);
 	    	(*boundary_state_function(oldhs))(Coords(oldp),oldhs,front,
-			(POINTER)td_params,(POINTER)newst);	
+			(POINTER)td_params,(POINTER)newst);
 	    }
             for (i = 0; i < dim; ++i)
 		FT_RecordMaxFrontSpeed(i,fabs(newst->vel[i]),NULL,Coords(newp),
@@ -1552,8 +1552,8 @@ extern void fluid_read_front_states(
 	int dim = intfc->dim;
 
         if (binary == YES)
-        {               
-            next_output_line_containing_string(infile,"Interface ifluid states:");                
+        {
+            next_output_line_containing_string(infile,"Interface ifluid states:");
             next_point(intfc,NULL,NULL,NULL);
             if (hardware_is_little_endian())
             {
@@ -1635,7 +1635,7 @@ extern void fluid_read_front_states_vd(
         FILE *infile,
         Front *front,
         bool binary)
-{       
+{
         double val[3];
 
         INTERFACE *intfc = front->interf;
@@ -1645,9 +1645,9 @@ extern void fluid_read_front_states_vd(
         HYPER_SURF_ELEMENT *hse;
         STATE *lstate,*rstate;
         int dim = intfc->dim;
-                
+
         if (binary == YES)
-        {               
+        {
             next_output_line_containing_string(infile,"Interface ifluid states:");
             next_point(intfc,NULL,NULL,NULL);
             if (hardware_is_little_endian())
@@ -1714,7 +1714,7 @@ extern void fluid_read_front_states_vd(
                         lstate->vel[2] = val[0];
                         rstate->vel[2] = val[1];
                     }
-                    // for vd    
+                    // for vd
                     fread(val, sizeof(double), 2, infile);
                     lstate->dens = val[0];
                     rstate->dens = val[1];
@@ -1991,7 +1991,7 @@ static void get_time_dependent_params(
 	    clean_up(ERROR);
 	}
 
-	*params = (POINTER)td_params;	
+	*params = (POINTER)td_params;
 }	/* end get_time_dependent_params */
 
 extern void recordBdryEnergyFlux(
@@ -2061,8 +2061,8 @@ static void addToEnergyFlux(
 	boolean is_influx)
 {
 	int i,dim = rgr->dim;
-	double *L = rgr->L;	
-	double *U = rgr->U;	
+	double *L = rgr->L;
+	double *U = rgr->U;
 	CURVE *c;
 	SURFACE *s;
 	BOND *b;

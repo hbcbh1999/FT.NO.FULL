@@ -1169,6 +1169,7 @@ EXPORT	boolean cpu_adapt_front(
 
 /* TODO && FIXME
  * Currently, for reflection boundary condition, + sign => - sign
+ * Velocity ONLY
  * 3D ONLY
  * */
 LOCAL   void reflect_array_buffer(

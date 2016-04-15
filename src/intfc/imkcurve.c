@@ -94,6 +94,28 @@ LOCAL   double line_func(POINTER,double*);
 //for RSRV case
 LOCAL   double adjust_for_z_grid_spacing(double,double,double);
 
+//for Meniscus Linear Profile
+LOCAL   double dist_line_meniscus(double,double,double,double);
+
+
+//meniscus linear profile function
+// Three points
+// where alpha is contact angle
+// where m is meniscus
+// where b is -meniscus/tan(alpha)
+LOCAL  double dist_line_meniscus(
+            double angle,
+            double z0,
+            double meniscus,
+            double x )
+{
+     angle = angle * 1.0 / 180.0 * PI;
+     double a = 0.5 * PI + angle;
+     double slope = tan(a);
+     return slope * (x - meniscus);
+}
+
+
 #define		MAX_NUM_SEGMENTS		100
 
 
@@ -1702,6 +1724,92 @@ EXPORT double level_wave_func_cyl_sphere(
         return dist;
 }
 
+EXPORT double level_wave_func_Meniscus(
+        POINTER func_params,
+        double *coords)
+
+{
+        //RANDOM_PARAMS_VD *rand_params = (RANDOM_PARAMS_VD*)func_params;
+        //RECT_GRID *gr = rand_params->gr;
+        //FOURIER_POLY *wave_params = rand_params->pert;
+
+        FOURIER_POLY *wave_params = (FOURIER_POLY*)func_params;
+        double arg,z,t,sigma,dist;
+        int i,j,num_modes,dim;
+        double *L = wave_params->L;
+        double *U = wave_params->U;
+        int min_n = wave_params->min_n;
+        int max_n = wave_params->max_n;
+        double A_sd = wave_params->A_sd;
+        double av_phase = wave_params->av_phase;
+        double P_sd = wave_params->P_sd;
+        double wv_num[1000][1000], A[1000];
+        double phase[1000];
+        double nu;
+        double angle = wave_params->contact_angle; // Contact Angle
+        double meniscus = wave_params->Meniscus; // position of Meniscus
+        int iii, jjj, n, m[2], k[3];
+        unsigned short int xsubi_a[3], xsubi_p[3];
+
+        dim = wave_params->dim;
+        z = wave_params->z0;
+        av_phase = radians(av_phase);
+        P_sd = radians(P_sd);
+        num_modes = (max_n+2)*(max_n+1)/2 - min_n*(min_n+1)/2;
+        //xsubi_a[0] = 5123;      xsubi_a[1] = 234; xsubi_a[2] = 1979;
+        xsubi_a[0] = 82;      xsubi_a[1] = 1772; xsubi_a[2] = 813;
+        //xsubi_p[0] = 4857;      xsubi_p[1] = 123; xsubi_p[2] = 11001;
+        xsubi_p[0] = 6362;      xsubi_p[1] = 88; xsubi_p[2] = 183;
+
+        iii = 0;
+        for (n = min_n; n <= max_n; ++n)
+        {
+            for (m[0] = 0; m[0] <= n; ++m[0])
+            {
+                m[1] = (n - m[0]);
+                /*fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));*/
+                /*fprintf(stdout, "A%d %e\n", iii,A[iii]);*/
+                A[iii] = random_gaussian(0.0,A_sd,xsubi_a);
+                /*(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);*/
+                phase[iii] = random_gaussian(av_phase,P_sd,xsubi_p);
+                /*(void) printf("\tPhase for mode %d::%g\n",
+                              iii,degrees(phase[iii]));*/
+                for (jjj = 0; jjj < 2; ++jjj)
+                {
+                    nu = (double) m[jjj];
+                    /*(void) printf("\tfrequency for mode %d ",iii);
+                      (void) printf("direction %d::%g\n",jjj,nu);
+                      wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
+                      phase[i] += L[j]*wv_num[i][j];*/
+                    wv_num[iii][jjj] = 2.0*PI*nu/((U[0]-L[0]));
+                    phase[iii] += L[0]*wv_num[iii][jjj];
+                }
+                ++iii;
+            }
+        }
+
+        t = 0.0;
+        sigma = 0.0;
+        for (iii = 0; iii < num_modes; iii++)
+        {
+            arg = 0.0;
+            for (jjj = 0; jjj < dim-1; jjj++)
+                arg += wv_num[iii][jjj]*coords[jjj];
+            arg -= phase[iii];
+            z += A[iii] * exp(sigma*t)*cos(arg);
+        }
+
+        dist = coords[dim-1] - z;
+        /* TODO: this is a quasi-3D implementation FIXME */
+        //COMMENT OUT MENISCUS FOR NOW.
+
+        if (coords[0] > 0.0 && coords[0] < meniscus)
+            dist = dist - dist_line_meniscus(angle, z, meniscus, coords[0]);
+
+        return dist;
+}
+
+
 EXPORT double level_wave_func_cylindrical_init(
 	POINTER func_params,
 	double *coords)
@@ -1771,7 +1879,7 @@ EXPORT double level_wave_func_cylindrical_init(
             for (jjj = 0; jjj < dim-1; jjj++)
                 arg += wv_num[iii][jjj]*coords[jjj];
             arg -= phase[iii];
-            z += A[iii] * exp(sigma*t)*cos(arg);
+            z += A[iii] * exp(sigma*t)*sin(arg);
         }
 
         dist = coords[dim-1] - z;

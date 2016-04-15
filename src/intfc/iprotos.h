@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -156,8 +156,8 @@ IMPORT	int side_of_tri_with_bond(BOND*,TRI*);
 IMPORT	uint64_t	bond_tri_number(BOND_TRI*,INTERFACE*);
 IMPORT	uint64_t	surface_number(SURFACE*);
 IMPORT	uint64_t	tri_number(TRI*,INTERFACE*);
-IMPORT  void 	order_interface(INTERFACE *); 
-IMPORT  void 	delete_scn(SURFACE *); 
+IMPORT  void 	order_interface(INTERFACE *);
+IMPORT  void 	delete_scn(SURFACE *);
 IMPORT  boolean    change_node_of_closed_curve(POINT*, CURVE*);
 IMPORT  void    reset_nodes_posn(INTERFACE *);
 
@@ -568,7 +568,7 @@ IMPORT	boolean	IntfcGetPointChain(POINT*,POINT**,int);
 IMPORT	boolean	i_set_boundary3d(INTERFACE*,RECT_GRID*,COMPONENT,double);
 
 /*	trisurf.c*/
-IMPORT	void	oblique_planar_surface_triangulation(SURFACE*,RECT_GRID*); 
+IMPORT	void	oblique_planar_surface_triangulation(SURFACE*,RECT_GRID*);
 IMPORT	void	planar_hole_surface_triangulation(SURFACE*,RECT_GRID*,
 						  POINT*,POINT*,POINT*,POINT*);
 IMPORT	void	planar_surface_triangulation(SURFACE*,RECT_GRID*,const boolean);
@@ -777,6 +777,8 @@ IMPORT  double  level_wave_func_cyl_simple(POINTER,double*);
 IMPORT  double  level_wave_func_cyl_sphere(POINTER,double*);
 IMPORT  double  level_wave_func_two_sphere(POINTER,double*);
 IMPORT  double  level_wave_func_center_sphere(POINTER,double*);
+// Smeeton Young's Meniscus
+IMPORT  double  level_wave_func_Meniscus(POINTER,double*);
 IMPORT	double 	level_circle_func(POINTER,double*);
 //for RSRV case
 IMPORT  double  random_pert_vd_func(POINTER,double*);
@@ -819,7 +821,7 @@ IMPORT  void    assign_intersection_comp(double (*func_1)(POINTER,double*),
                         POINTER,double (*func_2)(POINTER,double*),POINTER,
                         COMPONENT***,RECT_GRID,COMPONENT,SIDE,SIDE);
 IMPORT  void    make_grid_surfaces(BLK_CRX*,EG_CRX*,int*,boolean);
-IMPORT  void    alloc_grid_crx_mem(EG_CRX*,int*,int,boolean); 
+IMPORT  void    alloc_grid_crx_mem(EG_CRX*,int*,int,boolean);
 IMPORT  void    free_grid_crx_mem(EG_CRX*,boolean);
 IMPORT  boolean    onfront_block(int,int,int,const EG_CRX*);
 IMPORT  boolean    is_curve_crx(COMPONENT,COMPONENT,COMPONENT,COMPONENT);
@@ -932,7 +934,7 @@ IMPORT  boolean    point_within_range(POINT*,double*,double,int);
 #if defined(USE_OVERTURE)
 /*   intfc_amr.c  */
 
-IMPORT void set_amr_intfc_tol(INTERFACE*,double); 
+IMPORT void set_amr_intfc_tol(INTERFACE*,double);
 #endif /* if defined(USE_OVERTURE) */
 
 #ifdef IMESH

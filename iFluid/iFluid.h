@@ -90,7 +90,6 @@ typedef struct {
         double Dcoef2;
         double vol_frac_threshold;
 	double width_idl; //width of initial diffusion layer
-    double contact_angle; // value of contact angle for Smeeton Youngs' Experiment 105
 } IF_PARAMS;
 
 struct _FLOW_THROUGH_PARAMS {

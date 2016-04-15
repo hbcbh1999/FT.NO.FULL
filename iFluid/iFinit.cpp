@@ -233,11 +233,17 @@ static void initRSSYIntfc(
         (void) printf("%12.8g\n",iFparams->smoothing_radius);
 
         // Add Contact Angle for Smeeton Youngs Experiment 105
-        // iFparams->contact_angle == 0 => NO Mensicus
-        iFparams->contact_angle = 0.0;
+        // level_func_params->contact_angle == 0 => NO Mensicus
         CursorAfterString(infile,"Enter the degree of Contact Angle:");
-        fscanf(infile,"%lf",&iFparams->contact_angle);
-        (void) printf("%12.8g\n",iFparams->contact_angle);
+        fscanf(infile,"%lf",&level_func_params.contact_angle);
+        (void) printf("%12.8g\n", level_func_params.contact_angle);
+
+        CursorAfterString(infile,"Enter the starting point of Meniscus:");
+        fscanf(infile,"%lf",&level_func_params.Meniscus);
+        (void) printf("%12.8g\n",level_func_params.Meniscus);
+        //TODO && FIXME: Need to check contact angle and meniscus : if contact angle is 0, then no meniscus.
+        if (level_func_params.contact_angle == 0.0)
+            level_func_params.Meniscus = 0.0;
 
         // TODO && FIXME: This was missing.
         iFparams->width_idl = 0;
@@ -282,7 +288,7 @@ static void initRSSYIntfc(
         /* After this assignment, using level_func_pack->func &
          * level_func_pack->func_params to make level surface */
 
-        level_func_pack->func = level_wave_func_cylindrical_init;
+        level_func_pack->func = level_wave_func_Meniscus;
         fclose(infile);
 }       /* end initRSSYIntfc */
 

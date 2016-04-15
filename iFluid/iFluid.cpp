@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 /*
 *				ifluid.c
 * This program is modified from example0.c for solving incompressible flow.
-* 
+*
 * The solver is define in lcartsn.h/c.
 *
 *
 *	Copyright 1999 by The University at Stony Brook, All rights reserved.
-*	
+*
 *	This example shows a circle in a double vortex field. It demonstrates
 *	the resolution of the front tracking method.
 *
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 
 	FT_Init(argc,argv,&f_basic);//Read parameters from command line
 	f_basic.size_of_intfc_state = sizeof(STATE);
-	
+
 	//Initialize Petsc before the FrontStartUp
 	PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
 	//printf("Passed PetscInitialize()\n");
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 	}
 	else if(f_basic.dim == 3)
 	{
-	    if (f_basic.coord_system == CYLINDRICAL_REMAP) 
+	    if (f_basic.coord_system == CYLINDRICAL_REMAP)
 	    /*
             //Cylindrical coordinate in 3D
 	    {
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	    //Sperical coordinate in 3D, not implemented yet
 	    {
 	    }
-	    else 
+	    else
 	    //Default: Rectangular coordinate in 3D
 	    {
 		if (isTesting)
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
 	FT_InitVeloFunc(&front,&velo_func_pack);
 	if (debugging("trace"))
 	    printf("Passed FT_InitVeloFunc()\n");
-       
+
         if (!isVd)
 	    l_cartesian->initMesh();
         else
@@ -277,9 +277,9 @@ int main(int argc, char **argv)
                 totalNum = get_number_of_blockName(stdout, blockName);
                 printf("number_of_%s = %d\n", blockName, totalNum);
                 long_alloc_view(stdout);
-            }    
+            }
 
- 
+
 	if (debugging("sample_velocity"))
 	    l_cartesian->initSampleVelocity(in_name);
 
@@ -407,7 +407,7 @@ static  void ifluid_driver(
                         "l_cartesian->max_dt = %f\n",front->dt, l_cartesian->max_dt);
             FT_Propagate(front);
 
-	    if (debugging("trace")) 
+	    if (debugging("trace"))
                 (void) printf("Zeroth step: Calling ifluid solve()\n");
             if (!isVd)
                 l_cartesian->solve(front->dt);
@@ -694,10 +694,10 @@ static  void ifluid_driver(
             }
 
 	    FT_AddTimeStepToCounter(front);
-            
+
             if(front->step == 0)
                 front->time = 0;
- 	
+
             //Next time step determined by maximum speed of previous
             //step, assuming the propagation is hyperbolic and
             //is not dependent on second order derivatives of
@@ -714,7 +714,7 @@ static  void ifluid_driver(
 	    if (debugging("step_size"))
                 (void) printf("Time step from l_cartesian->max_dt(): %20.14f\n",
 					front->dt);
-	
+
 
             /* Output section */
 
@@ -760,12 +760,12 @@ static  void ifluid_driver(
             if (FT_IsMovieFrameTime(front))
 	    {
                 //print P-node/state files for making plot
-//                l_cartesian->printInteriorVelocity(out_name);
+                l_cartesian->printInteriorVelocity(out_name);
 
-	    	if (debugging("trace")) 
+	    	if (debugging("trace"))
 		    (void) printf("Calling initMovieVariables()\n");
 	        l_cartesian->initMovieVariables();
-	    	if (debugging("trace")) 
+	    	if (debugging("trace"))
 		    (void) printf("Calling FT_AddMovieFrame()\n");
                 //print P-node/intfc files for making plot
             	FT_AddMovieFrame(front,out_name,binary);

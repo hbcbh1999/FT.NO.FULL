@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -97,7 +97,7 @@ typedef	enum {
 #define d_index(icoords,gmax,dim)                               \
         ((dim) == 1 ? d_index1d((icoords[0]),(gmax)) :          \
          (dim) == 2 ? d_index2d((icoords[0]),(icoords[1]),(gmax)) :     \
-         d_index3d((icoords[0]),(icoords[1]),(icoords[2]),(gmax)))	
+         d_index3d((icoords[0]),(icoords[1]),(icoords[2]),(gmax)))
 
 
 		/* Structure Defining a Regular Rectangular Grid: */
@@ -120,7 +120,7 @@ typedef	enum {
 *
 *	Which is just the combined length of the edge and dl uni_arrays.
 *	This storage should be mapped out as follows
-*	
+*
 *	edge[0] = glstore + lb[0]
 *	edge[i]   = edge[i-1]   + gmax[i-1]   + ub[i-1]   + 1 + lb[i]	(i > 0)
 *	dl[0]     = edge[dim-1] + gmax[dim-1] + ub[dim-1] + 1 + lb[0]
@@ -186,7 +186,7 @@ struct _RECT_GRID {
 	    /*grid cell area*/
 	    double          (*Area)(const double*,const struct _RECT_GRID*);
 	} Remap;
-}; 
+};
 typedef struct _RECT_GRID RECT_GRID;
 
 struct _COMM_BOX {
@@ -308,9 +308,9 @@ typedef enum {
 *
 *	           num_modes-1
 *		     -----
-*		     \                                 
+*		     \
 *	z(p) = z0 +   \     A[k]*sin(<nu[k],p>) + phase[k])
-*		      /                                
+*		      /
 *		     /
 *		     -----
 *	             k = 0
@@ -321,7 +321,7 @@ enum _PERT_BDRY_TYPE {
         PERIODIC,
         SYMMETRIC,
         UNMODIFIED
-};          
+};
 typedef enum _PERT_BDRY_TYPE PERT_BDRY_TYPE;
 
 typedef struct {
@@ -336,6 +336,9 @@ typedef struct {
 	//for RS_RV case
         int    num_modes_x;
         double *vel_A, *vel_phase;
+    //for Smeeton Young's Experiment 105: Contact Angle and Meniscus
+    double contact_angle;
+    double Meniscus;
         PERT_BDRY_TYPE  pert_bdry_type[3];
 } FOURIER_POLY;
 
@@ -351,9 +354,9 @@ typedef struct _RANDOM_PARAMS_VD RANDOM_PARAMS_VD;
 *
 *		        max_degree
 *			 -----
-*		         \                                 
+*		         \
 *		r(x) =    \     A[n]*P (x)
-*			  /           n                    
+*			  /           n
 *			 /
 *			 -----
 *		         n = 0
@@ -411,17 +414,17 @@ typedef struct {
 
 typedef struct {
 	/* equation for line is a*x + b*y = c */
-        double a;		
-        double b;		
-        double c;		
+        double a;
+        double b;
+        double c;
 } LINE_PARAMS;
 
 typedef struct {
 	/* equation for line is x^2/a^2 + y^2/b^2 = 1 */
-        double x0;		
-        double y0;		
-        double a;		
-        double b;		
+        double x0;
+        double y0;
+        double a;
+        double b;
 } ELLIP2D_PARAMS;
 
 typedef struct {
@@ -486,11 +489,11 @@ typedef struct {
 
 typedef struct {
 	/* equation for line is x^2/a^2 + y^2/b^2 = 1 */
-        double x0;		
-        double y0;		
-        double r;		
-        double w;		
-        double h;		
+        double x0;
+        double y0;
+        double r;
+        double w;
+        double h;
 } TDISK_PARAMS;
 
 typedef struct {
@@ -504,7 +507,7 @@ typedef struct {
         int           num_ellip;
         double         **cen;            /* Center of Ellipsoid 1 */
         double         **rad;            /* Lengths of radii 1 */
-        ORIENTATION   nor_orient;       /* Specifies inward or outward normal */        
+        ORIENTATION   nor_orient;       /* Specifies inward or outward normal */
         int           dim;              /* Dimension of embedding space */
         RECT_GRID     *gr;
 } M_ELLIP_PARAMS;
