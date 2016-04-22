@@ -17,7 +17,7 @@ CFL factor: 0.75
 Type y to use the Fast Merge Algorithm: n
 Type y to turn on turbulence model: n
 Type y to turn on the point propagation reduction in the thin film: n
-Point propagation reduction parameter: 5
+Point propagation reduction parameter: 0
 Thin film thickness parameter: 0
 Redistribution interval: 5
 Type yes to turn off auto-redistribution: n
@@ -36,21 +36,21 @@ Projection type can be
         KIM_MOIN
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
-Enter mean position of fluid interface: 7.5
+Enter mean position of fluid interface: 10.0
 Enter the minimum mode numbers: 12
 Enter the maximum mode numbers: 24
 Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
-Enter the degree of Contact Angle: 0
-Enter the starting point of Meniscus: 0
+Enter the degree of Contact Angle: 45
+Enter the starting point of Meniscus: 0.1
 
 Choices for the perturbation boundary type are
         PERIODIC
         SYMMETRIC
         UNMODIFIED
-Enter the boundary type of perturbation in direction 0: PERIODIC
-Enter the boundary type of perturbation in direction 1: PERIODIC
+Enter the boundary type of perturbation in direction 0: SYMMETRIC
+Enter the boundary type of perturbation in direction 1: SYMMETRIC
 Enter density and viscosity of fluid 1: 0.0739 0.00000363
 Enter density and viscosity of fluid 2: 0.626 0.00000363
 Enter concentration and binary diffusivity of fluid 1: 0.0 0.000000018

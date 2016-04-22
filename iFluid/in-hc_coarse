@@ -37,12 +37,11 @@ Projection type can be
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
 Enter mean position of fluid interface: 12
-Enter the number of modes in the initial interface: 61
-Enter the number of modes in x-direction: 25
-Enter the name of the file containing the initial interface perturbation data in the x - direction. The full directory path name of the file is preferred: /global/u2/w/whu/FronTier-mac_RT_sgs/iFluid/x_init.txt
-Enter the name of the file containing the initial interface perturbation data in the y - direction. The full directory path name of the file is preferred: /global/u2/w/whu/FronTier-mac_RT_sgs/iFluid/y_init.txt
-Enter the name of the file containing the initial velocity amplitude data. The full directory path name of the file is preferred: /global/u2/w/whu/FronTier-mac_RT_sgs/iFluid/vx_init.txt
-Input the seed for the random number generator: 3429
+Enter the minimum mode numbers: 40
+Enter the maximum mode numbers: 60
+Enter the amplitude standard deviation: 1e-04
+Enter the average phase: 0
+Enter the phase standard deviation: 90
 Choices for the perturbation boundary type are
         PERIODIC
         SYMMETRIC

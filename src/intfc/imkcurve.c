@@ -1781,7 +1781,7 @@ EXPORT double level_wave_func_Meniscus(
                       (void) printf("direction %d::%g\n",jjj,nu);
                       wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
                       phase[i] += L[j]*wv_num[i][j];*/
-                    wv_num[iii][jjj] = 2.0*PI*nu/((U[0]-L[0]));
+                    wv_num[iii][jjj] = 2.0*PI*nu/((U[jjj]-L[jjj]));
                     phase[iii] += L[0]*wv_num[iii][jjj];
                 }
                 ++iii;
@@ -1800,10 +1800,7 @@ EXPORT double level_wave_func_Meniscus(
         }
 
         dist = coords[dim-1] - z;
-        /* TODO: this is a quasi-3D implementation FIXME */
-        //COMMENT OUT MENISCUS FOR NOW.
-
-        if (coords[0] > 0.0 && coords[0] < meniscus)
+        if ((coords[0] > 0.0 && coords[0] < meniscus))
             dist = dist - dist_line_meniscus(angle, z, meniscus, coords[0]);
 
         return dist;
@@ -1864,7 +1861,7 @@ EXPORT double level_wave_func_cylindrical_init(
                       (void) printf("direction %d::%g\n",jjj,nu);
                       wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
                       phase[i] += L[j]*wv_num[i][j];*/
-                    wv_num[iii][jjj] = 2.0*PI*nu/((U[0]-L[0]));
+                    wv_num[iii][jjj] = 2.0*PI*nu/((U[iii]-L[jjj]));
                     phase[iii] += L[0]*wv_num[iii][jjj];
                 }
                 ++iii;

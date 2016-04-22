@@ -1071,6 +1071,8 @@ protected:
         //Reflection Boundary Condition
         void Solute_Reflect(int, double*);
         void ReflectBC(int, int, int, int*, int*, int*, double*);
+        void ReflectBC_DEBUG(int, int, int, int*, int*, int*, double*);
+        void debugPrintStates(int, int, int, int);
 };
 
 
