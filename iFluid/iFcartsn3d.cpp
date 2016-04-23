@@ -11521,15 +11521,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 }
             }
 
-            //z_intfc_pert = pert_interface_vd(pert,coords,0,dim); //TODO: should call "pert_height_vd"
+            z_intfc_pert = pert_interface_vd(pert,coords,0,dim); //TODO: should call "pert_height_vd"
             //For SY
-            double dist = level_wave_func_cylindrical_init(pert, coords);
+            //double dist = level_wave_func_cylindrical_init(level_func_pack->func_params, coords);
 
-            //cell_center[index].m_state.m_rho = 0.5*(m_rho[0]+m_rho[1]) + 0.5*(m_rho[0]-m_rho[1])*
-            //                                   erf((coords[dim-1]-z0 + z_intfc_pert-z0)/initial_diff_layer*2.0);
+            cell_center[index].m_state.m_rho = 0.5*(m_rho[0]+m_rho[1]) + 0.5*(m_rho[0]-m_rho[1])*
+                                               erf((coords[dim-1]-z0 + z_intfc_pert-z0)/initial_diff_layer*2.0);
 //                                               erf((coords[dim-1]-z_intfc_pert)/initial_diff_layer*2.0)
             //For SY
-            cell_center[index].m_state.m_rho = 0.5*(m_rho[0]+m_rho[1]) + 0.5*(m_rho[0]-m_rho[1])*erf(dist/initial_diff_layer*4.0);
+            //cell_center[index].m_state.m_rho = 0.5*(m_rho[0]+m_rho[1]) + 0.5*(m_rho[0]-m_rho[1])*erf(dist/initial_diff_layer*4.0);
             cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
             //define dynamic mu = rho*(mu0+mu1)/(rho0+rho1) as eqn. (3.3) of Mueschke thesis
             mu = cell_center[index].m_state.m_rho*(m_mu[0]+m_mu[1])/(m_rho[0]+m_rho[1]);
@@ -12827,8 +12827,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
             pointsy = 1;
             pointsx = gmax[0] + 1;
             totalpoints = pointsx*pointsy*pointsz;
-            fprintf(outfile1, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
-            fprintf(outfile1, "POINTS %d double\n", totalpoints);
+            fprintf(outfile2, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
+            fprintf(outfile2, "POINTS %d double\n", totalpoints);
             j = 0;
             for(i = 0; i <= pointsx-1; ++i)
             for(k = 0; k <= pointsz-1; ++k)
@@ -12836,7 +12836,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
                 coord_x = gr->GL[0] + i*top_h[0];
                 coord_y = gr->GL[1] + j*top_h[1];
                 coord_z = gr->GL[2] + k*top_h[2];
-                fprintf(outfile1, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
+                fprintf(outfile2, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
             }
             fclose(outfile2);
 
@@ -12850,8 +12850,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
             pointsy = gmax[1] + 1;
             pointsx = gmax[0] + 1;
             totalpoints = pointsx*pointsy*pointsz;
-            fprintf(outfile1, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
-            fprintf(outfile1, "POINTS %d double\n", totalpoints);
+            fprintf(outfile3, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
+            fprintf(outfile3, "POINTS %d double\n", totalpoints);
             k = 0;
             for(i = 0; i <= pointsx-1; ++i)
             for(j = 0; j <= pointsy-1; ++j)
@@ -12859,7 +12859,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
                 coord_x = gr->GL[0] + i*top_h[0];
                 coord_y = gr->GL[1] + j*top_h[1];
                 coord_z = gr->GL[2] + k*top_h[2];
-                fprintf(outfile1, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
+                fprintf(outfile3, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
             }
             fclose(outfile3);
 
@@ -12873,8 +12873,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
             pointsy = gmax[1] + 1;
             pointsx = 1;
             totalpoints = pointsx*pointsy*pointsz;
-            fprintf(outfile1, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
-            fprintf(outfile1, "POINTS %d double\n", totalpoints);
+            fprintf(outfile4, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
+            fprintf(outfile4, "POINTS %d double\n", totalpoints);
             i = gmax[0];
             for(j = 0; j <= pointsy-1; ++j)
             for(k = 0; k <= pointsz-1; ++k)
@@ -12882,7 +12882,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
                 coord_x = gr->GL[0] + i*top_h[0];
                 coord_y = gr->GL[1] + j*top_h[1];
                 coord_z = gr->GL[2] + k*top_h[2];
-                fprintf(outfile1, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
+                fprintf(outfile4, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
             }
             fclose(outfile4);
 
@@ -12896,8 +12896,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
             pointsy = 1;
             pointsx = gmax[0] + 1;
             totalpoints = pointsx*pointsy*pointsz;
-            fprintf(outfile1, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
-            fprintf(outfile1, "POINTS %d double\n", totalpoints);
+            fprintf(outfile5, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
+            fprintf(outfile5, "POINTS %d double\n", totalpoints);
             j = gmax[1];
             for(i = 0; i <= pointsx-1; ++i)
             for(k = 0; k <= pointsz-1; ++k)
@@ -12905,7 +12905,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
                 coord_x = gr->GL[0] + i*top_h[0];
                 coord_y = gr->GL[1] + j*top_h[1];
                 coord_z = gr->GL[2] + k*top_h[2];
-                fprintf(outfile1, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
+                fprintf(outfile5, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
             }
             fclose(outfile5);
 
@@ -12919,8 +12919,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
             pointsy = gmax[1] + 1;
             pointsx = gmax[0] + 1;
             totalpoints = pointsx*pointsy*pointsz;
-            fprintf(outfile1, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
-            fprintf(outfile1, "POINTS %d double\n", totalpoints);
+            fprintf(outfile6, "DIMENSIONS %d %d %d\n", pointsz, pointsy, pointsx);
+            fprintf(outfile6, "POINTS %d double\n", totalpoints);
             k = gmax[2];
             for(i = 0; i <= pointsx-1; ++i)
             for(j = 0; j <= pointsy-1; ++j)
@@ -12928,7 +12928,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printExpandedMesh_ascii(char *out_na
                 coord_x = gr->GL[0] + i*top_h[0];
                 coord_y = gr->GL[1] + j*top_h[1];
                 coord_z = gr->GL[2] + k*top_h[2];
-                fprintf(outfile1, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
+                fprintf(outfile6, "%.16g %.16g %.16g\n", coord_x, coord_y, coord_z);
             }
             fclose(outfile6);
         }
@@ -15550,6 +15550,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             start_clock("compSGS");
             //Subgrid-scale model for vd
+            //TODO && FIXME: Smeeton Young 105s don't need SGS term.
             computeSubgridModel_vd();
             stop_clock("compSGS");
 

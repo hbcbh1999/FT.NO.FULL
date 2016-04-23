@@ -574,7 +574,7 @@ static void initRSRVIntfc(
 
         level_func_pack->func_params = (POINTER)&level_func_params;
         //level_func_pack->func = random_pert_vd_func;
-        level_func_pack->func = level_wave_func_cylindrical_init;
+        level_func_pack->func = level_wave_func_cylindrical;
         fclose(infile);
 } /* end initRSRVIntfc */
 
