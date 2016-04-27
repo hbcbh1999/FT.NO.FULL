@@ -1,7 +1,7 @@
 Domain limit in 0-th dimension: 0 1.875
-Domain limit in 1-th dimension: 0 1.875
-Domain limit in 2-th dimension: 0 15.0
-Computational grid: 36 36 288
+Domain limit in 1-th dimension: 0 0.625
+Domain limit in 2-th dimension: 0 3.75
+Computational grid: 36 12 72 
 Lower boundary in 0-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 0-th dimension: REFLECTION_BOUNDARY
 Lower boundary in 1-th dimension: REFLECTION_BOUNDARY
@@ -36,7 +36,7 @@ Projection type can be
         KIM_MOIN
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
-Enter mean position of fluid interface: 7.5
+Enter mean position of fluid interface: 1.875
 Enter the minimum mode numbers: 1
 Enter the maximum mode numbers: 1
 Enter the amplitude standard deviation: 1e-04
@@ -49,8 +49,8 @@ Choices for the perturbation boundary type are
         PERIODIC
         SYMMETRIC
         UNMODIFIED
-Enter the boundary type of perturbation in direction 0: UNMODIFIED
-Enter the boundary type of perturbation in direction 1: UNMODIFIED
+Enter the boundary type of perturbation in direction 0: SYMMETRIC
+Enter the boundary type of perturbation in direction 1: SYMMETRIC
 Enter density and viscosity of fluid 1: 0.0739 0.00000363
 Enter density and viscosity of fluid 2: 0.626 0.00000363
 Enter concentration and binary diffusivity of fluid 1: 1.0 0.000000018
