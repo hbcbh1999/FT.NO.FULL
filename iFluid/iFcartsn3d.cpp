@@ -4,6 +4,9 @@
 #include "iFluid.h"
 #include "solver.h"
 
+// keep tracking velocities
+static int countingnow = 0;
+
 //--------------------------------------------------------------------------
 // 		   Incompress_Solver_Smooth_3D_Cartesian
 //--------------------------------------------------------------------------
@@ -12164,6 +12167,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             }
         }
 //TODO && FIXME:
+/*
         for (l = 0; l < dim; ++l)
         {
             for (k = 0; k <= top_gmax[2]; k++)
@@ -12174,7 +12178,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 cell_center[index].m_state.m_U_velo_var[l] = 0;
             }
         }
-
+*/
 
         //calc div_U before adding diffusion velo to U
         for (l = 0; l < dim; ++l)
@@ -21240,4 +21244,51 @@ void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
               ReflectBC_DEBUG(dim, dir, side, gmax, lbuf, ubuf, solute);
          }
      }
+}
+
+// TODO && FIXME: print out velocity and feed it to Smeeton Youngs 105 Experiment
+// This is to check divergence.
+extern void saveOutputVelocity(double** vel,
+        int dim,
+        int *top_gmax)
+{
+    FILE *fp;
+    int i, j, k, l, index;
+    char name[256];
+    sprintf(name, "RSRV-Velocity-%d",countingnow);
+    fp = fopen(name, "w+");
+    for (l = 0; l < dim; ++l)
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        fprintf(fp, "%.16g\n", vel[l][index]);
+    }
+    fclose(fp);
+    printf("Velocities were filled up in file. EXIT! \n");
+    countingnow += 1;
+}
+
+// TODO && FIXME: get  velocity and feed it to Smeeton Youngs 105 Experiment
+// This is to check divergence.
+void Incompress_Solver_Smooth_3D_Cartesian::readOutputVelocity(double **vel)
+{
+    FILE *fp;
+    int i, j, k, l, index;
+    double tmpvel;
+    char name[256];
+    sprintf(name, "RSRV-Velocity-%d",countingnow);
+    fp = fopen(name, "w+");
+    for (l = 0; l < dim; ++l)
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        fscanf(fp, "%.16g", &tmpvel);
+        vel[l][index] = cell_center[index].m_state.m_U[l] = tmpvel;
+    }
+    fclose(fp);
+    printf("Velocities from RS-RV were read. \n");
 }

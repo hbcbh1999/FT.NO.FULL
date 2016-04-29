@@ -1938,7 +1938,7 @@ EXPORT double level_wave_func_cylindrical(
                       (void) printf("direction %d::%g\n",jjj,nu);
                       wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
                       phase[i] += L[j]*wv_num[i][j];*/
-                    wv_num[iii][jjj] = 2.0*PI*nu/((U[0]-L[0]));
+                    wv_num[iii][jjj] = 2.0*PI*nu/((U[jjj]-L[jjj]));
                     phase[iii] += L[0]*wv_num[iii][jjj];
                 }
                 ++iii;

@@ -1073,6 +1073,8 @@ protected:
         void ReflectBC(int, int, int, int*, int*, int*, double*);
         void ReflectBC_DEBUG(int, int, int, int*, int*, int*, double*);
         void debugPrintStates(int, int, int, int);
+        //Check divergence free
+        void readOutputVelocity(double**);
 };
 
 
@@ -1320,5 +1322,8 @@ extern void fluid_read_front_states_vd(FILE*,Front*,bool);
 extern void read_iF_movie_options(char*,IF_PARAMS*);
 extern void read_iF_dirichlet_bdry_data(char*,Front*,F_BASIC_DATA);
 extern boolean isDirichletPresetBdry(Front*,int*,GRID_DIRECTION,COMPONENT);
+//divergence free check
+extern void saveOutputVelocity(double**, int, int*);
+void readOutputVelocity(double**, int, int*);
 
 #endif

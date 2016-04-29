@@ -10,7 +10,7 @@ Lower boundary in 2-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 2-th dimension: REFLECTION_BOUNDARY
 
 Max time: 120
-Max step: 880
+Max step: 88
 Print interval: 1.0
 Movie frame interval: 1.0
 CFL factor: 0.45
@@ -42,8 +42,8 @@ Enter the maximum mode numbers: 1
 Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
-Enter the degree of Contact Angle: 45
-Enter the starting point of Meniscus: 0.2
+Enter the degree of Contact Angle: 0
+Enter the starting point of Meniscus: 0.0
 
 Choices for the perturbation boundary type are
         PERIODIC
