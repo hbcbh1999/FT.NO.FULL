@@ -16038,14 +16038,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
             {
                 outfile = fopen(filename,"w");
                 //fprintf(outfile,"  ts     time         tau          Agt2       hb_intfc     hs_intfc      hb_vf        hs_vf        theta1       theta2    var(u)/AgH                 var(v)/AgH   var(w)/AgH   raw_variances\n");
-                fprintf(outfile, "ts    time        t2      bubblecorner        spikecorner         bubbleedge          spikeedge\n");
+                fprintf(outfile, "time        t2      bubblecorner        spikecorner         bubbleedge          spikeedge\n");
             }
             else {
                 outfile = fopen(filename,"a");
             }
             //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu-mean_u*mean_u)/fabs(A*g*H),(mean_vv-mean_v*mean_v)/fabs(A*g*H),(mean_ww-mean_w*mean_w)/fabs(A*g*H),(mean_uu_raw-mean_u_raw*mean_u_raw)/fabs(A*g*H),(mean_vv_raw-mean_v_raw*mean_v_raw)/fabs(A*g*H),(mean_ww_raw-mean_w_raw*mean_w_raw)/fabs(A*g*H));
             //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu_raw-mean_u_raw*mean_u_raw),(mean_vv_raw-mean_v_raw*mean_v_raw),(mean_ww_raw-mean_w_raw*mean_w_raw),(mean_uw_raw-mean_u_raw*mean_w_raw),(mean_vw_raw-mean_v_raw*mean_w_raw));
-            fprintf(outfile, "%4d %e %e %e %e %e %e\n", front->step, front->time, front->time*front->time, h_bubble_corner, h_spike_corner, h_bubble_edge, h_spike_edge);
+            fprintf(outfile, "%e %e %e %e %e %e\n", front->time, front->time*front->time, h_bubble_corner, h_spike_corner, h_bubble_edge, h_spike_edge);
 
             fclose(outfile);
         }

@@ -1786,6 +1786,7 @@ EXPORT double level_wave_func_Meniscus(
 
         dim = wave_params->dim;
         z = wave_params->z0;
+/*
         av_phase = radians(av_phase);
         P_sd = radians(P_sd);
         num_modes = (max_n+2)*(max_n+1)/2 - min_n*(min_n+1)/2;
@@ -1800,20 +1801,20 @@ EXPORT double level_wave_func_Meniscus(
             for (m[0] = 0; m[0] <= n; ++m[0])
             {
                 m[1] = (n - m[0]);
-                /*fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));*/
-                /*fprintf(stdout, "A%d %e\n", iii,A[iii]);*/
+                //fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));
+                //fprintf(stdout, "A%d %e\n", iii,A[iii]);
                 A[iii] = random_gaussian(0.0,A_sd,xsubi_a);
-                /*(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);*/
+                //(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);
                 phase[iii] = random_gaussian(av_phase,P_sd,xsubi_p);
-                /*(void) printf("\tPhase for mode %d::%g\n",
-                              iii,degrees(phase[iii]));*/
+                //(void) printf("\tPhase for mode %d::%g\n",
+                    //          iii,degrees(phase[iii]));
                 for (jjj = 0; jjj < 2; ++jjj)
                 {
                     nu = (double) m[jjj];
-                    /*(void) printf("\tfrequency for mode %d ",iii);
-                      (void) printf("direction %d::%g\n",jjj,nu);
-                      wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
-                      phase[i] += L[j]*wv_num[i][j];*/
+                    //(void) printf("\tfrequency for mode %d ",iii);
+                    //  (void) printf("direction %d::%g\n",jjj,nu);
+                    //  wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
+                    //  phase[i] += L[j]*wv_num[i][j];
                     wv_num[iii][jjj] = 2.0*PI*nu/((U[jjj]-L[jjj]));
                     phase[iii] += L[0]*wv_num[iii][jjj];
                 }
@@ -1831,7 +1832,7 @@ EXPORT double level_wave_func_Meniscus(
             arg -= phase[iii];
             z += A[iii] * exp(sigma*t)*cos(arg);
         }
-
+*/
         dist = coords[dim-1] - z;
         // TODO && FIXME: copy 3D meniscus back here.
         if (areaOne(coords[0], coords[1], meniscus))
