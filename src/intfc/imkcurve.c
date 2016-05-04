@@ -96,7 +96,8 @@ LOCAL   double adjust_for_z_grid_spacing(double,double,double);
 
 //for Meniscus Linear Profile
 LOCAL   double dist_line_meniscus(double,double,double,double);
-
+LOCAL   boolean areaOne(double,double,double);
+LOCAL   boolean areaTwo(double,double,double);
 
 //meniscus linear profile function
 // Three points
@@ -105,17 +106,47 @@ LOCAL   double dist_line_meniscus(double,double,double,double);
 // where b is -meniscus/tan(alpha)
 LOCAL  double dist_line_meniscus(
             double angle,
-            double z0,
             double meniscus,
-            double x )
+            double x,
+            double y)
 {
      angle = angle * 1.0 / 180.0 * PI;
-     double a = 0.5 * PI + angle;
-     double slope = tan(a);
-     return slope * (x - meniscus);
+     double tmp = meniscus - y;
+     double anotherangle = PI * 1.0 / 2.0 - angle;
+     if (anotherangle < 0.0)
+     {
+         printf("contact angle larger than PI/2 not support yet!\n");
+         fflush(stdout);
+         clean_up(ERROR);
+     }
+     double height = tan(anotherangle) * tmp;
+     return height;
 }
 
+LOCAL boolean areaOne(double x, double y, double meniscus)
+{
 
+    if (y >= 0.0 && y <= meniscus)
+    {
+        if ((x >= 0.0 && x <= meniscus) && y >= x)
+            return NO;
+        return YES;
+    }
+    else
+        return NO;
+}
+
+LOCAL boolean areaTwo(double x, double y, double meniscus)
+{
+    if (x >= 0.0 && x <= meniscus)
+    {
+        if ((y >= 0.0 && y <= meniscus) && y < x)
+            return NO;
+        return YES;
+    }
+    else
+        return NO;
+}
 #define		MAX_NUM_SEGMENTS		100
 
 
@@ -1724,6 +1755,8 @@ EXPORT double level_wave_func_cyl_sphere(
         return dist;
 }
 
+
+// TODO && FIXME: No Fourier Node, No Bubble.
 EXPORT double level_wave_func_Meniscus(
         POINTER func_params,
         double *coords)
@@ -1800,10 +1833,19 @@ EXPORT double level_wave_func_Meniscus(
         }
 
         dist = coords[dim-1] - z;
-        if ((coords[0] > 0.0 && coords[0] < meniscus))
-            dist = dist - dist_line_meniscus(angle, z, meniscus, coords[0]);
-
-        return dist;
+        // TODO && FIXME: copy 3D meniscus back here.
+        if (areaOne(coords[0], coords[1], meniscus))
+        {
+            dist = dist - dist_line_meniscus(angle, meniscus, coords[0], coords[1]);
+            return dist;
+        }
+        else if (areaTwo(coords[0], coords[1], meniscus))
+        {
+            dist = dist - dist_line_meniscus(angle, meniscus, coords[1], coords[0]);
+            return dist;
+        }
+        else
+            return dist;
 }
 
 

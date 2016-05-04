@@ -1,7 +1,7 @@
 Domain limit in 0-th dimension: 0 1.875
 Domain limit in 1-th dimension: 0 0.625
 Domain limit in 2-th dimension: 0 3.75
-Computational grid: 36 12 72 
+Computational grid: 36 12 72
 Lower boundary in 0-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 0-th dimension: REFLECTION_BOUNDARY
 Lower boundary in 1-th dimension: REFLECTION_BOUNDARY
@@ -42,8 +42,8 @@ Enter the maximum mode numbers: 1
 Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
-Enter the degree of Contact Angle: 0
-Enter the starting point of Meniscus: 0.0
+Enter the degree of Contact Angle: 45
+Enter the starting point of Meniscus: 0.3
 
 Choices for the perturbation boundary type are
         PERIODIC
