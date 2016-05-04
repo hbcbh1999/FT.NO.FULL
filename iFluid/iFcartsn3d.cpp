@@ -15654,12 +15654,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
         double h_bubble_vf,h_spike_vf; //bubble/spike height of n% volume fraction contour
         //H = 32cm is the vertical height of the water channel
         //refer to Eq. (18) of Mueschke's paper in 2009
-        double H = 32.0;
+        double H = 32.0;//TODO: This is hard-wired. NEED TO BE FIXME: Be aware of the unit
         FILE *outfile;
         double z_coord,max_dens,min_dens,Dens;
         double sum_vf1,sum_vf2,sum_vf1vf2,mean_vf1,mean_vf2,mean_vf1vf2;
         double usum_vf1,usum_vf2,usum_vf1vf2,umean_vf1,umean_vf2,umean_vf1vf2;
         double vf1,vf2,vf1vf2,uvf1,uvf2,uvf1vf2;
+        double h_bubble_corner, h_spike_corner, h_bubble_edge, h_spike_edge;// This is new measurement based on Glimm's new discovery.
+        double zmax_bubble_corner = -HUGE, zmin_spike_corner = HUGE, zmax_bubble_edge = -HUGE, zmin_spike_edge = HUGE;
 
 	z0 = (GL[dim-1] + GU[dim-1])/2.0;
         A = fabs(m_rho[1]-m_rho[0])/(m_rho[1]+m_rho[0]);
@@ -15714,6 +15716,22 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
                                 zmax = crds[dim-1];
                             if (crds[dim-1] < zmin)
                                 zmin = crds[dim-1];
+                            //TODO: corner value 0 < x < dh[0]
+                            if (crds[0] > 0.0  && crds[0] < rgr->h[0])
+                            {
+                                if (crds[dim-1] > zmax_bubble_corner)
+                                    zmax_bubble_corner = crds[dim-1];
+                                if (crds[dim-1] < zmin_spike_corner)
+                                    zmin_spike_corner = crds[dim-1];
+                            }
+                            //TODO: edge value 0 < y < dh[1]
+                            if (crds[1] > 0.0 && crds[1] < rgr->h[1])
+                            {
+                                 if (crds[dim-1] > zmax_bubble_edge)
+                                     zmax_bubble_edge = crds[dim-1];
+                                 if (crds[dim-1] < zmin_spike_edge)
+                                     zmin_spike_edge = crds[dim-1];
+                            }
                         }
                     }
                 }
@@ -15721,9 +15739,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
         }
         pp_global_max(&zmax,1);
         pp_global_min(&zmin,1);
+        pp_global_max(&zmax_bubble_corner,1);
+        pp_global_max(&zmax_bubble_edge,1);
+        pp_global_min(&zmin_spike_corner,1);
+        pp_global_min(&zmin_spike_edge,1);
 	// store zmax and zmin
 	zmax_intfc = zmax;
 	zmin_intfc = zmin;
+    // store corner value and edge value
         if (debugging("glayer"))
         {
             printf("\n\tzmin_intfc = %lf\n", zmin);
@@ -15731,6 +15754,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
         }
         h_bubble_intfc = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
         h_spike_intfc = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
+        //corner value
+        h_bubble_corner = (m_rho[0]<m_rho[1]) ? fabs(zmin_spike_corner-z0):fabs(zmax_bubble_corner-z0);
+        h_spike_corner = (m_rho[0]<m_rho[1]) ? fabs(zmax_bubble_corner-z0):fabs(zmin_spike_corner-z0);
+        //edge value
+        h_bubble_edge = (m_rho[0]<m_rho[1]) ? fabs(zmin_spike_edge-z0):fabs(zmax_bubble_edge-z0);
+        h_spike_edge = (m_rho[0]<m_rho[1]) ? fabs(zmax_bubble_edge-z0):fabs(zmin_spike_edge-z0);
 
 
 	//2. get bubble/spike height of volume fraction contour
@@ -16008,13 +16037,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
             if (front->step == 0)
             {
                 outfile = fopen(filename,"w");
-                fprintf(outfile,"  ts     time         tau          Agt2       hb_intfc     hs_intfc      hb_vf        hs_vf        theta1       theta2    var(u)/AgH                 var(v)/AgH   var(w)/AgH   raw_variances\n");
+                //fprintf(outfile,"  ts     time         tau          Agt2       hb_intfc     hs_intfc      hb_vf        hs_vf        theta1       theta2    var(u)/AgH                 var(v)/AgH   var(w)/AgH   raw_variances\n");
+                fprintf(outfile, "ts    time        t2      bubblecorner        spikecorner         bubbleedge          spikeedge\n");
             }
             else {
                 outfile = fopen(filename,"a");
             }
             //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu-mean_u*mean_u)/fabs(A*g*H),(mean_vv-mean_v*mean_v)/fabs(A*g*H),(mean_ww-mean_w*mean_w)/fabs(A*g*H),(mean_uu_raw-mean_u_raw*mean_u_raw)/fabs(A*g*H),(mean_vv_raw-mean_v_raw*mean_v_raw)/fabs(A*g*H),(mean_ww_raw-mean_w_raw*mean_w_raw)/fabs(A*g*H));
-            fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu_raw-mean_u_raw*mean_u_raw),(mean_vv_raw-mean_v_raw*mean_v_raw),(mean_ww_raw-mean_w_raw*mean_w_raw),(mean_uw_raw-mean_u_raw*mean_w_raw),(mean_vw_raw-mean_v_raw*mean_w_raw));
+            //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu_raw-mean_u_raw*mean_u_raw),(mean_vv_raw-mean_v_raw*mean_v_raw),(mean_ww_raw-mean_w_raw*mean_w_raw),(mean_uw_raw-mean_u_raw*mean_w_raw),(mean_vw_raw-mean_v_raw*mean_w_raw));
+            fprintf(outfile, "%4d %e %e %e %e %e %e\n", front->step, front->time, front->time*front->time, h_bubble_corner, h_spike_corner, h_bubble_edge, h_spike_edge);
 
             fclose(outfile);
         }
