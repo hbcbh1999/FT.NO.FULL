@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -260,7 +260,7 @@ IMPORT	void	show_grid_components(int*,int*,int,INTERFACE*);
 IMPORT	void	show_line_components3d(int*, int*, int, INTERFACE*);
 IMPORT	void 	show_the_grid_comp(const char*,INTERFACE*);
 IMPORT	void	adjust_grid_intfc_points(INTERFACE*);
-	
+
 	/* finit.c*/
 IMPORT	void	f_read_print_front_options(INIT_DATA*,Front*);
 IMPORT	boolean	f_read_print_max_front_speed_info(INIT_DATA*,const IO_TYPE*,
@@ -506,7 +506,7 @@ IMPORT	void    find_position_along_wall(double*,TN*,double,const Tparams*,
 				Front*);
 IMPORT  void    print_TN(TN*);
 IMPORT  void    print_Tparams(const char*, Tparams*);
-IMPORT	boolean	f_tan_point_propagate(Front*,POINT*,POINT*, 
+IMPORT	boolean	f_tan_point_propagate(Front*,POINT*,POINT*,
 				HYPER_SURF_ELEMENT*,HYPER_SURF*,double,int);
 IMPORT  boolean set_up_tangent_params(Front*,POINT*,HYPER_SURF_ELEMENT*,
                                 HYPER_SURF*,Tparams*);
@@ -668,7 +668,7 @@ IMPORT	void	delete_subdomain_boundaries(INTERFACE*);
 IMPORT	void 	clip_front_to_subdomain(Front*);
 IMPORT  void    clip_front_to_rect_boundary_type(Front*);
 IMPORT	void 	set_front_pp_grid(INIT_DATA*,Front*);
-IMPORT  void    scatter_top_grid_float_array(double*,Front*);
+IMPORT  void    scatter_top_grid_float_array(double*,Front*,int*);// Introduce one more param int* for REFLECTION BOUNDARY CONDITION
 IMPORT  void    scatter_cell_index(Front*,int*,int*,POINTER);
 IMPORT	boolean	cpu_adapt_front(Front*,double,int*,int*);
 IMPORT	boolean	f_intfc_communication1d(Front*);
@@ -687,7 +687,7 @@ IMPORT  void    set_cut_none_local_flag(int);
 IMPORT  int     get_cut_none_local_flag(void);
 IMPORT  void    set_min_sc_sep_val_flag(int);
 IMPORT  void    set_use_delete_short_bonds_flag(void);
-IMPORT  void    set_debug_cut_flag(int);  
+IMPORT  void    set_debug_cut_flag(int);
 #endif /* if defined(USE_OVERTURE) */
 
 	/* fscat3d1.c*/
@@ -709,7 +709,7 @@ IMPORT  void    shift_interface(INTERFACE*,double,int);
 IMPORT	void	cut_surface(SURFACE*,boolean (*func)(POINTER,double*),POINTER,boolean);
 IMPORT	void	install_hsbdry_on_surface(SURFACE*,int);
 IMPORT	boolean	surfaces_matched(SURFACE*,SURFACE*);
-	
+
 	/* fscat3d2.c*/
 IMPORT	boolean	f_intfc_communication3d2(Front*);
 IMPORT  void    clip_front_for_output(Front*,RECT_GRID*);
@@ -717,7 +717,7 @@ IMPORT	double	line_cross_tolerance(RECT_GRID*);
 IMPORT  void    merge_curves(INTERFACE *);
 IMPORT  void    merge_btris(BOND*,BOND*,CURVE*,ORIENTATION,INTERFACE*);
 IMPORT  void    average_btris(TRI*,SURFACE*,TRI*,SURFACE*);
-	
+
 	/* fstate.c*/
 IMPORT	ConstantFlowRegion	*SetConstantFlowRegion(COMPONENT,Locstate,
 						       INTERFACE*);

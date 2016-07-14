@@ -3,9 +3,8 @@
  *******************************************************************/
 #include "iFluid.h"
 #include "solver.h"
+#include "ifluid_basic.h"
 
-// keep tracking velocities
-static int countingnow = 0;
 
 //--------------------------------------------------------------------------
 // 		   Incompress_Solver_Smooth_3D_Cartesian
@@ -17,6 +16,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
         COMPONENT comp;
         double density, max_tmp, min_tmp, nu, max_rho, min_rho;
         int indmax[3],indmin[3];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         max_density = -1;
         min_density = HUGE;
@@ -97,7 +98,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho_old;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -113,7 +114,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -129,7 +130,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_mu_old;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -145,7 +146,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_mu;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -208,6 +209,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewConcentration_vd(void)
         PetscInt num_iter;
         double rel_residual;
         boolean use_neumann_solver = YES;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         max_concentration = -1;
         min_concentration = HUGE;
@@ -434,7 +437,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewConcentration_vd(void)
             if (cell_center[index].m_state.m_c > 1.0)	cell_center[index].m_state.m_c = 1.0;
             array[index] = cell_center[index].m_state.m_c;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -470,6 +473,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         PetscInt num_iter;
         double rel_residual;
         double **vel = iFparams->field->vel;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         max_speed = 0.0;
         max_u = 0.0;
@@ -1270,7 +1275,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U_tmp[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -1290,7 +1295,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //TODO && FIXME: REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -1324,7 +1331,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 index = d_index3d(i,j,k,top_gmax);
                 source[index] = computeFieldPointDiv(icoords,vel);
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             // store the div(U*) in div_U
             for (k = 0; k <= top_gmax[2]; k++)
@@ -1380,6 +1387,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         PetscInt num_iter;
         double rel_residual;
         double **vel = iFparams->field->vel;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         max_speed = 0.0;
         max_u = 0.0;
@@ -1585,7 +1594,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U_tmp[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -1601,7 +1610,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
+        //TODO && FIXME: REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -1647,7 +1658,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 index = d_index3d(i,j,k,top_gmax);
                 source[index] = computeFieldPointDiv(icoords,vel);
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             // store the div(U*) in div_U
             for (k = 0; k <= top_gmax[2]; k++)
@@ -1701,6 +1712,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     PetscInt num_iter;
     double rel_residual;
     double **vel = iFparams->field->vel;
+    int reflect[MAXD];
+    reflect[0] = reflect[1] = reflect[2] = YES;
 
     max_speed = 0.0;
     max_u = 0.0;
@@ -1970,7 +1983,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U_tmp[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -1986,7 +1999,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U[l];
         }
-        scatMeshArray();
+
+        scatMeshArray(reflect);
+        //REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -2032,7 +2048,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front, reflect);
 
         // store the div(U*) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -2087,6 +2103,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     PetscInt num_iter;
     double rel_residual;
     double **vel = iFparams->field->vel;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     max_speed = 0.0;
     max_u = 0.0;
@@ -2358,7 +2376,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U_tmp[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -2374,7 +2392,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
+        //REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -2430,7 +2450,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
         // store the div(U*) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -2485,6 +2505,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     PetscInt num_iter;
     double rel_residual;
     double **vel = iFparams->field->vel;
+    int reflect[MAXD];
+    reflect[0] = reflect[1] = reflect[2] = YES;
 
     max_speed = 0.0;
     max_u = 0.0;
@@ -2757,7 +2779,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U_tmp[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -2773,7 +2795,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
+        //TODO && FIXME: REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -2829,7 +2853,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
         // store the div(U*) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -2887,6 +2911,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         double rel_residual;
         double **vel = iFparams->field->vel;
         boolean useSGSCellCenter = YES; //use mu_t on the cell center. o.w. use mu_t on 3 cell-faces
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         max_u = max_v = max_w = max_speed = 0;
         setIndexMap();
@@ -2981,7 +3007,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 printf("codes needed for mu_turbulent on cell-faces.\n");
                 assert(false);
             }
-
+            //TODO && FIXME: MAKE IT FOR PERIODIC B.C. and NEUMANN B.C.
             //periodic B.C. for WEST,EAST,SOUTH,NORTH
             for (nb=0; nb<4; ++nb) {
                 U0_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[0];
@@ -3775,8 +3801,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             }
 
             //add other terms to rhs
-            rhs += m_dt*state.m_U[2];
-//            rhs += m_dt*cell_center[index].m_state.f_surf[2];
+            rhs += m_dt*state.m_U[2];// gravity term source term
+//            rhs += m_dt*cell_center[index].m_state.f_surf[2];//Smeeton Youngs Experiment 105 Introduce Surface Tension.
             rhs -= m_dt*cell_center[index].m_state.grad_q[2]/rho;
             rhs -= m_dt*cell_center[index].m_state.m_adv[2];
 
@@ -3940,7 +3966,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U_tmp[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -3960,7 +3986,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -3990,7 +4018,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         // store the div(U*) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -4033,6 +4061,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection_vd(void)
         double sum_div;
         double value;
         double diffusion[5],diffusion_old[5];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         sum_div = 0.0;
         max_value = -1;
@@ -4096,9 +4126,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection_vd(void)
             diff_coeff_old[index] = cell_center[index].m_state.m_rho_old;
         }
 
-        FT_ParallelExchGridArrayBuffer(source,front);
-        FT_ParallelExchGridArrayBuffer(diff_coeff,front);
-        FT_ParallelExchGridArrayBuffer(diff_coeff_old,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
+        FT_ParallelExchGridArrayBuffer(diff_coeff,front,reflect);
+        FT_ParallelExchGridArrayBuffer(diff_coeff_old,front,reflect);
 
         poisson_solver3d_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,diff_coeff_old,
                         array,&P_max,&P_min);
@@ -4122,6 +4152,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection_MAC_vd(void)
         double sum_div;
         double value;
         double diffusion;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         sum_div = 0;
         max_value = -1.0;
@@ -4145,12 +4177,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection_MAC_vd(void)
             diff_coeff_old[index] = cell_center[index].m_state.m_rho_old;
         }
 
-        FT_ParallelExchGridArrayBuffer(source,front);
-        FT_ParallelExchGridArrayBuffer(diff_coeff,front);
-        FT_ParallelExchGridArrayBuffer(diff_coeff_old,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
+        FT_ParallelExchGridArrayBuffer(diff_coeff,front,reflect);
+        FT_ParallelExchGridArrayBuffer(diff_coeff_old,front,reflect);
 
         poisson_solver3d_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,diff_coeff_old,
                         array,&P_max,&P_min);
+        // TODO && FIXME: for RSSY Smeeton Young's 105. coefficient matrix will be updated.
+        printf("Possion Solver for RSSY Case Smeeton Young's 105 Experiment!\n");
 
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -4189,6 +4223,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
         HYPER_SURF *hs;
         double t;
         max_speed = 0;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         //update U^{n+1} using U^{*}
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4275,7 +4311,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4305,7 +4343,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         //store the values of div(U^{n+1}) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -4355,7 +4393,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
                 getDivU_MAC_vd(icoords,&diffusion,2,bGhostCell);
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -4402,6 +4440,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroW_vd(
         HYPER_SURF *hs;
         double t;
         max_speed = 0.0;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         //update U^{n+1} using U^{*}
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4503,7 +4543,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroW_vd(
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4533,7 +4575,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroW_vd(
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         //store the values of div(U^{n+1}) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -4583,7 +4625,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroW_vd(
                 getDivU_MAC_vd(icoords,&diffusion,2,bGhostCell);
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -4630,6 +4672,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroV_vd(
         HYPER_SURF *hs;
         double t;
         max_speed = 0.0;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         //update U^{n+1} using U^{*}
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4731,7 +4775,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroV_vd(
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4761,7 +4807,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroV_vd(
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         //store the values of div(U^{n+1}) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -4811,7 +4857,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_zeroV_vd(
                 getDivU_MAC_vd(icoords,&diffusion,2,bGhostCell);
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -4872,10 +4918,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
     double U[6], c[6], rho[6];
     double diffusion, value, sum_div, c_bar;
     double **vel = iFparams->field->vel;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     setIndexMap();
 
-    if (!flag)
+    if (!flag)// flag = 0
     {
         // (1) get U_center_bar on cell centers, and U_face_bar on cell faces
         for (k = kmin; k <= kmax; k++)
@@ -4903,7 +4951,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U_center_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4919,7 +4967,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U_face_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4948,7 +4996,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         //store the values of div(U_face_bar) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -5005,7 +5053,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         //store div(U_face_bar_0) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -5064,7 +5112,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_adv[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -5097,7 +5145,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index = d_index3d(i,j,k,top_gmax);
                 source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -5150,7 +5198,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_rho_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -5168,7 +5216,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_c_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -5228,7 +5276,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index  = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho_adv;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -5244,7 +5292,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index  = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_c_adv;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -5279,7 +5327,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         //store div(U_face_bar_1) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -5329,7 +5377,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 getDivU_MAC_vd(icoords,&diffusion,flag,bGhostCell);
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -5390,7 +5438,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_rho_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -5408,7 +5456,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_c_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -5469,7 +5517,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index  = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho_adv;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -5485,7 +5533,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index  = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_c_adv;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -5570,7 +5618,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
             comp,&intfc_state,&hs,crx_coords,m_t_int) &&
             wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+    {
         bNoBoundary[4] = NO;
+    }
     else
         bNoBoundary[4] = YES;
     // UPPER
@@ -6444,6 +6494,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeMacPhi_vd(int flag)
         int i,j,k,icoords[MAXD];
         double P_max,P_min;
         double diffusion[5];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         /* Compute velocity divergence */
         for (k = kmin; k <= kmax; k++)
@@ -6464,8 +6516,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeMacPhi_vd(int flag)
             else
                 diff_coeff[index] = cell_center[index].m_state.m_rho_old; //rho_n
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
-        FT_ParallelExchGridArrayBuffer(diff_coeff,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
+        FT_ParallelExchGridArrayBuffer(diff_coeff,front,reflect);
 
         poisson_solver3d_MacPhi_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,
                         array,&P_max,&P_min);
@@ -6486,6 +6538,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeMacPhi_MAC_vd(int flag)
     int i,j,k,icoords[MAXD];
     double P_max,P_min;
     double diffusion;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     if (m_dt < min_dt) {
         for (k = 0; k <= top_gmax[2]; k++)
@@ -6518,8 +6572,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeMacPhi_MAC_vd(int flag)
         else
             diff_coeff[index] = cell_center[index].m_state.m_rho_old; //rho_n
     }
-    FT_ParallelExchGridArrayBuffer(source,front);
-    FT_ParallelExchGridArrayBuffer(diff_coeff,front);
+    FT_ParallelExchGridArrayBuffer(source,front,reflect);
+    FT_ParallelExchGridArrayBuffer(diff_coeff,front,reflect);
 
     if (debugging("trace"))
         printf("enter poisson_solver3d_MacPhi_vd in computeMacPhi_MAC_vd()\n");
@@ -6553,6 +6607,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
         POINTER intfc_state;
         HYPER_SURF *hs;
         int ind[6],index_nb[6];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
@@ -6663,7 +6719,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U_face_bar[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -6789,13 +6845,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCenterVelocity_MAC_middleStep_hat
     {
     case WEST:
         getLimitedSlope_Velocity_MAC_vd(icoords,COORD_X,slope_limited); //u_x, u_y, and u_z
+        // Source: Wenlin Thesis [47]: A Projection Method For Low Mach Number Fast Chemistry Reacting Flow
         state_orig.m_U[0] = std::min(state_orig.m_U[0], 0.0);
         state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_limited[0];
         break;
 
     case EAST:
         getLimitedSlope_Velocity_MAC_vd(icoords,COORD_X,slope_limited); //u_x, u_y, and u_z
-        state_orig.m_U[0] = std::max(state_orig.m_U[0], 0.0);
+        state_orig.m_U[0] = std::max(state_orig.m_U[0], 0.0);//TODO: why adjust velocity here?
         state_hat.m_U[0] = state_orig.m_U[0] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_limited[0];
         break;
 
@@ -10322,12 +10379,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         else if (!bNoBoundary[4]) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
-            slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
+            slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);//Why? TODO NEED FIXME???????? Ask Jeremy or Glimm
         }
         else if (!bNoBoundary[5]) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
-            slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);
+            slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);//Why? TODO NEED FIXME?????????? Ask Jeremy or Glimm
         }
         else assert(false);
     }
@@ -11030,6 +11087,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
         double dist=0, depth_diff_layer=0;
         double **vel = iFparams->field->vel;
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         if (iFparams->width_idl != 0)
             depth_diff_layer = iFparams->width_idl;
@@ -11128,7 +11187,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_Dcoef;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11144,7 +11203,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11161,7 +11220,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_c;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11177,7 +11236,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_P;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11196,7 +11255,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -11225,7 +11286,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11321,7 +11382,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
+            //
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -11350,7 +11414,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11399,7 +11463,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_vd(LEVEL_FUNC_PA
                 getDivU_MAC_vd(icoords,&diffusion,0,bGhostCell); //get the divergence constraint S^0
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -11446,6 +11510,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
         double **vel = iFparams->field->vel;
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
         RECT_GRID *gr = front->rect_grid;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	if (iFparams->width_idl != 0)
 	    initial_diff_layer = iFparams->width_idl;
@@ -11580,7 +11646,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_Dcoef;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11596,7 +11662,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_mu;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11613,7 +11679,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11630,7 +11696,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_c;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11648,7 +11714,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -11700,7 +11766,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11816,7 +11882,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -11845,7 +11911,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -11894,7 +11960,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 getDivU_MAC_vd(icoords,&diffusion,0,NO); //get the divergence constraint S^0
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -11957,7 +12023,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
             //rhs = div(rho*g), vel stands for g.
             source[index] = computeFieldPointDiv_Neumann_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         poisson_solver3d_P0_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,
                         array,&P_max,&P_min);
 
@@ -11989,7 +12055,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         double max_speed=0;
         double dist=0, depth_diff_layer=0;
         double **vel = iFparams->field->vel;
+        int ii;//REFLECTION BOUNDARY CONDITION
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
         //depth_diff_layer = top_h[MAXD-1];
         depth_diff_layer = iFparams->width_idl;
@@ -12088,7 +12157,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_Dcoef;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -12104,7 +12173,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_rho;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -12121,7 +12190,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_c;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -12137,7 +12206,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_P;
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -12156,8 +12225,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();//TODO && FIXME: REFLECTION BOUNDARY CONDITION REQUIRES SPECIAL VELOCITY TREATMENT.
-            //Solute_Reflect(l, array);
+            scatMeshArray(reflect);//TODO && FIXME: REFLECTION BOUNDARY CONDITION REQUIRES SPECIAL VELOCITY TREATMENT.
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -12199,7 +12268,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -12231,7 +12300,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                                         max_value);
             max_value = 0.0;
         }
-
         // ***************************************************************
         //  Add diffusion velocity according to the divergence constraint
         // ***************************************************************
@@ -12295,8 +12363,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();//TODO && FIXME: REFLECTION BOUNDARY CONDITION
-            //Solute_Reflect(l, array);
+            scatMeshArray(reflect);//TODO && FIXME: REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -12325,7 +12393,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -12356,14 +12424,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             pp_global_max(&max_value,1);
             (void) printf("\nThe max value of divergence of U^0 WITH diffusion velocity added is %.16g\n",
                                         max_value);
-            // TODO && FIXME: If it's not divergence free, call clean_up(ERROR)
-            /*
-            if (fabs(sum_div) > 1e-12)
-            {
-                printf("It's not divergence free!\n");
-                clean_up(ERROR);
-            }
-            */
             max_value = 0;
         }
 
@@ -12383,7 +12443,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 getDivU_MAC_vd(icoords,&diffusion,0,bGhostCell); //get the divergence constraint S^0
                 source[index] = diffusion;
             }
-            FT_ParallelExchGridArrayBuffer(source,front);
+            FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -12411,11 +12471,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             (void) printf("\n");
             max_value = 0;
         }
-//TEST INITIALIZE PRESSURE START
-//TEST INITIALIZE PRESSURE END
+
+
         computeGradientQ_MAC_vd();
         copyMeshStates_vd();
         setAdvectionDt_vd();
+        printf("After function %s, check Contact Angle is %e\n", __func__, front->interf->contactangle);
 } /* end setInitialCondition_RSSY_vd */
 
 
@@ -12424,6 +12485,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
         int   i,j,k,l,index,totalpoints;
         double coord_x,coord_y,coord_z;
         double vel_x, vel_y, vel_z;
+        double pgx, pgy, pgz;
         int first;
         int step = front->step;
         char name[200];
@@ -12432,6 +12494,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
         static size_t filename_len = 0;
         FILE *outfile;
 
+        printf("In function %s, check Contact Angle is %e @ step %d\n", __func__, front->interf->contactangle, step);
         if (pp_numnodes() > 1)
             sprintf(dirname,"%s/P-%s",out_name,right_flush(pp_mynode(),4));
         else
@@ -12571,6 +12634,45 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                     fprintf(outfile,"%.16g\n",cell_center[index].m_state.m_Dcoef);
                 }
             }
+            // This print out pressure gradient
+            fprintf(outfile, "VECTORS pressgrad double\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                pgx = cell_center[index].m_state.grad_q[0];
+                pgy = cell_center[index].m_state.grad_q[1];
+                pgz = cell_center[index].m_state.grad_q[2];
+                fprintf(outfile, "%.16g %.16g %.16g\n",pgx, pgy, pgz);
+            }
+            fprintf(outfile, "SCALARS pgx double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                fprintf(outfile, "%.16g\n",cell_center[index].m_state.grad_q[0]);
+            }
+            fprintf(outfile, "SCALARS pgy double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                fprintf(outfile, "%.16g\n",cell_center[index].m_state.grad_q[1]);
+            }
+            fprintf(outfile, "SCALARS pgz double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                fprintf(outfile, "%.16g\n",cell_center[index].m_state.grad_q[2]);
+            }
             {
                 fprintf(outfile, "SCALARS Phi double\n");
                 fprintf(outfile, "LOOKUP_TABLE default\n");
@@ -12582,6 +12684,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                     fprintf(outfile,"%.16g\n",cell_center[index].m_state.m_phi);
                 }
             }
+
             if(iFparams->movie_option->plot_dens)
             {
                 fprintf(outfile, "SCALARS density double\n");
@@ -12954,6 +13057,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeAdvection(void)
 	int icoords[MAXD];
 	POINTER intfc_state;
 	HYPER_SURF *hs;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 
@@ -13112,7 +13217,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeAdvection(void)
 	    	index = d_index3d(i,j,k,top_gmax);
 	    	array[index] = cell_center[index].m_state.m_U[l];
 	    }
-	    scatMeshArray();
+	    scatMeshArray(reflect);
+        //REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
@@ -13147,6 +13254,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::
 	HYPER_SURF *hs;
 	PetscInt num_iter;
 	double rel_residual;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 	setIndexMap();
@@ -13666,7 +13775,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            Solute_Reflect(l,array,reflect);
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -13704,6 +13815,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_coupl
 	HYPER_SURF *hs;
 	PetscInt num_iter;
 	double rel_residual;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 	setIndexMap();
@@ -14983,7 +15096,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_coupl
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();
+            scatMeshArray(reflect);
+            //REFLECTION BOUNDARY CONDITION
+            //Solute_Reflect(l,array,reflect);
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -15023,6 +15138,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection(void)
 	sum_phi = 0.0;
 	PetscInt num_iter = 0;
 	double rel_residual = 0.0;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	PETSc solver;
 	solver.Create(ilower, iupper-1, 7, 7);
@@ -15053,7 +15170,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection(void)
 	    index = d_index3d(i,j,k,top_gmax);
 	    array[index] = computeFieldPointDiv(icoords,vel);
 	}
-	scatMeshArray();
+	scatMeshArray(reflect);
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
@@ -15215,7 +15332,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection(void)
 	    I = ijk_to_I[i][j][k];
 	    array[index] = x[I-ilower];
 	}
-	scatMeshArray();
+	scatMeshArray(reflect);
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
@@ -15253,6 +15370,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity(void)
 	COMPONENT comp;
 	double speed;
 	int icoords[MAXD];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 
@@ -15299,7 +15418,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity(void)
 	    	index = d_index3d(i,j,k,top_gmax);
 	    	array[index] = cell_center[index].m_state.m_U[l];
 	    }
-	    scatMeshArray();
+	    scatMeshArray(reflect);
+        //REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
@@ -15325,8 +15446,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSourceTerm(double *coords, L_
 {
 	int i;
 	for (i = 0; i < dim; ++i)
-	    state.m_U[i] = iFparams->gravity[i];
-
+    {
+        state.m_U[i] = iFparams->gravity[i];
+    }
 	state.m_P = HUGE_VAL;
 }
 void Incompress_Solver_Smooth_3D_Cartesian::computeSourceTerm(double *coords, double t, L_STATE &state)
@@ -15600,14 +15722,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
                     computeNewVelocity_fullMAC_vd();
                     stop_clock("computeNewVelocity_fullMAC_vd");
 
-		    for (l = 0; l < dim; ++l)
-		    for (k = 0; k <= top_gmax[2]; k++)
-		    for (j = 0; j <= top_gmax[1]; j++)
-		    for (i = 0; i <= top_gmax[0]; i++)
-		    {
-			index = d_index3d(i,j,k,top_gmax);
-			cell_center[index].m_state.m_U_velo_var[l] += cell_center[index].m_state.m_U[l];
-		    }
+                    for (l = 0; l < dim; ++l)
+                    for (k = 0; k <= top_gmax[2]; k++)
+                    for (j = 0; j <= top_gmax[1]; j++)
+                    for (i = 0; i <= top_gmax[0]; i++)
+                    {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.m_U_velo_var[l] += cell_center[index].m_state.m_U[l];
+                    }
 
 
                     if (debugging("step_size"))
@@ -16271,6 +16393,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates()
 	double *pres = field->pres;
 	double *vort = field->vort;
 	double **vort3d = field->vort3d;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	for (i = imin; i <= imax; ++i)
 	for (j = jmin; j <= jmax; ++j)
@@ -16297,13 +16421,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates()
 		}
 	    }
 	}
-	FT_ParallelExchGridArrayBuffer(pres,front);
-	FT_ParallelExchGridArrayBuffer(vel[0],front);
-	FT_ParallelExchGridArrayBuffer(vel[1],front);
-	FT_ParallelExchGridArrayBuffer(vel[2],front);
-	FT_ParallelExchGridArrayBuffer(vort3d[0],front);
-	FT_ParallelExchGridArrayBuffer(vort3d[1],front);
-	FT_ParallelExchGridArrayBuffer(vort3d[2],front);
+	FT_ParallelExchGridArrayBuffer(pres,front,reflect);
+    // TODO && FIXME: Velocity Update Will Be Different.
+	FT_ParallelExchGridArrayBuffer(vel[0],front,reflect);
+	FT_ParallelExchGridArrayBuffer(vel[1],front,reflect);
+	FT_ParallelExchGridArrayBuffer(vel[2],front,reflect);
+	FT_ParallelExchGridArrayBuffer(vort3d[0],front,reflect);
+	FT_ParallelExchGridArrayBuffer(vort3d[1],front,reflect);
+	FT_ParallelExchGridArrayBuffer(vort3d[2],front,reflect);
 }	/* end copyMeshStates */
 
 
@@ -16311,6 +16436,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
 {
         int i,j,k,d,index;
         double **vel = field->vel;
+        int ii;//REFLECTION BOUNDARY CONDITION
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 //        double *pres = field->pres;
 //        double *vort = field->vort;
 //        double **vort3d = field->vort3d;
@@ -16353,13 +16481,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
             }
         }
 //        FT_ParallelExchGridArrayBuffer(pres,front);
-        FT_ParallelExchGridArrayBuffer(vel[0],front);
-        FT_ParallelExchGridArrayBuffer(vel[1],front);
-        FT_ParallelExchGridArrayBuffer(vel[2],front);
+        FT_ParallelExchGridArrayBuffer(vel[0],front,reflect);
+        FT_ParallelExchGridArrayBuffer(vel[1],front,reflect);
+        FT_ParallelExchGridArrayBuffer(vel[2],front,reflect);
         // Update Reflection Boundary Condition TODO && FIXME: Solute_Reflect contribute divergence non-free situation.
-        //Solute_Reflect(0, vel[0]);
-        //Solute_Reflect(1, vel[1]);
-        //Solute_Reflect(2, vel[2]);
 //        FT_ParallelExchGridArrayBuffer(vort3d[0],front);
 //        FT_ParallelExchGridArrayBuffer(vort3d[1],front);
 //        FT_ParallelExchGridArrayBuffer(vort3d[2],front);
@@ -16386,7 +16511,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
             {
                 index = d_index3d(i,j,7,top_gmax);
                 printf("For (%d,%d,7) on proc #1, vel[index=%d] = (%12.8g,%12.8g,%12.8g) at ts = %d\n",
-                       i,j,index,vel[0][index],vel[1][index],vel[2][index],front->step);
+                        i,j,index,vel[0][index],vel[1][index],vel[2][index],front->step);
             }
         }
 
@@ -16398,274 +16523,282 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
         if (debugging("interpolate") && pp_mynode()==0 && front->step==20)
         {
             for (i = imin; i <= imax; ++i)
-            for (j = jmin; j <= jmax; ++j)
-            {
-                index = d_index3d(i,j,7,top_gmax);
-                printf("For (%d,%d,7) on proc #0, vel[index=%d] = (%12.8g,%12.8g,%12.8g) at ts = %d\n",
-                       i,j,index,vel[0][index],vel[1][index],vel[2][index],front->step);
-            }
+                for (j = jmin; j <= jmax; ++j)
+                {
+                    index = d_index3d(i,j,7,top_gmax);
+                    printf("For (%d,%d,7) on proc #0, vel[index=%d] = (%12.8g,%12.8g,%12.8g) at ts = %d\n",
+                            i,j,index,vel[0][index],vel[1][index],vel[2][index],front->step);
+                }
         }
 
         if (debugging("interpolate") && pp_mynode()==1 && front->step==20)
         {
             for (i = imin; i <= imax; ++i)
-            for (j = jmin; j <= jmax; ++j)
-            {
-                index = d_index3d(i,j,0,top_gmax);
-                printf("For (%d,%d,0) on proc #1, vel[index=%d] = (%12.8g,%12.8g,%12.8g) at ts = %d\n",
-                       i,j,index,vel[0][index],vel[1][index],vel[2][index],front->step);
-            }
+                for (j = jmin; j <= jmax; ++j)
+                {
+                    index = d_index3d(i,j,0,top_gmax);
+                    printf("For (%d,%d,0) on proc #1, vel[index=%d] = (%12.8g,%12.8g,%12.8g) at ts = %d\n",
+                            i,j,index,vel[0][index],vel[1][index],vel[2][index],front->step);
+                }
         }
 
 } /* end copyMeshStates_vd */
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::
-	compDiffWithSmoothProperty_1st_decoupled(void)
+compDiffWithSmoothProperty_1st_decoupled(void)
 {
-        COMPONENT comp;
-        int index,index_nb[6],size;
-        int I,I_nb[6];
-	int i,j,k,l,nb,icoords[MAXD];
-        L_STATE state;
-        INTERFACE *intfc = front->interf;
-	double coords[MAXD], crx_coords[MAXD];
-	double coeff[6],mu[6],mu0,rho,corner[6],rhs,U_nb[6];
-        double speed;
-        double *x;
-	GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-	double (*getStateVel[3])(POINTER) =
-			{getStateXvel,getStateYvel,getStateZvel};
-	POINTER intfc_state;
-	HYPER_SURF *hs;
-	PetscInt num_iter;
-	double rel_residual;
+    COMPONENT comp;
+    int index,index_nb[6],size;
+    int I,I_nb[6];
+    int i,j,k,l,nb,icoords[MAXD];
+    L_STATE state;
+    INTERFACE *intfc = front->interf;
+    double coords[MAXD], crx_coords[MAXD];
+    double coeff[6],mu[6],mu0,rho,corner[6],rhs,U_nb[6];
+    double speed;
+    double *x;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    double (*getStateVel[3])(POINTER) =
+    {getStateXvel,getStateYvel,getStateZvel};
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    PetscInt num_iter;
+    double rel_residual;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-        setIndexMap();
+    setIndexMap();
 
-	max_speed = 0.0;
+    max_speed = 0.0;
 
-        size = iupper - ilower;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+    size = iupper - ilower;
+    FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
 
-	for (l = 0; l < dim; ++l)
-	{
-            PETSc solver;
-            solver.Create(ilower, iupper-1, 7, 7);
-	    solver.Reset_A();
-	    solver.Reset_b();
-	    solver.Reset_x();
+    for (l = 0; l < dim; ++l)
+    {
+        PETSc solver;
+        solver.Create(ilower, iupper-1, 7, 7);
+        solver.Reset_A();
+        solver.Reset_b();
+        solver.Reset_x();
 
-            for (k = kmin; k <= kmax; k++)
+        for (k = kmin; k <= kmax; k++)
             for (j = jmin; j <= jmax; j++)
-            for (i = imin; i <= imax; i++)
-            {
-            	I = ijk_to_I[i][j][k];
-            	if (I == -1) continue;
+                for (i = imin; i <= imax; i++)
+                {
+                    I = ijk_to_I[i][j][k];
+                    if (I == -1) continue;
 
-            	index = d_index3d(i,j,k,top_gmax);
-            	index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-            	index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-            	index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-            	index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-            	index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-            	index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+                    index = d_index3d(i,j,k,top_gmax);
+                    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-		icoords[0] = i;
-		icoords[1] = j;
-		icoords[2] = k;
-		comp = top_comp[index];
+                    icoords[0] = i;
+                    icoords[1] = j;
+                    icoords[2] = k;
+                    comp = top_comp[index];
 
-            	I_nb[0] = ijk_to_I[i-1][j][k]; //west
-            	I_nb[1] = ijk_to_I[i+1][j][k]; //east
-            	I_nb[2] = ijk_to_I[i][j-1][k]; //south
-            	I_nb[3] = ijk_to_I[i][j+1][k]; //north
-            	I_nb[4] = ijk_to_I[i][j][k-1]; //lower
-            	I_nb[5] = ijk_to_I[i][j][k+1]; //upper
+                    I_nb[0] = ijk_to_I[i-1][j][k]; //west
+                    I_nb[1] = ijk_to_I[i+1][j][k]; //east
+                    I_nb[2] = ijk_to_I[i][j-1][k]; //south
+                    I_nb[3] = ijk_to_I[i][j+1][k]; //north
+                    I_nb[4] = ijk_to_I[i][j][k-1]; //lower
+                    I_nb[5] = ijk_to_I[i][j][k+1]; //upper
 
 
-            	mu0 = cell_center[index].m_state.m_mu;
-            	rho = cell_center[index].m_state.m_rho;
+                    mu0 = cell_center[index].m_state.m_mu;
+                    rho = cell_center[index].m_state.m_rho;
 
-            	for (nb = 0; nb < 6; nb++)
-            	{
-                    if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-                                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                    for (nb = 0; nb < 6; nb++)
+                    {
+                        if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                                    comp,&intfc_state,&hs,crx_coords,m_t_new) &&
                                 wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-		    {
-			U_nb[nb] = getStateVel[l](intfc_state);
-			if (wave_type(hs) == DIRICHLET_BOUNDARY ||
-			    wave_type(hs) == NEUMANN_BOUNDARY)
-			    mu[nb] = mu0;
-			else
-			    mu[nb] = 1.0/2*(mu0 +
-				cell_center[index_nb[nb]].m_state.m_mu);
-		    }
+                        {
+                            U_nb[nb] = getStateVel[l](intfc_state);
+                            if (wave_type(hs) == DIRICHLET_BOUNDARY ||
+                                    wave_type(hs) == NEUMANN_BOUNDARY)
+                                mu[nb] = mu0;
+                            else
+                                mu[nb] = 1.0/2*(mu0 +
+                                        cell_center[index_nb[nb]].m_state.m_mu);
+                        }
+                        else
+                        {
+                            U_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[l];
+                            mu[nb] = 1.0/2*(mu0 +
+                                    cell_center[index_nb[nb]].m_state.m_mu);
+                        }
+                    }
+
+                    coeff[0] = 0.5*m_dt/rho*mu[0]/(top_h[0]*top_h[0]);
+                    coeff[1] = 0.5*m_dt/rho*mu[1]/(top_h[0]*top_h[0]);
+                    coeff[2] = 0.5*m_dt/rho*mu[2]/(top_h[1]*top_h[1]);
+                    coeff[3] = 0.5*m_dt/rho*mu[3]/(top_h[1]*top_h[1]);
+                    coeff[4] = 0.5*m_dt/rho*mu[4]/(top_h[2]*top_h[2]);
+                    coeff[5] = 0.5*m_dt/rho*mu[5]/(top_h[2]*top_h[2]);
+
+                    getRectangleCenter(index, coords);
+                    computeSourceTerm(coords, state);
+
+                    solver.Set_A(I,I,1+coeff[0]+coeff[1]+coeff[2]+coeff[3]+
+                            coeff[4]+coeff[5]);
+                    rhs = (1-coeff[0]-coeff[1]-coeff[2]-coeff[3]-coeff[4]-coeff[5])*
+                        cell_center[index].m_state.m_U[l];
+
+                    for(nb = 0; nb < 6; nb++)
+                    {
+                        if(I_nb[nb] != -1)
+                        {
+                            solver.Set_A(I,I_nb[nb],-coeff[nb]);
+                            rhs += coeff[nb]*U_nb[nb];
+                        }
+                        else
+                            rhs += 2.0*coeff[nb]*U_nb[nb];
+                    }
+                    rhs += m_dt*state.m_U[l];
+                    rhs += m_dt*cell_center[index].m_state.f_surf[l];
+                    rhs -= m_dt*cell_center[index].m_state.grad_q[l]/rho;
+
+                    solver.Set_b(I, rhs);
+                }
+
+        solver.SetMaxIter(40000);
+        solver.SetTol(1e-10);
+
+        start_clock("Befor Petsc solve");
+        solver.Solve_GMRES();
+        solver.GetNumIterations(&num_iter);
+        solver.GetFinalRelativeResidualNorm(&rel_residual);
+
+        //if(rel_residual > 1)
+        //{
+        //	printf("\nThe solution diverges! The residual is %le. Solve again using GMRES!\n",rel_residual);
+        //	solver.Reset_x();
+        //	solver.Solve_GMRES();
+        //	solver.GetNumIterations(&num_iter);
+        //	solver.GetFinalRelativeResidualNorm(&rel_residual);
+        //}
+        stop_clock("After Petsc solve");
+
+        // get back the solution
+        solver.Get_x(x);
+
+        if (debugging("PETSc"))
+            (void) printf("L_CARTESIAN::"
+                    "compDiffWithSmoothProperty_1st_decoupled: "
+                    "num_iter = %d, rel_residual = %le. \n",
+                    num_iter,rel_residual);
+
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    I = ijk_to_I[i][j][k];
+                    index = d_index3d(i,j,k,top_gmax);
+                    if (I >= 0)
+                    {
+                        cell_center[index].m_state.m_U[l] = x[I-ilower];
+                    }
                     else
-		    {
-                    	U_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[l];
-			mu[nb] = 1.0/2*(mu0 +
-				cell_center[index_nb[nb]].m_state.m_mu);
-		    }
-            	}
-
-            	coeff[0] = 0.5*m_dt/rho*mu[0]/(top_h[0]*top_h[0]);
-            	coeff[1] = 0.5*m_dt/rho*mu[1]/(top_h[0]*top_h[0]);
-            	coeff[2] = 0.5*m_dt/rho*mu[2]/(top_h[1]*top_h[1]);
-            	coeff[3] = 0.5*m_dt/rho*mu[3]/(top_h[1]*top_h[1]);
-            	coeff[4] = 0.5*m_dt/rho*mu[4]/(top_h[2]*top_h[2]);
-            	coeff[5] = 0.5*m_dt/rho*mu[5]/(top_h[2]*top_h[2]);
-
-            	getRectangleCenter(index, coords);
-            	computeSourceTerm(coords, state);
-
-            	solver.Set_A(I,I,1+coeff[0]+coeff[1]+coeff[2]+coeff[3]+
-				coeff[4]+coeff[5]);
-		rhs = (1-coeff[0]-coeff[1]-coeff[2]-coeff[3]-coeff[4]-coeff[5])*
-		      		cell_center[index].m_state.m_U[l];
-
-		for(nb = 0; nb < 6; nb++)
-		{
-		    if(I_nb[nb] != -1)
-		    {
-			solver.Set_A(I,I_nb[nb],-coeff[nb]);
-			rhs += coeff[nb]*U_nb[nb];
-		    }
-		    else
-			rhs += 2.0*coeff[nb]*U_nb[nb];
-		}
-		rhs += m_dt*state.m_U[l];
-		rhs += m_dt*cell_center[index].m_state.f_surf[l];
-		rhs -= m_dt*cell_center[index].m_state.grad_q[l]/rho;
-
-		solver.Set_b(I, rhs);
-            }
-
-            solver.SetMaxIter(40000);
-            solver.SetTol(1e-10);
-
-	    start_clock("Befor Petsc solve");
-            solver.Solve_GMRES();
-            solver.GetNumIterations(&num_iter);
-            solver.GetFinalRelativeResidualNorm(&rel_residual);
-
-	    //if(rel_residual > 1)
-	    //{
-	    //	printf("\nThe solution diverges! The residual is %le. Solve again using GMRES!\n",rel_residual);
-	    //	solver.Reset_x();
-	    //	solver.Solve_GMRES();
-	    //	solver.GetNumIterations(&num_iter);
-            //	solver.GetFinalRelativeResidualNorm(&rel_residual);
-	    //}
-	    stop_clock("After Petsc solve");
-
-            // get back the solution
-            solver.Get_x(x);
-
-            if (debugging("PETSc"))
-                (void) printf("L_CARTESIAN::"
-			"compDiffWithSmoothProperty_1st_decoupled: "
-                        "num_iter = %d, rel_residual = %le. \n",
-                        num_iter,rel_residual);
-
-	    for (k = kmin; k <= kmax; k++)
-            for (j = jmin; j <= jmax; j++)
-            for (i = imin; i <= imax; i++)
-            {
-                I = ijk_to_I[i][j][k];
-                index = d_index3d(i,j,k,top_gmax);
-                if (I >= 0)
-                {
-                    cell_center[index].m_state.m_U[l] = x[I-ilower];
+                    {
+                        cell_center[index].m_state.m_U[l] = 0.0;
+                    }
                 }
-                else
-                {
-                    cell_center[index].m_state.m_U[l] = 0.0;
-                }
-            }
 
-	    for (k = kmin; k <= kmax; k++)
+        for (k = kmin; k <= kmax; k++)
             for (j = jmin; j <= jmax; j++)
-            for (i = imin; i <= imax; i++)
-            {
-                index = d_index3d(i,j,k,top_gmax);
-                array[index] = cell_center[index].m_state.m_U[l];
-            }
-            scatMeshArray();
-	    for (k = 0; k <= top_gmax[2]; k++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.m_U[l];
+                }
+        scatMeshArray(reflect);
+        //REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
+        for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
-            for (i = 0; i <= top_gmax[0]; i++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.m_U[l] = array[index];
+                }
+    }
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
             {
                 index = d_index3d(i,j,k,top_gmax);
-                cell_center[index].m_state.m_U[l] = array[index];
-            }
-        }
-	for (k = kmin; k <= kmax; k++)
-        for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-	{
-	    index = d_index3d(i,j,k,top_gmax);
-            speed = fabs(cell_center[index].m_state.m_U[0]) +
+                speed = fabs(cell_center[index].m_state.m_U[0]) +
                     fabs(cell_center[index].m_state.m_U[1]) +
                     fabs(cell_center[index].m_state.m_U[2]);
-            if (speed > max_speed)
+                if (speed > max_speed)
                     max_speed = speed;
-	}
-        pp_global_max(&max_speed,1);
+            }
+    pp_global_max(&max_speed,1);
 
-        FT_FreeThese(1,x);
+    FT_FreeThese(1,x);
 }       /* end compDiffWithSmoothProperty3d_1st_decoupled */
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::computePressurePmI(void)
 {
-        int i,j,k,index;
+    int i,j,k,index;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-        for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-	{
-            index = d_index3d(i,j,k,top_gmax);
-            cell_center[index].m_state.m_P += cell_center[index].m_state.m_phi;
-	    array[index] = cell_center[index].m_state.m_P;
-	}
-	scatMeshArray();
-	for (k = 0; k <= top_gmax[2]; k++)
-	for (j = 0; j <= top_gmax[1]; j++)
-	for (i = 0; i <= top_gmax[0]; i++)
-	{
-	    index = d_index3d(i,j,k,top_gmax);
-	    cell_center[index].m_state.m_P = array[index];
-	    cell_center[index].m_state.m_q = array[index];
-	}
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_P += cell_center[index].m_state.m_phi;
+                array[index] = cell_center[index].m_state.m_P;
+            }
+    scatMeshArray(reflect);
+    for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+            for (i = 0; i <= top_gmax[0]; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_P = array[index];
+                cell_center[index].m_state.m_q = array[index];
+            }
 }        /* end computePressurePmI3d */
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::computePressurePmII(void)
 {
-        int i,j,k,index;
-        double mu0;
+    int i,j,k,index;
+    double mu0;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-        for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-	{
-            index = d_index3d(i,j,k,top_gmax);
-            mu0 = 0.5*cell_center[index].m_state.m_mu;
-            cell_center[index].m_state.m_P = (cell_center[index].m_state.m_q +
-				              cell_center[index].m_state.m_phi -
-                        	              mu0*cell_center[index].m_state.div_U);
-	    array[index] = cell_center[index].m_state.m_P;
-	}
-	scatMeshArray();
-	for(k = 0; k <= top_gmax[2]; k++)
-	for(j = 0; j <= top_gmax[1]; j++)
-	for(i = 0; i <= top_gmax[0]; i++)
-	{
-	    index = d_index3d(i,j,k,top_gmax);
-	    cell_center[index].m_state.m_P = array[index];
-	    cell_center[index].m_state.m_q = array[index];
-	}
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                mu0 = 0.5*cell_center[index].m_state.m_mu;
+                cell_center[index].m_state.m_P = (cell_center[index].m_state.m_q +
+                        cell_center[index].m_state.m_phi -
+                        mu0*cell_center[index].m_state.div_U);
+                array[index] = cell_center[index].m_state.m_P;
+            }
+    scatMeshArray(reflect);
+    for(k = 0; k <= top_gmax[2]; k++)
+        for(j = 0; j <= top_gmax[1]; j++)
+            for(i = 0; i <= top_gmax[0]; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_P = array[index];
+                cell_center[index].m_state.m_q = array[index];
+            }
 }        /* end computePressurePmII3d */
 
 
@@ -16676,39 +16809,39 @@ void Incompress_Solver_Smooth_3D_Cartesian::computePressurePmII_vd(void)
 
 void Incompress_Solver_Smooth_3D_Cartesian::computePressurePmIII(void)
 {
-        int i,j,k,index;
-        double mu0;
+    int i,j,k,index;
+    double mu0;
 
-	for(k = 0; k <= top_gmax[2]; k++)
-	for(j = 0; j <= top_gmax[1]; j++)
-	for(i = 0; i <= top_gmax[0]; i++)
-	{
-	    index = d_index3d(i,j,k,top_gmax);
-	    mu0 = 0.5*cell_center[index].m_state.m_mu;
-	    cell_center[index].m_state.m_P =
-		cell_center[index].m_state.m_phi -
-		accum_dt*mu0*cell_center[index].m_state.div_U;
-	    cell_center[index].m_state.m_q = 0.0;
-	}
+    for(k = 0; k <= top_gmax[2]; k++)
+        for(j = 0; j <= top_gmax[1]; j++)
+            for(i = 0; i <= top_gmax[0]; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                mu0 = 0.5*cell_center[index].m_state.m_mu;
+                cell_center[index].m_state.m_P =
+                    cell_center[index].m_state.m_phi -
+                    accum_dt*mu0*cell_center[index].m_state.div_U;
+                cell_center[index].m_state.m_q = 0.0;
+            }
 }        /* end computePressurePmIII3d */
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::computePressure(void)
 {
-	switch (iFparams->num_scheme)
-	{
-	case BELL_COLELLA:
-	    computePressurePmI();
-	    break;
-	case KIM_MOIN:
-	    computePressurePmII();
-	    break;
-	case SIMPLE:
-	case PEROT_BOTELLA:
-	    computePressurePmIII();
-	    break;
-	}
-	computeGradientQ();
+    switch (iFparams->num_scheme)
+    {
+        case BELL_COLELLA:
+            computePressurePmI();
+            break;
+        case KIM_MOIN:
+            computePressurePmII();
+            break;
+        case SIMPLE:
+        case PEROT_BOTELLA:
+            computePressurePmIII();
+            break;
+    }
+    computeGradientQ();
 }	/* end computePressure */
 
 void Incompress_Solver_Smooth_3D_Cartesian::computePressure_vd(void)
@@ -16718,29 +16851,29 @@ void Incompress_Solver_Smooth_3D_Cartesian::computePressure_vd(void)
 
 void Incompress_Solver_Smooth_3D_Cartesian::computePressure_MAC_vd(void)
 {
-	switch (iFparams->num_scheme)
-	{
-	case BELL_COLELLA:
-	    computePressurePmI();
-//            computePressurePmII();
-	    break;
-	case KIM_MOIN:
-	    computePressurePmII();
-	    break;
-	case SIMPLE:
-	case PEROT_BOTELLA:
-	    computePressurePmIII();
-	    break;
-	}
-	computeGradientQ_MAC_vd();
+    switch (iFparams->num_scheme)
+    {
+        case BELL_COLELLA:
+            computePressurePmI();
+            //            computePressurePmII();
+            break;
+        case KIM_MOIN:
+            computePressurePmII();
+            break;
+        case SIMPLE:
+        case PEROT_BOTELLA:
+            computePressurePmIII();
+            break;
+    }
+    computeGradientQ_MAC_vd();
 } /* end computePressure_MAC_vd */
 
 
 //set q_z = 0
 void Incompress_Solver_Smooth_3D_Cartesian::computePressure_MAC_zeroW_vd(void)
 {
-        switch (iFparams->num_scheme)
-        {
+    switch (iFparams->num_scheme)
+    {
         case BELL_COLELLA:
             computePressurePmII();
             break;
@@ -16751,16 +16884,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::computePressure_MAC_zeroW_vd(void)
         case PEROT_BOTELLA:
             computePressurePmIII();
             break;
-        }
-        computeGradientQ_MAC_zeroW_vd();
+    }
+    computeGradientQ_MAC_zeroW_vd();
 } /* end computePressure_MAC_zeroW_vd */
 
 
 //set q_y = 0
 void Incompress_Solver_Smooth_3D_Cartesian::computePressure_MAC_zeroV_vd(void)
 {
-        switch (iFparams->num_scheme)
-        {
+    switch (iFparams->num_scheme)
+    {
         case BELL_COLELLA:
             computePressurePmII();
             break;
@@ -16771,534 +16904,638 @@ void Incompress_Solver_Smooth_3D_Cartesian::computePressure_MAC_zeroV_vd(void)
         case PEROT_BOTELLA:
             computePressurePmIII();
             break;
-        }
-        computeGradientQ_MAC_zeroV_vd();
+    }
+    computeGradientQ_MAC_zeroV_vd();
 } /* end computePressure_MAC_zeroV_vd */
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ(void)
 {
-	int i,j,k,l,index;
-	double *grad_q;
-	int icoords[MAXD];
+    int i,j,k,l,index;
+    double *grad_q;
+    int icoords[MAXD];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-	for (k = kmin; k <= kmax; ++k)
-	for (j = jmin; j <= jmax; ++j)
-	for (i = imin; i <= imax; ++i)
-	{
-	    index = d_index3d(i,j,k,top_gmax);
-	    array[index] = cell_center[index].m_state.m_q;
-	}
-	scatMeshArray();
+    for (k = kmin; k <= kmax; ++k)
+        for (j = jmin; j <= jmax; ++j)
+            for (i = imin; i <= imax; ++i)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                array[index] = cell_center[index].m_state.m_q;
+            }
+    scatMeshArray(reflect);
 
-	for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	for (i = imin; i <= imax; i++)
-	{
-	    index = d_index3d(i,j,k,top_gmax);
-	    grad_q = cell_center[index].m_state.grad_q;
-	    icoords[0] = i;
-	    icoords[1] = j;
-	    icoords[2] = k;
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                grad_q = cell_center[index].m_state.grad_q;
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
 
-	    computeFieldPointGrad(icoords,array,grad_q);
-	}
-	for (l = 0; l < dim; ++l)
-	{
-	    for (k = kmin; k <= kmax; k++)
-	    for (j = jmin; j <= jmax; j++)
-	    for (i = imin; i <= imax; i++)
-	    {
-	    	index = d_index3d(i,j,k,top_gmax);
-		array[index] = cell_center[index].m_state.grad_q[l];
-	    }
-	    scatMeshArray();
-	    for (k = 0; k <= top_gmax[2]; k++)
-	    for (j = 0; j <= top_gmax[1]; j++)
-	    for (i = 0; i <= top_gmax[0]; i++)
-	    {
-	    	index = d_index3d(i,j,k,top_gmax);
-		cell_center[index].m_state.grad_q[l] = array[index];
-	    }
-	}
+                computeFieldPointGrad(icoords,array,grad_q);
+            }
+    for (l = 0; l < dim; ++l)
+    {
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.grad_q[l];
+                }
+        scatMeshArray(reflect);
+        for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.grad_q[l] = array[index];
+                }
+    }
 } /* end computeGradientQ */
 
+/*Compute Pressure Gradient*/
+/*
+void Incompress_Solver_Smooth_3D_Cartesian::computeGradientP_MAC_vd(void)
+{
+    bool bNoBoundary[6];
+    int index_nb[6];
+    int i,j,k,l,index;
+    double rho,g;
+    int icoords[MAXD];
+    L_STATE gravity;
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    COMPONENT comp;
 
+    for (k = kmin; k <= kmax;: k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                comp = top_comp[index];
+
+                index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
+                //4 directions
+                bNoBoundary[0] = YES;
+                bNoBoundary[1] = YES;
+                bNoBoundary[2] = YES;
+                bNoBoundary[3] = YES;
+                //LOWER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[4] = NO;
+                else
+                    bNoBoundary[4] = YES;
+                //UPPER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[5] = NO;
+                else
+                    bNoBoundary[5] = YES;
+
+                if (!bNoBoundary[5]) //cells on UPPER bdry
+                {
+                    //get gravity force terms
+                    getRectangleCenter(index, coords);
+                    computeSourceTerm(coords, gravity);
+
+                    g = gravity.m_U[2];
+                    rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
+
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = rho*g;//p_z = rho*g on UPPER/LOWER bdry
+                }
+                else //other cells
+                {
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[2];
+                }
+            }
+    //scatter states
+    for (l = 0; l < dim; ++l)
+    {
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.grad_p[l];
+                }
+        scatMeshArray();
+        for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.grad_p[l] = array[index];
+                }
+    }
+} *//* end computeGradientP_MAC_vd */
 void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
 {
-        bool bNoBoundary[6];
-	int index_nb[6];
-	int i,j,k,l,index;
-	double rho,g;
-	int icoords[MAXD];
-        L_STATE gravity;
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        COMPONENT comp;
+    bool bNoBoundary[6];
+    int index_nb[6];
+    int i,j,k,l,index;
+    double rho,g;
+    int icoords[MAXD];
+    L_STATE gravity;
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    COMPONENT comp;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-	for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	for (i = imin; i <= imax; i++)
-	{
-            index = d_index3d(i,j,k,top_gmax);
-            comp = top_comp[index];
-
-     	    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-            index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-            index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-            index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-            index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-            index_nb[5] = d_index3d(i,j,k+1,top_gmax);
-
-	    icoords[0] = i;
-	    icoords[1] = j;
-	    icoords[2] = k;
-            //4 directions
-            bNoBoundary[0] = YES;
-            bNoBoundary[1] = YES;
-            bNoBoundary[2] = YES;
-            bNoBoundary[3] = YES;
-            //LOWER
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
-                    comp,&intfc_state,&hs,crx_coords,m_t_int) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-                bNoBoundary[4] = NO;
-            else
-                bNoBoundary[4] = YES;
-            //UPPER
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
-                    comp,&intfc_state,&hs,crx_coords,m_t_int) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-                bNoBoundary[5] = NO;
-            else
-                bNoBoundary[5] = YES;
-
-            if (!bNoBoundary[5]) //cells on UPPER bdry
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
             {
-                //get gravity force terms
-                getRectangleCenter(index, coords);
-                computeSourceTerm(coords, gravity);
+                index = d_index3d(i,j,k,top_gmax);
+                comp = top_comp[index];
 
-                g = gravity.m_U[2];
-                rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
+                index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-                cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[0];
-                cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[1];
-                cell_center[index].m_state.grad_q[2] = rho*g;//p_z = rho*g on UPPER/LOWER bdry
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
+                //4 directions
+                bNoBoundary[0] = YES;
+                bNoBoundary[1] = YES;
+                bNoBoundary[2] = YES;
+                bNoBoundary[3] = YES;
+                //LOWER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[4] = NO;
+                else
+                    bNoBoundary[4] = YES;
+                //UPPER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[5] = NO;
+                else
+                    bNoBoundary[5] = YES;
+
+                if (!bNoBoundary[5]) //cells on UPPER bdry
+                {
+                    //get gravity force terms
+                    getRectangleCenter(index, coords);
+                    computeSourceTerm(coords, gravity);
+
+                    g = gravity.m_U[2];
+                    rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
+
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = rho*g;//p_z = rho*g on UPPER/LOWER bdry
+                }
+                else //other cells
+                {
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[2];
+                }
             }
-            else //other cells
-            {
-                cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[0];
-                cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[1];
-                cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[2];
-            }
-	}
-        //scatter states
-	for (l = 0; l < dim; ++l)
-	{
-	    for (k = kmin; k <= kmax; k++)
-	    for (j = jmin; j <= jmax; j++)
-	    for (i = imin; i <= imax; i++)
-	    {
-	    	index = d_index3d(i,j,k,top_gmax);
-		array[index] = cell_center[index].m_state.grad_q[l];
-	    }
-	    scatMeshArray();
-	    for (k = 0; k <= top_gmax[2]; k++)
-	    for (j = 0; j <= top_gmax[1]; j++)
-	    for (i = 0; i <= top_gmax[0]; i++)
-	    {
-	    	index = d_index3d(i,j,k,top_gmax);
-		cell_center[index].m_state.grad_q[l] = array[index];
-	    }
-	}
+    //scatter states
+    for (l = 0; l < dim; ++l)
+    {
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.grad_q[l];
+                }
+        scatMeshArray(reflect);
+        for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.grad_q[l] = array[index];
+                }
+    }
 } /* end computeGradientQ_MAC_vd */
 
 
 //set q_z = 0
 void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_zeroW_vd(void)
 {
-        bool bNoBoundary[6];
-        int index_nb[6];
-        int i,j,k,l,index;
-        double rho,g;
-        int icoords[MAXD];
-        L_STATE gravity;
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        COMPONENT comp;
+    bool bNoBoundary[6];
+    int index_nb[6];
+    int i,j,k,l,index;
+    double rho,g;
+    int icoords[MAXD];
+    L_STATE gravity;
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    COMPONENT comp;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-        for (k = kmin; k <= kmax; k++)
+    for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            comp = top_comp[index];
-
-            index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-            index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-            index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-            index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-            index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-            index_nb[5] = d_index3d(i,j,k+1,top_gmax);
-
-            icoords[0] = i;
-            icoords[1] = j;
-            icoords[2] = k;
-            // 4 directions
-            bNoBoundary[0] = YES;
-            bNoBoundary[1] = YES;
-            bNoBoundary[2] = YES;
-            bNoBoundary[3] = YES;
-            // LOWER
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
-                    comp,&intfc_state,&hs,crx_coords,m_t_int) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-                bNoBoundary[4] = NO;
-            else
-                bNoBoundary[4] = YES;
-            // UPPER
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
-                    comp,&intfc_state,&hs,crx_coords,m_t_int) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-                bNoBoundary[5] = NO;
-            else
-                bNoBoundary[5] = YES;
-
-            if (!bNoBoundary[5]) //cells on UPPER bdry
-            {
-                //get gravity force terms
-                getRectangleCenter(index, coords);
-                computeSourceTerm(coords, gravity);
-
-                g = gravity.m_U[2];
-                rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
-
-                cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[0];
-                cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[1];
-                cell_center[index].m_state.grad_q[2] = rho*g; //p_z = rho*g on UPPER/LOWER bdry
-            }
-            else //other cells
-            {
-                cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[0];
-                cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[1];
-                cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[2];
-            }
-        }
-        //scatter states
-        for (l = 0; l < dim; ++l)
-        {
-            for (k = kmin; k <= kmax; k++)
-            for (j = jmin; j <= jmax; j++)
             for (i = imin; i <= imax; i++)
             {
                 index = d_index3d(i,j,k,top_gmax);
-                array[index] = cell_center[index].m_state.grad_q[l];
+                comp = top_comp[index];
+
+                index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
+                // 4 directions
+                bNoBoundary[0] = YES;
+                bNoBoundary[1] = YES;
+                bNoBoundary[2] = YES;
+                bNoBoundary[3] = YES;
+                // LOWER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[4] = NO;
+                else
+                    bNoBoundary[4] = YES;
+                // UPPER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[5] = NO;
+                else
+                    bNoBoundary[5] = YES;
+
+                if (!bNoBoundary[5]) //cells on UPPER bdry
+                {
+                    //get gravity force terms
+                    getRectangleCenter(index, coords);
+                    computeSourceTerm(coords, gravity);
+
+                    g = gravity.m_U[2];
+                    rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
+
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = rho*g; //p_z = rho*g on UPPER/LOWER bdry
+                }
+                else //other cells
+                {
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[2];
+                }
             }
-            scatMeshArray();
-            for (k = 0; k <= top_gmax[2]; k++)
+    //scatter states
+    for (l = 0; l < dim; ++l)
+    {
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.grad_q[l];
+                }
+        scatMeshArray(reflect);
+        for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.grad_q[l] = array[index];
+                }
+    }
+    //set q_z = 0
+    for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
             {
                 index = d_index3d(i,j,k,top_gmax);
-                cell_center[index].m_state.grad_q[l] = array[index];
+                cell_center[index].m_state.grad_q[2] = 0.0;
             }
-        }
-        //set q_z = 0
-        for (k = 0; k <= top_gmax[2]; k++)
-        for (j = 0; j <= top_gmax[1]; j++)
-        for (i = 0; i <= top_gmax[0]; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            cell_center[index].m_state.grad_q[2] = 0.0;
-        }
 } /* end computeGradientQ_MAC_zeroW_vd */
 
 
 //set q_y = 0
 void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_zeroV_vd(void)
 {
-        bool bNoBoundary[6];
-        int index_nb[6];
-        int i,j,k,l,index;
-        double rho,g;
-        int icoords[MAXD];
-        L_STATE gravity;
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        COMPONENT comp;
+    bool bNoBoundary[6];
+    int index_nb[6];
+    int i,j,k,l,index;
+    double rho,g;
+    int icoords[MAXD];
+    L_STATE gravity;
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    COMPONENT comp;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
-        for (k = kmin; k <= kmax; k++)
+    for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            comp = top_comp[index];
-
-            index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-            index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-            index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-            index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-            index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-            index_nb[5] = d_index3d(i,j,k+1,top_gmax);
-
-            icoords[0] = i;
-            icoords[1] = j;
-            icoords[2] = k;
-            // 4 directions
-            bNoBoundary[0] = YES;
-            bNoBoundary[1] = YES;
-            bNoBoundary[2] = YES;
-            bNoBoundary[3] = YES;
-            // LOWER
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
-                    comp,&intfc_state,&hs,crx_coords,m_t_int) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-                bNoBoundary[4] = NO;
-            else
-                bNoBoundary[4] = YES;
-            // UPPER
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
-                    comp,&intfc_state,&hs,crx_coords,m_t_int) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-                bNoBoundary[5] = NO;
-            else
-                bNoBoundary[5] = YES;
-
-            if (!bNoBoundary[5]) //cells on UPPER bdry
-            {
-                //get gravity force terms
-                getRectangleCenter(index, coords);
-                computeSourceTerm(coords, gravity);
-
-                g = gravity.m_U[2];
-                rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
-
-                cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[0];
-                cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[1];
-                cell_center[index].m_state.grad_q[2] = rho*g; //p_z = rho*g on UPPER/LOWER bdry
-            }
-            else //other cells
-            {
-                cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[0];
-                cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[1];
-                cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
-                                                        cell_center[index].m_state.m_q)/top_h[2];
-            }
-        }
-        //scatter states
-        for (l = 0; l < dim; ++l)
-        {
-            for (k = kmin; k <= kmax; k++)
-            for (j = jmin; j <= jmax; j++)
             for (i = imin; i <= imax; i++)
             {
                 index = d_index3d(i,j,k,top_gmax);
-                array[index] = cell_center[index].m_state.grad_q[l];
+                comp = top_comp[index];
+
+                index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
+                // 4 directions
+                bNoBoundary[0] = YES;
+                bNoBoundary[1] = YES;
+                bNoBoundary[2] = YES;
+                bNoBoundary[3] = YES;
+                // LOWER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[4] = NO;
+                else
+                    bNoBoundary[4] = YES;
+                // UPPER
+                if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+                            comp,&intfc_state,&hs,crx_coords,m_t_int) &&
+                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                    bNoBoundary[5] = NO;
+                else
+                    bNoBoundary[5] = YES;
+
+                if (!bNoBoundary[5]) //cells on UPPER bdry
+                {
+                    //get gravity force terms
+                    getRectangleCenter(index, coords);
+                    computeSourceTerm(coords, gravity);
+
+                    g = gravity.m_U[2];
+                    rho = 0.5*(cell_center[index].m_state.m_rho + cell_center[index].m_state.m_rho_old);
+
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = rho*g; //p_z = rho*g on UPPER/LOWER bdry
+                }
+                else //other cells
+                {
+                    cell_center[index].m_state.grad_q[0] = (cell_center[index_nb[1]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[0];
+                    cell_center[index].m_state.grad_q[1] = (cell_center[index_nb[3]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[1];
+                    cell_center[index].m_state.grad_q[2] = (cell_center[index_nb[5]].m_state.m_q -
+                            cell_center[index].m_state.m_q)/top_h[2];
+                }
             }
-            scatMeshArray();
-            for (k = 0; k <= top_gmax[2]; k++)
+    //scatter states
+    for (l = 0; l < dim; ++l)
+    {
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.grad_q[l];
+                }
+        scatMeshArray(reflect);
+        for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.grad_q[l] = array[index];
+                }
+    }
+    //set q_y = 0
+    for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
             {
                 index = d_index3d(i,j,k,top_gmax);
-                cell_center[index].m_state.grad_q[l] = array[index];
+                cell_center[index].m_state.grad_q[1] = 0.0;
             }
-        }
-        //set q_y = 0
-        for (k = 0; k <= top_gmax[2]; k++)
-        for (j = 0; j <= top_gmax[1]; j++)
-        for (i = 0; i <= top_gmax[0]; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            cell_center[index].m_state.grad_q[1] = 0.0;
-        }
 } /* end computeGradientQ_MAC_zeroV_vd */
 
 
 #define		MAX_TRI_FOR_INTEGRAL		100
 void Incompress_Solver_Smooth_3D_Cartesian::surfaceTension(
-	double *d,
-	HYPER_SURF_ELEMENT *hse,
-	HYPER_SURF *hs,
-	double *force,
-	double dd)
+        double *d,
+        HYPER_SURF_ELEMENT *hse,
+        HYPER_SURF *hs,
+        double *force,
+        double dd)
 {
-    	/*
-    	double cellVolume = top_h[0]*top_h[1]*top_h[2];
-	int i,j,k,num_tris;
-	TRI *tri,*tri_list[MAX_TRI_FOR_INTEGRAL];
-	double kappa_tmp,kappa,mag_nor,area,delta;
-	double median[MAXD],nor[MAXD];
-	POINT *p;
+    /*
+       double cellVolume = top_h[0]*top_h[1]*top_h[2];
+       int i,j,k,num_tris;
+       TRI *tri,*tri_list[MAX_TRI_FOR_INTEGRAL];
+       double kappa_tmp,kappa,mag_nor,area,delta;
+       double median[MAXD],nor[MAXD];
+       POINT *p;
 
-	TriAndFirstRing(hse,hs,&num_tris,tri_list);
-	for (i = 0; i < num_tris; ++i)
-	{
-	    kappa = 0.0;
-	    tri = tri_list[i];
-	    for (j = 0; j < 3; ++j) median[j] = 0.0;
-	    for (j = 0; j < 3; ++j)
-	    {
-		p = Point_of_tri(tri)[j];
-		for (k = 0; k < 3; ++k)
-		    median[k] += Coords(p)[k];
-	    	GetFrontCurvature(p,Hyper_surf_element(tri),hs,
-				&kappa_tmp,front);
-		kappa += kappa_tmp;
-		nor[j] = Tri_normal(tri)[j];
-	    }
-	    kappa /= 3.0;
-	    mag_nor = mag_vector(nor,3);
-	    area = 0.5*mag_nor;
-	    for (j = 0; j < 3; ++j)
-	    {
-		nor[j] /= mag_nor;
-		median[j] /= 3.0;
-	    }
-	    delta = smoothedDeltaFunction(coords,median);
-	    if (delta == 0.0) continue;
-	    for (j = 0; j < dim; ++j)
-	    {
-		force[j] += delta*sigma*area*kappa*nor[j];
-	    }
-	}
-	for (i = 0; i < dim; i++)
-	    force[j] /= cellVolume;
-	*/
+       TriAndFirstRing(hse,hs,&num_tris,tri_list);
+       for (i = 0; i < num_tris; ++i)
+       {
+       kappa = 0.0;
+       tri = tri_list[i];
+       for (j = 0; j < 3; ++j) median[j] = 0.0;
+       for (j = 0; j < 3; ++j)
+       {
+       p = Point_of_tri(tri)[j];
+       for (k = 0; k < 3; ++k)
+       median[k] += Coords(p)[k];
+       GetFrontCurvature(p,Hyper_surf_element(tri),hs,
+       &kappa_tmp,front);
+       kappa += kappa_tmp;
+       nor[j] = Tri_normal(tri)[j];
+       }
+       kappa /= 3.0;
+       mag_nor = mag_vector(nor,3);
+       area = 0.5*mag_nor;
+       for (j = 0; j < 3; ++j)
+       {
+       nor[j] /= mag_nor;
+       median[j] /= 3.0;
+       }
+       delta = smoothedDeltaFunction(coords,median);
+       if (delta == 0.0) continue;
+       for (j = 0; j < dim; ++j)
+       {
+       force[j] += delta*sigma*area*kappa*nor[j];
+       }
+       }
+       for (i = 0; i < dim; i++)
+       force[j] /= cellVolume;
+       */
 }	/* end surfaceTension3d */
 
 void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition()
 {
-	int i;
-	COMPONENT comp;
-	double coords[MAXD];
+    int i;
+    COMPONENT comp;
+    double coords[MAXD];
 
-	FT_MakeGridIntfc(front);
-	setDomain();
+    FT_MakeGridIntfc(front);
+    setDomain();
 
-        m_rho[0] = iFparams->rho1;
-        m_rho[1] = iFparams->rho2;
-        m_mu[0] = iFparams->mu1;
-        m_mu[1] = iFparams->mu2;
-	m_comp[0] = iFparams->m_comp1;
-	m_comp[1] = iFparams->m_comp2;
-	m_smoothing_radius = iFparams->smoothing_radius;
-	m_sigma = iFparams->surf_tension;
-	mu_min = rho_min = HUGE;
-	for (i = 0; i < 2; ++i)
-	{
-	    if (ifluid_comp(m_comp[i]))
-	    {
-        	mu_min = std::min(mu_min,m_mu[i]);
-        	rho_min = std::min(rho_min,m_rho[i]);
-	    }
-	}
-
-	// Initialize state at cell_center
-        for (i = 0; i < cell_center.size(); i++)
+    m_rho[0] = iFparams->rho1;
+    m_rho[1] = iFparams->rho2;
+    m_mu[0] = iFparams->mu1;
+    m_mu[1] = iFparams->mu2;
+    m_comp[0] = iFparams->m_comp1;
+    m_comp[1] = iFparams->m_comp2;
+    m_smoothing_radius = iFparams->smoothing_radius;
+    m_sigma = iFparams->surf_tension;
+    mu_min = rho_min = HUGE;
+    for (i = 0; i < 2; ++i)
+    {
+        if (ifluid_comp(m_comp[i]))
         {
-            getRectangleCenter(i, coords);
-	    cell_center[i].m_state.setZero();
-	    comp = top_comp[i];
-	    if (getInitialState != NULL)
-	    	(*getInitialState)(comp,coords,cell_center[i].m_state,dim,
-						iFparams);
+            mu_min = std::min(mu_min,m_mu[i]);
+            rho_min = std::min(rho_min,m_rho[i]);
         }
-	computeGradientQ();
-        copyMeshStates();
-	setAdvectionDt();
+    }
+
+    // Initialize state at cell_center
+    for (i = 0; i < cell_center.size(); i++)
+    {
+        getRectangleCenter(i, coords);
+        cell_center[i].m_state.setZero();
+        comp = top_comp[i];
+        if (getInitialState != NULL)
+            (*getInitialState)(comp,coords,cell_center[i].m_state,dim,
+                    iFparams);
+    }
+    computeGradientQ();
+    copyMeshStates();
+    setAdvectionDt();
 }       /* end setInitialCondition */
 
 double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv(
         int *icoords,
         double **field)
 {
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-	int index_nb[6];
-        double div,u_nb[2],v_nb[2],w_nb[2];
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-      	double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double div,u_nb[2],v_nb[2],w_nb[2];
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
 
-	i = icoords[0];
-	j = icoords[1];
-	k = icoords[2];
-	index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
 
-	index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-	index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-	index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-	index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-	index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-	index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-	if (FT_StateStructAtGridCrossing_tmp(front,icoords,WEST,
-		comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-	        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    u_nb[0] = getStateXvel(intfc_state);
-	else
-	    u_nb[0] = (field[0][index] + field[0][index_nb[0]])/2.0;
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,WEST,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        u_nb[0] = getStateXvel(intfc_state);
+    else
+        u_nb[0] = (field[0][index] + field[0][index_nb[0]])/2.0;
 
-	if (FT_StateStructAtGridCrossing_tmp(front,icoords,EAST,
-		comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-	        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    u_nb[1] = getStateXvel(intfc_state);
-	else
-	    u_nb[1] = (field[0][index] + field[0][index_nb[1]])/2.0;
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,EAST,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        u_nb[1] = getStateXvel(intfc_state);
+    else
+        u_nb[1] = (field[0][index] + field[0][index_nb[1]])/2.0;
 
-	if (FT_StateStructAtGridCrossing_tmp(front,icoords,SOUTH,
-		comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-	        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    v_nb[0] = getStateYvel(intfc_state);
-	else
-	    v_nb[0] = (field[1][index] + field[1][index_nb[2]])/2.0;
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,SOUTH,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        v_nb[0] = getStateYvel(intfc_state);
+    else
+        v_nb[0] = (field[1][index] + field[1][index_nb[2]])/2.0;
 
-	if (FT_StateStructAtGridCrossing_tmp(front,icoords,NORTH,
-		comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-	        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    v_nb[1] = getStateYvel(intfc_state);
-	else
-	    v_nb[1] = (field[1][index] + field[1][index_nb[3]])/2.0;
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,NORTH,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        v_nb[1] = getStateYvel(intfc_state);
+    else
+        v_nb[1] = (field[1][index] + field[1][index_nb[3]])/2.0;
 
-	if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
-		comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-	        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    w_nb[0] = getStateZvel(intfc_state);
-	else
-	    w_nb[0] = (field[2][index] + field[2][index_nb[4]])/2.0;
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        w_nb[0] = getStateZvel(intfc_state);
+    else
+        w_nb[0] = (field[2][index] + field[2][index_nb[4]])/2.0;
 
-	if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
-		comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-	        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    w_nb[1] = getStateZvel(intfc_state);
-	else
-	    w_nb[1] = (field[2][index] + field[2][index_nb[5]])/2.0;
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        w_nb[1] = getStateZvel(intfc_state);
+    else
+        w_nb[1] = (field[2][index] + field[2][index_nb[5]])/2.0;
 
-        div = (u_nb[1]-u_nb[0])/top_h[0] + (v_nb[1]-v_nb[0])/top_h[1] + (w_nb[1]-w_nb[0])/top_h[2];
-        return div;
+    div = (u_nb[1]-u_nb[0])/top_h[0] + (v_nb[1]-v_nb[0])/top_h[1] + (w_nb[1]-w_nb[0])/top_h[2];
+    return div;
 } /* end computeFieldPointDiv */
 
 
@@ -17306,134 +17543,146 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_Neumann_vd(
         int *icoords,
         double **field)
 {
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-        int index_nb[6];
-        double div,u_nb[2],v_nb[2],w_nb[2];
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double div,u_nb[2],v_nb[2],w_nb[2];
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
 
-        i = icoords[0];
-        j = icoords[1];
-        k = icoords[2];
-        index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
 
-        index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-        index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-        index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-        index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-        index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-        index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-        //use homogeneous Neumann B.C.
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,WEST,
+    //use homogeneous Neumann B.C.
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,WEST,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            u_nb[0] = field[0][index];
-        else
-            u_nb[0] = (field[0][index] + field[0][index_nb[0]])/2.0;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        u_nb[0] = field[0][index];
+    else
+        u_nb[0] = (field[0][index] + field[0][index_nb[0]])/2.0;
 
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,EAST,
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,EAST,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            u_nb[1] = field[0][index];
-        else
-            u_nb[1] = (field[0][index] + field[0][index_nb[1]])/2.0;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        u_nb[1] = field[0][index];
+    else
+        u_nb[1] = (field[0][index] + field[0][index_nb[1]])/2.0;
 
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,SOUTH,
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,SOUTH,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            v_nb[0] = field[1][index];
-        else
-            v_nb[0] = (field[1][index] + field[1][index_nb[2]])/2.0;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        v_nb[0] = field[1][index];
+    else
+        v_nb[0] = (field[1][index] + field[1][index_nb[2]])/2.0;
 
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,NORTH,
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,NORTH,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            v_nb[1] = field[1][index];
-        else
-            v_nb[1] = (field[1][index] + field[1][index_nb[3]])/2.0;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        v_nb[1] = field[1][index];
+    else
+        v_nb[1] = (field[1][index] + field[1][index_nb[3]])/2.0;
 
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            w_nb[0] = field[2][index];
-        else
-            w_nb[0] = (field[2][index] + field[2][index_nb[4]])/2.0;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        w_nb[0] = field[2][index];
+    else
+        w_nb[0] = (field[2][index] + field[2][index_nb[4]])/2.0;
 
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            w_nb[1] = field[2][index];
-        else
-            w_nb[1] = (field[2][index] + field[2][index_nb[5]])/2.0;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        w_nb[1] = field[2][index];
+    else
+        w_nb[1] = (field[2][index] + field[2][index_nb[5]])/2.0;
 
-        div = (u_nb[1]-u_nb[0])/top_h[0] + (v_nb[1]-v_nb[0])/top_h[1] + (w_nb[1]-w_nb[0])/top_h[2];
-        return div;
+    div = (u_nb[1]-u_nb[0])/top_h[0] + (v_nb[1]-v_nb[0])/top_h[1] + (w_nb[1]-w_nb[0])/top_h[2];
+    return div;
 } /* end computeFieldPointDiv_Neumann_vd */
-
 
 double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
         int *icoords,
         double **field)
 {
-        bool bNoBoundary[6];
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-	int index_nb[6];
-        double div;
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
+    bool bNoBoundary[6];
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double div;
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    INTERFACE *intfc;
+    intfc = front->interf;
+    int dirr, side;
 
-	i = icoords[0];
-	j = icoords[1];
-	k = icoords[2];
-	index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
 
-	index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-	index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-	index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
 
-        // 4 directions
-        bNoBoundary[0] = YES;
-        bNoBoundary[1] = YES;
-        bNoBoundary[2] = YES;
-        bNoBoundary[3] = YES;
-        // LOWER
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+    // 4 directions
+    bNoBoundary[0] = YES;
+    bNoBoundary[1] = YES;
+    bNoBoundary[2] = YES;
+    bNoBoundary[3] = YES;
+    // bNoBoundary == true (using neighbor cell)
+    // bNoBoundary == false (using appropriate boundary state)
+    // TODO && FIXME: A Help Function to convert GRID_DIRECTION into dir and side
+    //convertGridDirectionToDirSide(LOWER, &dirr, &side);
+    // LOWER
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            bNoBoundary[4] = NO;
-        else
-            bNoBoundary[4] = YES;
-        // UPPER
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+    {
+        bNoBoundary[4] = NO;
+        //printf("HZ LOWER SIDE icoords = (%d %d %d) BOUNDARY TYPE is %d\n", i, j, k, wave_type(hs));
+    }
+    else
+        bNoBoundary[4] = YES;
+    // UPPER
+    if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            bNoBoundary[5] = NO;
-        else
-            bNoBoundary[5] = YES;
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+    {
+        bNoBoundary[5] = NO;
+        //printf("HZ UPPER SIDE icoords = (%d %d %d) BOUNDARY TYPE is %d\n", i, j, k, wave_type(hs));
+    }
+    else
+        bNoBoundary[5] = YES;
 
-        div = 0;
-        if (!bNoBoundary[4]) //cells on LOWER bdry
-        {
-            div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
-            div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
-            div += (field[2][index] - 0)/top_h[2];
-        }
-        else //other cells
-        {
-            div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
-            div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
-            div += (field[2][index] - field[2][index_nb[4]])/top_h[2];
-        }
-        return div;
+    div = 0;
+    if (!bNoBoundary[4]) //cells on LOWER bdry
+    {
+        div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
+        div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
+        div += (field[2][index] - 0)/top_h[2];
+    }
+    else //other cells
+    {
+        div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
+        div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
+        div += (field[2][index] - field[2][index_nb[4]])/top_h[2];
+    }
+    return div;
 } /* end computeFieldPointDiv_MAC_vd */
 
 
@@ -17442,49 +17691,49 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGradPhi(
         double *field,
         double *grad_field)
 {
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-	int index_nb[6];
-        double p_nbedge[6],p0;  //the p values on the cell edges and cell center
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double p_nbedge[6],p0;  //the p values on the cell edges and cell center
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
-	i = icoords[0];
-	j = icoords[1];
-	k = icoords[2];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
 
-	index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
-	p0 = field[index];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
+    p0 = field[index];
 
-	index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-	index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-	index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-	index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-	index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-	index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-	for (nb = 0; nb < 6; nb++)
-	{
-	    if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-			comp,&intfc_state,&hs,crx_coords) &&
-		        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    {
-		if (wave_type(hs) == DIRICHLET_BOUNDARY &&
-		    boundary_state(hs) == NULL)
-		    p_nbedge[nb] = 0.0;
-		else //Neumann B.C.
-		    p_nbedge[nb] = p0;
-	    }
-	    else
-		p_nbedge[nb] = 0.5*(p0 + field[index_nb[nb]]);
-	}
-	grad_field[0] = (p_nbedge[1] - p_nbedge[0])/top_h[0];
-	grad_field[1] = (p_nbedge[3] - p_nbedge[2])/top_h[1];
-	grad_field[2] = (p_nbedge[5] - p_nbedge[4])/top_h[2];
+    for (nb = 0; nb < 6; nb++)
+    {
+        if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                    comp,&intfc_state,&hs,crx_coords) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        {
+            if (wave_type(hs) == DIRICHLET_BOUNDARY &&
+                    boundary_state(hs) == NULL)
+                p_nbedge[nb] = 0.0;
+            else //Neumann B.C.
+                p_nbedge[nb] = p0;
+        }
+        else
+            p_nbedge[nb] = 0.5*(p0 + field[index_nb[nb]]);
+    }
+    grad_field[0] = (p_nbedge[1] - p_nbedge[0])/top_h[0];
+    grad_field[1] = (p_nbedge[3] - p_nbedge[2])/top_h[1];
+    grad_field[2] = (p_nbedge[5] - p_nbedge[4])/top_h[2];
 }
 
 
@@ -17493,54 +17742,54 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGradRho(
         double *field,
         double *grad_field)
 {
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-        int index_nb[6];
-        double p_nbedge[6],p0;  //the p values on the cell faces and cell center
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double p_nbedge[6],p0;  //the p values on the cell faces and cell center
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
-        i = icoords[0];
-        j = icoords[1];
-        k = icoords[2];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
 
-        index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
-        p0 = field[index];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
+    p0 = field[index];
 
-        index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-        index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-        index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-        index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-        index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-        index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-        for (nb = 0; nb < 6; nb++)
+    for (nb = 0; nb < 6; nb++)
+    {
+        if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                    comp,&intfc_state,&hs,crx_coords) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
         {
-            if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-                        comp,&intfc_state,&hs,crx_coords) &&
-                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            {
-                if (wave_type(hs) == DIRICHLET_BOUNDARY &&
+            if (wave_type(hs) == DIRICHLET_BOUNDARY &&
                     boundary_state(hs) == NULL)
-                {
-                    if (nb == 4)
-                        p_nbedge[nb] = m_rho[1];
-                    if (nb == 5)
-                        p_nbedge[nb] = m_rho[0];
-                }
-                else // homogenous Neumann B.C. for rho
-                    p_nbedge[nb] = p0;
+            {
+                if (nb == 4)
+                    p_nbedge[nb] = m_rho[1];
+                if (nb == 5)
+                    p_nbedge[nb] = m_rho[0];
             }
-            else
-                p_nbedge[nb] = 0.5*(p0 + field[index_nb[nb]]);
+            else // homogenous Neumann B.C. for rho
+                p_nbedge[nb] = p0;
         }
-        grad_field[0] = (p_nbedge[1] - p_nbedge[0])/top_h[0];
-        grad_field[1] = (p_nbedge[3] - p_nbedge[2])/top_h[1];
-        grad_field[2] = (p_nbedge[5] - p_nbedge[4])/top_h[2];
+        else
+            p_nbedge[nb] = 0.5*(p0 + field[index_nb[nb]]);
+    }
+    grad_field[0] = (p_nbedge[1] - p_nbedge[0])/top_h[0];
+    grad_field[1] = (p_nbedge[3] - p_nbedge[2])/top_h[1];
+    grad_field[2] = (p_nbedge[5] - p_nbedge[4])/top_h[2];
 }
 
 
@@ -17549,52 +17798,52 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGradRho_MAC_vd(
         double *field,
         double *grad_field)
 {
-        int index,index_nb[6];
-        COMPONENT comp;
-        int i,j,k,nb;
-        double p_nb[6],p0; //the p values on the cell faces and cell center
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    int index,index_nb[6];
+    COMPONENT comp;
+    int i,j,k,nb;
+    double p_nb[6],p0; //the p values on the cell faces and cell center
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
-        i = icoords[0];
-        j = icoords[1];
-        k = icoords[2];
-        index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
-        p0 = field[index];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
+    p0 = field[index];
 
-        index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-        index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-        index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-        index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-        index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-        index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-        for (nb = 0; nb < 6; ++nb)
+    for (nb = 0; nb < 6; ++nb)
+    {
+        if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                    comp,&intfc_state,&hs,crx_coords) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
         {
-            if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-                        comp,&intfc_state,&hs,crx_coords) &&
-                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            {
-                if (wave_type(hs) == DIRICHLET_BOUNDARY &&
+            if (wave_type(hs) == DIRICHLET_BOUNDARY &&
                     boundary_state(hs) == NULL)
-                {
-                    if (nb == 4)
-                        p_nb[nb] = m_rho[1];
-                    if (nb == 5)
-                        p_nb[nb] = m_rho[0];
-                }
-                else // homogenous Neumann B.C. for rho
-                    p_nb[nb] = p0;
+            {
+                if (nb == 4)
+                    p_nb[nb] = m_rho[1];
+                if (nb == 5)
+                    p_nb[nb] = m_rho[0];
             }
-            else
-                p_nb[nb] = field[index_nb[nb]];
+            else // homogenous Neumann B.C. for rho
+                p_nb[nb] = p0;
         }
-        grad_field[0] = (p_nb[1] - p0)/top_h[0];
-        grad_field[1] = (p_nb[3] - p0)/top_h[1];
-        grad_field[2] = (p_nb[5] - p0)/top_h[2];
+        else
+            p_nb[nb] = field[index_nb[nb]];
+    }
+    grad_field[0] = (p_nb[1] - p0)/top_h[0];
+    grad_field[1] = (p_nb[3] - p0)/top_h[1];
+    grad_field[2] = (p_nb[5] - p0)/top_h[2];
 }
 
 
@@ -17603,49 +17852,49 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGrad_MAC_vd(
         double *field,
         double *grad_field)
 {
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-        int index_nb[6];
-        double p_nb[6],p0;
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double p_nb[6],p0;
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
-        i = icoords[0];
-        j = icoords[1];
-        k = icoords[2];
-        index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
-        p0 = field[index];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
+    p0 = field[index];
 
-        index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-        index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-        index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-        index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-        index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-        index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-        for (nb = 0; nb < 6; nb++)
+    for (nb = 0; nb < 6; nb++)
+    {
+        if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                    comp,&intfc_state,&hs,crx_coords) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
         {
-            if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-                        comp,&intfc_state,&hs,crx_coords) &&
-                        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            {
-                if ((wave_type(hs) == DIRICHLET_BOUNDARY &&
-                     boundary_state(hs) == NULL)
-                     || wave_type(hs) == NEUMANN_BOUNDARY)
-                    p_nb[nb] = p0;
-                else
-                    p_nb[nb] = field[index_nb[nb]];
-            }
+            if ((wave_type(hs) == DIRICHLET_BOUNDARY &&
+                        boundary_state(hs) == NULL)
+                    || wave_type(hs) == NEUMANN_BOUNDARY)
+                p_nb[nb] = p0;
             else
                 p_nb[nb] = field[index_nb[nb]];
         }
-        grad_field[0] = (p_nb[1] - p0)/top_h[0];
-        grad_field[1] = (p_nb[3] - p0)/top_h[1];
-        grad_field[2] = (p_nb[5] - p0)/top_h[2];
+        else
+            p_nb[nb] = field[index_nb[nb]];
+    }
+    grad_field[0] = (p_nb[1] - p0)/top_h[0];
+    grad_field[1] = (p_nb[3] - p0)/top_h[1];
+    grad_field[2] = (p_nb[5] - p0)/top_h[2];
 } /* end computeFieldPointGrad_MAC_vd */
 
 
@@ -17654,64 +17903,64 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGrad(
         double *field,
         double *grad_field)
 {
-        int index;
-        COMPONENT comp;
-        int i,j,k,nb;
-	int index_nb[6];
-        double p_nbedge[6],p0;  //the p values on the cell edges and cell center
-        double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
-        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    int index;
+    COMPONENT comp;
+    int i,j,k,nb;
+    int index_nb[6];
+    double p_nbedge[6],p0;  //the p values on the cell edges and cell center
+    double coords[MAXD],crx_coords[MAXD];
+    POINTER intfc_state;
+    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
-	i = icoords[0];
-	j = icoords[1];
-	k = icoords[2];
+    i = icoords[0];
+    j = icoords[1];
+    k = icoords[2];
 
-	index = d_index3d(i,j,k,top_gmax);
-        comp = top_comp[index];
-	p0 = field[index];
+    index = d_index3d(i,j,k,top_gmax);
+    comp = top_comp[index];
+    p0 = field[index];
 
-	index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-	index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-	index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-	index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-	index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-	index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-	for (nb = 0; nb < 6; nb++)
-	{
-	    if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-			comp,&intfc_state,&hs,crx_coords) &&
-		        wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-	    {
-		if (wave_type(hs) == DIRICHLET_BOUNDARY &&
-		    boundary_state(hs) == NULL)
-		    p_nbedge[nb] = 0.0;
-		else
-		{
-		    //p_nbedge[nb] = p0;
+    for (nb = 0; nb < 6; nb++)
+    {
+        if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                    comp,&intfc_state,&hs,crx_coords) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        {
+            if (wave_type(hs) == DIRICHLET_BOUNDARY &&
+                    boundary_state(hs) == NULL)
+                p_nbedge[nb] = 0.0;
+            else
+            {
+                //p_nbedge[nb] = p0;
 
-		    if (nb == 0)
-			p_nbedge[nb] = p0 - 0.5*(field[index_nb[1]] - p0);
-		    else if (nb == 1)
-			p_nbedge[nb] = p0 + 0.5*(p0 - field[index_nb[0]]);
-		    else if (nb == 2)
-			p_nbedge[nb] = p0 - 0.5*(field[index_nb[3]] - p0);
-		    else if (nb == 3)
-			p_nbedge[nb] = p0 + 0.5*(p0 - field[index_nb[2]]);
-		    else if (nb == 4)
-			p_nbedge[nb] = p0 - 0.5*(field[index_nb[5]] - p0);
-		    else if (nb == 5)
-			p_nbedge[nb] = p0 + 0.5*(p0 - field[index_nb[4]]);
-		}
-	    }
-	    else
-		p_nbedge[nb] = (p0 + field[index_nb[nb]])/2.0;
-	}
-	grad_field[0] = (p_nbedge[1] - p_nbedge[0])/top_h[0];
-	grad_field[1] = (p_nbedge[3] - p_nbedge[2])/top_h[1];
-	grad_field[2] = (p_nbedge[5] - p_nbedge[4])/top_h[2];
+                if (nb == 0)
+                    p_nbedge[nb] = p0 - 0.5*(field[index_nb[1]] - p0);
+                else if (nb == 1)
+                    p_nbedge[nb] = p0 + 0.5*(p0 - field[index_nb[0]]);
+                else if (nb == 2)
+                    p_nbedge[nb] = p0 - 0.5*(field[index_nb[3]] - p0);
+                else if (nb == 3)
+                    p_nbedge[nb] = p0 + 0.5*(p0 - field[index_nb[2]]);
+                else if (nb == 4)
+                    p_nbedge[nb] = p0 - 0.5*(field[index_nb[5]] - p0);
+                else if (nb == 5)
+                    p_nbedge[nb] = p0 + 0.5*(p0 - field[index_nb[4]]);
+            }
+        }
+        else
+            p_nbedge[nb] = (p0 + field[index_nb[nb]])/2.0;
+    }
+    grad_field[0] = (p_nbedge[1] - p_nbedge[0])/top_h[0];
+    grad_field[1] = (p_nbedge[3] - p_nbedge[2])/top_h[1];
+    grad_field[2] = (p_nbedge[5] - p_nbedge[4])/top_h[2];
 }
 
 
@@ -17728,6 +17977,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_decou
     INTERFACE *intfc = front->interf;
     double coords[MAXD], crx_coords[MAXD];
     double coeff[6],mu[6],mu0,rho,corner[6],rhs;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     // U_nb contains states at neighbor cell or states on the boundary.
     double U_nb[6], U_nb_new[6], U_center;
@@ -17750,196 +18001,198 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_decou
 
     for (l = 0; l < dim; ++l)
     {
-	PETSc solver;
+        PETSc solver;
 
-	solver.Create(ilower, iupper-1, 7, 7);
-	solver.Reset_A();
-	solver.Reset_b();
-	solver.Reset_x();
+        solver.Create(ilower, iupper-1, 7, 7);
+        solver.Reset_A();
+        solver.Reset_b();
+        solver.Reset_x();
 
-	for (k = kmin; k <= kmax; k++)
-	    for (j = jmin; j <= jmax; j++)
-		for (i = imin; i <= imax; i++)
-		{
-		    I = ijk_to_I[i][j][k];
-		    if (I == -1) continue;
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    I = ijk_to_I[i][j][k];
+                    if (I == -1) continue;
 
-		    index = d_index3d(i,j,k,top_gmax);
-		    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-		    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-		    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-		    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-		    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-		    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+                    index = d_index3d(i,j,k,top_gmax);
+                    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-		    icoords[0] = i;
-		    icoords[1] = j;
-		    icoords[2] = k;
-		    comp = top_comp[index];
+                    icoords[0] = i;
+                    icoords[1] = j;
+                    icoords[2] = k;
+                    comp = top_comp[index];
 
-		    I_nb[0] = ijk_to_I[i-1][j][k]; //west
-		    I_nb[1] = ijk_to_I[i+1][j][k]; //east
-		    I_nb[2] = ijk_to_I[i][j-1][k]; //south
-		    I_nb[3] = ijk_to_I[i][j+1][k]; //north
-		    I_nb[4] = ijk_to_I[i][j][k-1]; //lower
-		    I_nb[5] = ijk_to_I[i][j][k+1]; //upper
-
-
-		    mu0 = cell_center[index].m_state.m_mu;
-		    rho = cell_center[index].m_state.m_rho;
-		    U_center =  cell_center[index].m_state.m_U[l];
-
-		    for (nb = 0; nb < 6; nb++)
-		    {
-			if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-				comp,&intfc_state,&hs,crx_coords,m_t_old) &&
-				wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-			{
-			    // old boundary condition
-			    U_nb[nb] = getStateVel[l](intfc_state);
-			    // new boundary condition
-			    FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-				    comp,&intfc_state,&hs,crx_coords,m_t_new);
-			    U_nb_new[nb] = getStateVel[l](intfc_state);
-
-			    if (wave_type(hs) == DIRICHLET_BOUNDARY ||
-				    wave_type(hs) == NEUMANN_BOUNDARY)
-				mu[nb] = mu0;
-			    else
-				mu[nb] = 1.0/2*(mu0 +
-					cell_center[index_nb[nb]].m_state.m_mu);
-			}
-			else
-			{
-			    U_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[l];
-			    mu[nb] = 1.0/2*(mu0 +
-				    cell_center[index_nb[nb]].m_state.m_mu);
-			}
-		    }
+                    I_nb[0] = ijk_to_I[i-1][j][k]; //west
+                    I_nb[1] = ijk_to_I[i+1][j][k]; //east
+                    I_nb[2] = ijk_to_I[i][j-1][k]; //south
+                    I_nb[3] = ijk_to_I[i][j+1][k]; //north
+                    I_nb[4] = ijk_to_I[i][j][k-1]; //lower
+                    I_nb[5] = ijk_to_I[i][j][k+1]; //upper
 
 
-		    getRectangleCenter(index, coords);
-		    computeSourceTerm(coords, source_term);
+                    mu0 = cell_center[index].m_state.m_mu;
+                    rho = cell_center[index].m_state.m_rho;
+                    U_center =  cell_center[index].m_state.m_U[l];
+
+                    for (nb = 0; nb < 6; nb++)
+                    {
+                        if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                                    comp,&intfc_state,&hs,crx_coords,m_t_old) &&
+                                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                        {
+                            // old boundary condition
+                            U_nb[nb] = getStateVel[l](intfc_state);
+                            // new boundary condition
+                            FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                                    comp,&intfc_state,&hs,crx_coords,m_t_new);
+                            U_nb_new[nb] = getStateVel[l](intfc_state);
+
+                            if (wave_type(hs) == DIRICHLET_BOUNDARY ||
+                                    wave_type(hs) == NEUMANN_BOUNDARY)
+                                mu[nb] = mu0;
+                            else
+                                mu[nb] = 1.0/2*(mu0 +
+                                        cell_center[index_nb[nb]].m_state.m_mu);
+                        }
+                        else
+                        {
+                            U_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[l];
+                            mu[nb] = 1.0/2*(mu0 +
+                                    cell_center[index_nb[nb]].m_state.m_mu);
+                        }
+                    }
 
 
-		    rhs = 0;
-		    double dh[3] = {top_h[0], top_h[1], top_h[2]};
-		    for(nb = 0; nb<6; nb++)
-		    {
-			// use dh[1]*dh[2] as the face area
-			if(nb<2)
-			{
-			    dh[0] = top_h[0];
-			    dh[1] = top_h[1];
-			    dh[2] = top_h[2];
-			}
-			else if(nb<4 && nb>=2)
-			{
-			    dh[0] = top_h[1];
-			    dh[1] = top_h[2];
-			    dh[2] = top_h[0];
-			}
-			else if(nb<6 && nb>=4)
-			{
-			    dh[0] = top_h[2];
-			    dh[1] = top_h[0];
-			    dh[2] = top_h[1];
-			}
+                    getRectangleCenter(index, coords);
+                    computeSourceTerm(coords, source_term);
 
-			if(I_nb[nb]>=0)  // interior
-			{
-			    // u^{*}
-			    solver.Add_A(I, I,        (-1) * -0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]));
-			    solver.Add_A(I, I_nb[nb], (-1) *  0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]));
-			    // u^{n}
-			    rhs += 0.5*m_dt/rho*mu[nb] *
-				    (U_nb[nb]-U_center) /(dh[0]*dh[0]);
-			}
-			else		// boundary
-			{
-			    // u^{*}
-			    solver.Add_A(I, I,       (-1) * -0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]) * 2);
-			    rhs += 0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]) * 2 * U_nb_new[nb];
-			    // u^{n}
-			    rhs += 0.5*m_dt/rho*mu[nb] *
-				    (U_nb[nb]-U_center) /(dh[0]*dh[0]) * 2;
-			}
-		    }
 
-		    rhs += m_dt*source_term.m_U[l];
-		    rhs += m_dt*cell_center[index].m_state.f_surf[l];
-		    rhs -= m_dt*cell_center[index].m_state.grad_q[l]/rho;
-		    //printf("gradq = %.16g\n",cell_center[index].m_state.grad_q[l]);
+                    rhs = 0;
+                    double dh[3] = {top_h[0], top_h[1], top_h[2]};
+                    for(nb = 0; nb<6; nb++)
+                    {
+                        // use dh[1]*dh[2] as the face area
+                        if(nb<2)
+                        {
+                            dh[0] = top_h[0];
+                            dh[1] = top_h[1];
+                            dh[2] = top_h[2];
+                        }
+                        else if(nb<4 && nb>=2)
+                        {
+                            dh[0] = top_h[1];
+                            dh[1] = top_h[2];
+                            dh[2] = top_h[0];
+                        }
+                        else if(nb<6 && nb>=4)
+                        {
+                            dh[0] = top_h[2];
+                            dh[1] = top_h[0];
+                            dh[2] = top_h[1];
+                        }
 
-		    rhs -= m_dt * cell_center[index].m_state.m_adv[l]; //advection source term
+                        if(I_nb[nb]>=0)  // interior
+                        {
+                            // u^{*}
+                            solver.Add_A(I, I,        (-1) * -0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]));
+                            solver.Add_A(I, I_nb[nb], (-1) *  0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]));
+                            // u^{n}
+                            rhs += 0.5*m_dt/rho*mu[nb] *
+                                (U_nb[nb]-U_center) /(dh[0]*dh[0]);
+                        }
+                        else		// boundary
+                        {
+                            // u^{*}
+                            solver.Add_A(I, I,       (-1) * -0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]) * 2);
+                            rhs += 0.5*m_dt/rho*mu[nb] /(dh[0]*dh[0]) * 2 * U_nb_new[nb];
+                            // u^{n}
+                            rhs += 0.5*m_dt/rho*mu[nb] *
+                                (U_nb[nb]-U_center) /(dh[0]*dh[0]) * 2;
+                        }
+                    }
 
-		    solver.Add_A(I, I, 1.0);
-		    rhs += U_center;
+                    rhs += m_dt*source_term.m_U[l];
+                    rhs += m_dt*cell_center[index].m_state.f_surf[l];
+                    rhs -= m_dt*cell_center[index].m_state.grad_q[l]/rho;
+                    //printf("gradq = %.16g\n",cell_center[index].m_state.grad_q[l]);
 
-		    solver.Add_b(I, rhs);
-		}
+                    rhs -= m_dt * cell_center[index].m_state.m_adv[l]; //advection source term
 
-	solver.SetMaxIter(40000);
-	solver.SetTol(1e-10);
-	solver.Solve_GMRES();
+                    solver.Add_A(I, I, 1.0);
+                    rhs += U_center;
 
-	// get back the solution
-	solver.Get_x(x);
+                    solver.Add_b(I, rhs);
+                }
 
-	PetscInt num_iter;
-	double rel_residual;
-	solver.GetNumIterations(&num_iter);
-	solver.GetFinalRelativeResidualNorm(&rel_residual);
+        solver.SetMaxIter(40000);
+        solver.SetTol(1e-10);
+        solver.Solve_GMRES();
 
-	if (debugging("PETSc"))
-	    (void) printf("L_CARTESIAN::"
-		    "compDiffWithSmoothProperty_2nd_decoupled: "
-		    "num_iter = %d, rel_residual = %le. \n",
-		    num_iter,rel_residual);
+        // get back the solution
+        solver.Get_x(x);
 
-	for (k = kmin; k <= kmax; k++)
-	    for (j = jmin; j <= jmax; j++)
-		for (i = imin; i <= imax; i++)
-		{
-		    I = ijk_to_I[i][j][k];
-		    index = d_index3d(i,j,k,top_gmax);
-		    if (I >= 0)
-		    {
-			cell_center[index].m_state.m_U[l] = x[I-ilower];
-		    }
-		    else
-		    {
-			cell_center[index].m_state.m_U[l] = 0.0;
-		    }
-		}
+        PetscInt num_iter;
+        double rel_residual;
+        solver.GetNumIterations(&num_iter);
+        solver.GetFinalRelativeResidualNorm(&rel_residual);
 
-	for (k = kmin; k <= kmax; k++)
-	    for (j = jmin; j <= jmax; j++)
-		for (i = imin; i <= imax; i++)
-		{
-		    index = d_index3d(i,j,k,top_gmax);
-		    array[index] = cell_center[index].m_state.m_U[l];
-		}
-	scatMeshArray();
-	for (k = 0; k <= top_gmax[2]; k++)
-	    for (j = 0; j <= top_gmax[1]; j++)
-		for (i = 0; i <= top_gmax[0]; i++)
-		{
-		    index = d_index3d(i,j,k,top_gmax);
-		    cell_center[index].m_state.m_U[l] = array[index];
-		}
+        if (debugging("PETSc"))
+            (void) printf("L_CARTESIAN::"
+                    "compDiffWithSmoothProperty_2nd_decoupled: "
+                    "num_iter = %d, rel_residual = %le. \n",
+                    num_iter,rel_residual);
+
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    I = ijk_to_I[i][j][k];
+                    index = d_index3d(i,j,k,top_gmax);
+                    if (I >= 0)
+                    {
+                        cell_center[index].m_state.m_U[l] = x[I-ilower];
+                    }
+                    else
+                    {
+                        cell_center[index].m_state.m_U[l] = 0.0;
+                    }
+                }
+
+        for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.m_U[l];
+                }
+        scatMeshArray(reflect);
+        //REFLECTION BOUNDARY CONDITION
+        //Solute_Reflect(l,array,reflect);
+        for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.m_U[l] = array[index];
+                }
     }
     for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	    for (i = imin; i <= imax; i++)
-	    {
-		index = d_index3d(i,j,k,top_gmax);
-		speed = fabs(cell_center[index].m_state.m_U[0]) +
-			fabs(cell_center[index].m_state.m_U[1]) +
-			fabs(cell_center[index].m_state.m_U[2]);
-		if (speed > max_speed)
-		    max_speed = speed;
-	    }
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                speed = fabs(cell_center[index].m_state.m_U[0]) +
+                    fabs(cell_center[index].m_state.m_U[1]) +
+                    fabs(cell_center[index].m_state.m_U[2]);
+                if (speed > max_speed)
+                    max_speed = speed;
+            }
     pp_global_max(&max_speed,1);
 
     FT_FreeThese(1,x);
@@ -17955,24 +18208,24 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_decoupled(void)
     setIndexMap();
 
 
-	for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	for (i = imin; i <= imax; i++)
-	{
-	    I = ijk_to_I[i][j][k];
-	    if (I == -1) continue;
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                I = ijk_to_I[i][j][k];
+                if (I == -1) continue;
 
-	    index = d_index3d(i,j,k,top_gmax);
-	    icoords[0] = i;
-	    icoords[1] = j;
-	    icoords[2] = k;
+                index = d_index3d(i,j,k,top_gmax);
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
 
-	    double convectionTerm[3];
-	    getAdvectionTerm_decoupled(icoords,convectionTerm);
-	    cell_center[index].m_state.m_adv[0] = convectionTerm[0];
-	    cell_center[index].m_state.m_adv[1] = convectionTerm[1];
-	    cell_center[index].m_state.m_adv[2] = convectionTerm[2];
-	}
+                double convectionTerm[3];
+                getAdvectionTerm_decoupled(icoords,convectionTerm);
+                cell_center[index].m_state.m_adv[0] = convectionTerm[0];
+                cell_center[index].m_state.m_adv[1] = convectionTerm[1];
+                cell_center[index].m_state.m_adv[2] = convectionTerm[2];
+            }
 }
 
 
@@ -17985,24 +18238,24 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_coupled(void)
     setIndexMap();
 
 
-	for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	for (i = imin; i <= imax; i++)
-	{
-	    I = ijk_to_I[i][j][k];
-	    if (I == -1) continue;
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                I = ijk_to_I[i][j][k];
+                if (I == -1) continue;
 
-	    index = d_index3d(i,j,k,top_gmax);
-	    icoords[0] = i;
-	    icoords[1] = j;
-	    icoords[2] = k;
+                index = d_index3d(i,j,k,top_gmax);
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
 
-	    double convectionTerm[3];
-	    getAdvectionTerm_coupled(icoords,convectionTerm);
-	    cell_center[index].m_state.m_adv[0] = convectionTerm[0];
-	    cell_center[index].m_state.m_adv[1] = convectionTerm[1];
-	    cell_center[index].m_state.m_adv[2] = convectionTerm[2];
-	}
+                double convectionTerm[3];
+                getAdvectionTerm_coupled(icoords,convectionTerm);
+                cell_center[index].m_state.m_adv[0] = convectionTerm[0];
+                cell_center[index].m_state.m_adv[1] = convectionTerm[1];
+                cell_center[index].m_state.m_adv[2] = convectionTerm[2];
+            }
 }
 
 
@@ -18015,24 +18268,24 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_decoupled_upgraded
     setIndexMap();
 
 
-	for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	for (i = imin; i <= imax; i++)
-	{
-	    I = ijk_to_I[i][j][k];
-	    if (I == -1) continue;
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                I = ijk_to_I[i][j][k];
+                if (I == -1) continue;
 
-	    index = d_index3d(i,j,k,top_gmax);
-	    icoords[0] = i;
-	    icoords[1] = j;
-	    icoords[2] = k;
+                index = d_index3d(i,j,k,top_gmax);
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
 
-	    double convectionTerm[3];
-	    getAdvectionTerm_decoupled_upgraded(icoords,convectionTerm);
-	    cell_center[index].m_state.m_adv[0] = convectionTerm[0];
-	    cell_center[index].m_state.m_adv[1] = convectionTerm[1];
-	    cell_center[index].m_state.m_adv[2] = convectionTerm[2];
-	}
+                double convectionTerm[3];
+                getAdvectionTerm_decoupled_upgraded(icoords,convectionTerm);
+                cell_center[index].m_state.m_adv[0] = convectionTerm[0];
+                cell_center[index].m_state.m_adv[1] = convectionTerm[1];
+                cell_center[index].m_state.m_adv[2] = convectionTerm[2];
+            }
 }
 
 
@@ -18045,30 +18298,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_coupled_upgraded(v
     setIndexMap();
 
 
-	for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
-	for (i = imin; i <= imax; i++)
-	{
-	    I = ijk_to_I[i][j][k];
-	    if (I == -1) continue;
+    for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+            {
+                I = ijk_to_I[i][j][k];
+                if (I == -1) continue;
 
-	    index = d_index3d(i,j,k,top_gmax);
-	    icoords[0] = i;
-	    icoords[1] = j;
-	    icoords[2] = k;
+                index = d_index3d(i,j,k,top_gmax);
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
 
-	    double convectionTerm[3];
-	    getAdvectionTerm_coupled_upgraded(icoords,convectionTerm);
-	    cell_center[index].m_state.m_adv[0] = convectionTerm[0];
-	    cell_center[index].m_state.m_adv[1] = convectionTerm[1];
-	    cell_center[index].m_state.m_adv[2] = convectionTerm[2];
-	}
+                double convectionTerm[3];
+                getAdvectionTerm_coupled_upgraded(icoords,convectionTerm);
+                cell_center[index].m_state.m_adv[0] = convectionTerm[0];
+                cell_center[index].m_state.m_adv[1] = convectionTerm[1];
+                cell_center[index].m_state.m_adv[2] = convectionTerm[2];
+            }
 }
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
-	int *icoords,
-	double convectionTerm[3])
+        int *icoords,
+        double convectionTerm[3])
 {
     bool bNoBoundary;
     int ICoords[3];
@@ -18086,10 +18339,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,WEST,sl,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0] - 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep(ICoords,EAST,sl);
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep(ICoords,EAST,sl);
     }
     getFaceVelocity_middleStep(icoords,WEST,sr);
     getRiemannSolution(COORD_X,sl,sr,state_west);
@@ -18098,10 +18351,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,EAST,sr,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0] + 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep(ICoords,WEST,sr);
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep(ICoords,WEST,sr);
     }
     getFaceVelocity_middleStep(icoords,EAST,sl);
     getRiemannSolution(COORD_X,sl,sr,state_east);
@@ -18110,10 +18363,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,SOUTH,sl,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] - 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep(ICoords,NORTH,sl);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep(ICoords,NORTH,sl);
     }
     getFaceVelocity_middleStep(icoords,SOUTH,sr);
     getRiemannSolution(COORD_Y,sl,sr,state_south);
@@ -18122,10 +18375,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,NORTH,sr,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] + 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep(ICoords,SOUTH,sr);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep(ICoords,SOUTH,sr);
     }
     getFaceVelocity_middleStep(icoords,NORTH,sl);
     getRiemannSolution(COORD_Y,sl,sr,state_north);
@@ -18134,10 +18387,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,LOWER,sl,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] - 1;
-	getFaceVelocity_middleStep(ICoords,UPPER,sl);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] - 1;
+        getFaceVelocity_middleStep(ICoords,UPPER,sl);
     }
     getFaceVelocity_middleStep(icoords,LOWER,sr);
     getRiemannSolution(COORD_Z,sl,sr,state_lower);
@@ -18146,32 +18399,32 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,UPPER,sr,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] + 1;
-	getFaceVelocity_middleStep(ICoords,LOWER,sr);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] + 1;
+        getFaceVelocity_middleStep(ICoords,LOWER,sr);
     }
     getFaceVelocity_middleStep(icoords,UPPER,sl);
     getRiemannSolution(COORD_Z,sl,sr,state_upper);
 
     convectionTerm[0] =
-	    1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[0]-state_west.m_U[0])/dx +
-	    1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[0]-state_south.m_U[0])/dy +
-	    1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[0]-state_lower.m_U[0])/dz;
+        1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[0]-state_west.m_U[0])/dx +
+        1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[0]-state_south.m_U[0])/dy +
+        1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[0]-state_lower.m_U[0])/dz;
     convectionTerm[1] =
-	    1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[1]-state_west.m_U[1])/dx +
-	    1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[1]-state_south.m_U[1])/dy +
-	    1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[1]-state_lower.m_U[1])/dz;
+        1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[1]-state_west.m_U[1])/dx +
+        1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[1]-state_south.m_U[1])/dy +
+        1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[1]-state_lower.m_U[1])/dz;
     convectionTerm[2] =
-	    1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[2]-state_west.m_U[2])/dx +
-	    1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[2]-state_south.m_U[2])/dy +
-	    1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[2]-state_lower.m_U[2])/dz;
+        1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[2]-state_west.m_U[2])/dx +
+        1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[2]-state_south.m_U[2])/dy +
+        1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[2]-state_lower.m_U[2])/dz;
 }
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
-	int *icoords,
-	double convectionTerm[3])
+        int *icoords,
+        double convectionTerm[3])
 {
     bool bNoBoundary;
     int ICoords[3];
@@ -18189,10 +18442,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,WEST,sl,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0] - 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled(ICoords,EAST,sl);
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled(ICoords,EAST,sl);
     }
     getFaceVelocity_middleStep_coupled(icoords,WEST,sr);
     getRiemannSolution(COORD_X,sl,sr,state_west);
@@ -18201,10 +18454,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,EAST,sr,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0] + 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled(ICoords,WEST,sr);
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled(ICoords,WEST,sr);
     }
     getFaceVelocity_middleStep_coupled(icoords,EAST,sl);
     getRiemannSolution(COORD_X,sl,sr,state_east);
@@ -18213,10 +18466,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,SOUTH,sl,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] - 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled(ICoords,NORTH,sl);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled(ICoords,NORTH,sl);
     }
     getFaceVelocity_middleStep_coupled(icoords,SOUTH,sr);
     getRiemannSolution(COORD_Y,sl,sr,state_south);
@@ -18225,10 +18478,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,NORTH,sr,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] + 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled(ICoords,SOUTH,sr);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled(ICoords,SOUTH,sr);
     }
     getFaceVelocity_middleStep_coupled(icoords,NORTH,sl);
     getRiemannSolution(COORD_Y,sl,sr,state_north);
@@ -18237,10 +18490,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,LOWER,sl,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] - 1;
-	getFaceVelocity_middleStep_coupled(ICoords,UPPER,sl);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] - 1;
+        getFaceVelocity_middleStep_coupled(ICoords,UPPER,sl);
     }
     getFaceVelocity_middleStep_coupled(icoords,LOWER,sr);
     getRiemannSolution(COORD_Z,sl,sr,state_lower);
@@ -18249,32 +18502,32 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled(
     bNoBoundary = getNeighborOrBoundaryState(icoords,UPPER,sr,m_t_int);
     if(bNoBoundary)
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] + 1;
-	getFaceVelocity_middleStep_coupled(ICoords,LOWER,sr);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] + 1;
+        getFaceVelocity_middleStep_coupled(ICoords,LOWER,sr);
     }
     getFaceVelocity_middleStep_coupled(icoords,UPPER,sl);
     getRiemannSolution(COORD_Z,sl,sr,state_upper);
 
     convectionTerm[0] =
-	    1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[0]-state_west.m_U[0])/dx +
-	    1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[0]-state_south.m_U[0])/dy +
-	    1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[0]-state_lower.m_U[0])/dz;
+        1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[0]-state_west.m_U[0])/dx +
+        1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[0]-state_south.m_U[0])/dy +
+        1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[0]-state_lower.m_U[0])/dz;
     convectionTerm[1] =
-	    1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[1]-state_west.m_U[1])/dx +
-	    1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[1]-state_south.m_U[1])/dy +
-	    1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[1]-state_lower.m_U[1])/dz;
+        1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[1]-state_west.m_U[1])/dx +
+        1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[1]-state_south.m_U[1])/dy +
+        1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[1]-state_lower.m_U[1])/dz;
     convectionTerm[2] =
-	    1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[2]-state_west.m_U[2])/dx +
-	    1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[2]-state_south.m_U[2])/dy +
-	    1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[2]-state_lower.m_U[2])/dz;
+        1.0/2*(state_east.m_U[0]+state_west.m_U[0]) * (state_east.m_U[2]-state_west.m_U[2])/dx +
+        1.0/2*(state_north.m_U[1]+state_south.m_U[1]) * (state_north.m_U[2]-state_south.m_U[2])/dy +
+        1.0/2*(state_upper.m_U[2]+state_lower.m_U[2]) * (state_upper.m_U[2]-state_lower.m_U[2])/dz;
 }
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
-	int *icoords,
-	double convectionTerm[3])
+        int *icoords,
+        double convectionTerm[3])
 {
     bool bNoBoundary;
     int ICoords[3];
@@ -18306,72 +18559,72 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,WEST,state_west_hat_l,m_t_int);
     if(!bNoBoundary)
     {
-	state_west_hat = state_west_hat_l;
-	//getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
-	//getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
+        state_west_hat = state_west_hat_l;
+        //getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
+        //getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
     }
     else
     {
-	ICoords[0] = icoords[0] - 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,EAST,state_west_hat_l);
-	getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
-	getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,EAST,state_west_hat_l);
+        getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
+        getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
     }
 
     // EAST
     bNoBoundary = getNeighborOrBoundaryState(icoords,EAST,state_east_hat_r,m_t_int);
     if(!bNoBoundary)
     {
-	state_east_hat = state_east_hat_r;
-	//getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
-	//getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
+        state_east_hat = state_east_hat_r;
+        //getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
+        //getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
     }
     else
     {
-	ICoords[0] = icoords[0] + 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,WEST,state_east_hat_r);
-	getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
-	getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,WEST,state_east_hat_r);
+        getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
+        getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
     }
 
     // SOUTH
     bNoBoundary = getNeighborOrBoundaryState(icoords,SOUTH,state_south_hat_l,m_t_int);
     if(!bNoBoundary)
     {
-	state_south_hat = state_south_hat_l;
-	//getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
-	//getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
+        state_south_hat = state_south_hat_l;
+        //getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
+        //getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] - 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,NORTH,state_south_hat_l);
-	getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
-	getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,NORTH,state_south_hat_l);
+        getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
+        getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
     }
 
     // NORTH
     bNoBoundary = getNeighborOrBoundaryState(icoords,NORTH,state_north_hat_r,m_t_int);
     if(!bNoBoundary)
     {
-	state_north_hat = state_north_hat_r;
-	//getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
+        state_north_hat = state_north_hat_r;
+        //getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] + 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,SOUTH,state_north_hat_r);
-	getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
-	getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,SOUTH,state_north_hat_r);
+        getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
+        getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
 
     }
 
@@ -18379,36 +18632,36 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,LOWER,state_lower_hat_l,m_t_int);
     if(!bNoBoundary)
     {
-	state_lower_hat = state_lower_hat_l;
-	//getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
-	//getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
+        state_lower_hat = state_lower_hat_l;
+        //getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
+        //getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] - 1;
-	getFaceVelocity_middleStep_hat(ICoords,UPPER,state_lower_hat_l);
-	getFaceVelocity_middleStep_hat(icoords,LOWER,state_lower_hat_r);
-	getRiemannSolution(COORD_Z,state_lower_hat_l,state_lower_hat_r,state_lower_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] - 1;
+        getFaceVelocity_middleStep_hat(ICoords,UPPER,state_lower_hat_l);
+        getFaceVelocity_middleStep_hat(icoords,LOWER,state_lower_hat_r);
+        getRiemannSolution(COORD_Z,state_lower_hat_l,state_lower_hat_r,state_lower_hat);
     }
 
     // UPPER
     bNoBoundary = getNeighborOrBoundaryState(icoords,UPPER,state_upper_hat_r,m_t_int);
     if(!bNoBoundary)
     {
-	state_upper_hat = state_upper_hat_r;
-	//getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
+        state_upper_hat = state_upper_hat_r;
+        //getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] + 1;
-	getFaceVelocity_middleStep_hat(ICoords,LOWER,state_upper_hat_r);
-	getFaceVelocity_middleStep_hat(icoords,UPPER,state_upper_hat_l);
-	getRiemannSolution(COORD_Z,state_upper_hat_l,state_upper_hat_r,state_upper_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] + 1;
+        getFaceVelocity_middleStep_hat(ICoords,LOWER,state_upper_hat_r);
+        getFaceVelocity_middleStep_hat(icoords,UPPER,state_upper_hat_l);
+        getRiemannSolution(COORD_Z,state_upper_hat_l,state_upper_hat_r,state_upper_hat);
 
     }
 
@@ -18429,18 +18682,18 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,WEST,sl,m_t_int);
     if(!bNoBoundary)
     {
-	state_west_bar = sl;
-	//getFaceVelocity_middleStep_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
-	//getRiemannSolution(COORD_X,sl,sr,state_west_bar);
+        state_west_bar = sl;
+        //getFaceVelocity_middleStep_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
+        //getRiemannSolution(COORD_X,sl,sr,state_west_bar);
     }
     else
     {
-	ICoords[0] = icoords[0] - 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_bar(ICoords,EAST,sl,transverseD,state_west_hat_l);
-	getFaceVelocity_middleStep_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
-	getRiemannSolution(COORD_X,sl,sr,state_west_bar);
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_bar(ICoords,EAST,sl,transverseD,state_west_hat_l);
+        getFaceVelocity_middleStep_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
+        getRiemannSolution(COORD_X,sl,sr,state_west_bar);
     }
 
     // EAST
@@ -18458,20 +18711,20 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,EAST,sr,m_t_int);
     if(!bNoBoundary)
     {
-	state_east_bar = sr;
-	//getFaceVelocity_middleStep_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
-	//getRiemannSolution(COORD_X,sl,sr,state_east_bar);
+        state_east_bar = sr;
+        //getFaceVelocity_middleStep_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
+        //getRiemannSolution(COORD_X,sl,sr,state_east_bar);
 
     }
     else
     {
 
-	ICoords[0] = icoords[0] + 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_bar(ICoords,WEST,sr,transverseD,state_east_hat_r);
-	getFaceVelocity_middleStep_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
-	getRiemannSolution(COORD_X,sl,sr,state_east_bar);
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_bar(ICoords,WEST,sr,transverseD,state_east_hat_r);
+        getFaceVelocity_middleStep_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
+        getRiemannSolution(COORD_X,sl,sr,state_east_bar);
     }
 
     // SOUTH
@@ -18490,19 +18743,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,SOUTH,sl,m_t_int);
     if(!bNoBoundary)
     {
-	state_south_bar = sl;
-	//getFaceVelocity_middleStep_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
-	//getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
+        state_south_bar = sl;
+        //getFaceVelocity_middleStep_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
+        //getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] - 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_bar(ICoords,NORTH,sl,transverseD,state_south_hat_l);
-	getFaceVelocity_middleStep_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
-	getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_bar(ICoords,NORTH,sl,transverseD,state_south_hat_l);
+        getFaceVelocity_middleStep_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
+        getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
     }
 
     // NORTH
@@ -18521,19 +18774,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,NORTH,sr,m_t_int);
     if(!bNoBoundary)
     {
-	state_north_bar = sr;
-	//getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        state_north_bar = sr;
+        //getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] + 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_bar(ICoords,SOUTH,sr,transverseD,state_north_hat_r);
-	getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_bar(ICoords,SOUTH,sr,transverseD,state_north_hat_r);
+        getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
 
     }
 
@@ -18552,19 +18805,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,LOWER,sl,m_t_int);
     if(!bNoBoundary)
     {
-	state_lower_bar = sl;
-	//getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        state_lower_bar = sl;
+        //getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] - 1;
-	getFaceVelocity_middleStep_bar(ICoords,UPPER,sl,transverseD,state_lower_hat_l);
-	getFaceVelocity_middleStep_bar(icoords,LOWER,sr,transverseD,state_lower_hat_r);
-	getRiemannSolution(COORD_Z,sl,sr,state_lower_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] - 1;
+        getFaceVelocity_middleStep_bar(ICoords,UPPER,sl,transverseD,state_lower_hat_l);
+        getFaceVelocity_middleStep_bar(icoords,LOWER,sr,transverseD,state_lower_hat_r);
+        getRiemannSolution(COORD_Z,sl,sr,state_lower_bar);
 
     }
 
@@ -18583,40 +18836,40 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_decoupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,UPPER,sr,m_t_int);
     if(!bNoBoundary)
     {
-	state_upper_bar = sr;
-	//getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        state_upper_bar = sr;
+        //getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] + 1;
-	getFaceVelocity_middleStep_bar(ICoords,LOWER,sr,transverseD,state_upper_hat_r);
-	getFaceVelocity_middleStep_bar(icoords,UPPER,sl,transverseD,state_upper_hat_l);
-	getRiemannSolution(COORD_Z,sl,sr,state_upper_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] + 1;
+        getFaceVelocity_middleStep_bar(ICoords,LOWER,sr,transverseD,state_upper_hat_r);
+        getFaceVelocity_middleStep_bar(icoords,UPPER,sl,transverseD,state_upper_hat_l);
+        getRiemannSolution(COORD_Z,sl,sr,state_upper_bar);
 
     }
 
     convectionTerm[0] =
-	    1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[0]-state_west_bar.m_U[0])/dx +
-	    1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[0]-state_south_bar.m_U[0])/dy +
-	    1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[0]-state_lower_bar.m_U[0])/dz;
+        1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[0]-state_west_bar.m_U[0])/dx +
+        1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[0]-state_south_bar.m_U[0])/dy +
+        1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[0]-state_lower_bar.m_U[0])/dz;
     convectionTerm[1] =
-	    1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[1]-state_west_bar.m_U[1])/dx +
-	    1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[1]-state_south_bar.m_U[1])/dy +
-	    1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[1]-state_lower_bar.m_U[1])/dz;
+        1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[1]-state_west_bar.m_U[1])/dx +
+        1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[1]-state_south_bar.m_U[1])/dy +
+        1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[1]-state_lower_bar.m_U[1])/dz;
     convectionTerm[2] =
-	    1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[2]-state_west_bar.m_U[2])/dx +
-	    1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[2]-state_south_bar.m_U[2])/dy +
-	    1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[2]-state_lower_bar.m_U[2])/dz;
+        1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[2]-state_west_bar.m_U[2])/dx +
+        1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[2]-state_south_bar.m_U[2])/dy +
+        1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[2]-state_lower_bar.m_U[2])/dz;
 }
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
-	int *icoords,
-	double convectionTerm[3])
+        int *icoords,
+        double convectionTerm[3])
 {
     bool bNoBoundary;
     int ICoords[3];
@@ -18648,72 +18901,72 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,WEST,state_west_hat_l,m_t_int);
     if(!bNoBoundary)
     {
-	state_west_hat = state_west_hat_l;
-	//getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
-	//getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
+        state_west_hat = state_west_hat_l;
+        //getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
+        //getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
     }
     else
     {
-	ICoords[0] = icoords[0] - 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,EAST,state_west_hat_l);
-	getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
-	getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,EAST,state_west_hat_l);
+        getFaceVelocity_middleStep_hat(icoords,WEST,state_west_hat_r);
+        getRiemannSolution(COORD_X,state_west_hat_l,state_west_hat_r,state_west_hat);
     }
 
     // EAST
     bNoBoundary = getNeighborOrBoundaryState(icoords,EAST,state_east_hat_r,m_t_int);
     if(!bNoBoundary)
     {
-	state_east_hat = state_east_hat_r;
-	//getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
-	//getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
+        state_east_hat = state_east_hat_r;
+        //getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
+        //getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
     }
     else
     {
-	ICoords[0] = icoords[0] + 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,WEST,state_east_hat_r);
-	getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
-	getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,WEST,state_east_hat_r);
+        getFaceVelocity_middleStep_hat(icoords,EAST,state_east_hat_l);
+        getRiemannSolution(COORD_X,state_east_hat_l,state_east_hat_r,state_east_hat);
     }
 
     // SOUTH
     bNoBoundary = getNeighborOrBoundaryState(icoords,SOUTH,state_south_hat_l,m_t_int);
     if(!bNoBoundary)
     {
-	state_south_hat = state_south_hat_l;
-	//getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
-	//getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
+        state_south_hat = state_south_hat_l;
+        //getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
+        //getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] - 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,NORTH,state_south_hat_l);
-	getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
-	getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,NORTH,state_south_hat_l);
+        getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
+        getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
     }
 
     // NORTH
     bNoBoundary = getNeighborOrBoundaryState(icoords,NORTH,state_north_hat_r,m_t_int);
     if(!bNoBoundary)
     {
-	state_north_hat = state_north_hat_r;
-	//getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
+        state_north_hat = state_north_hat_r;
+        //getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] + 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_hat(ICoords,SOUTH,state_north_hat_r);
-	getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
-	getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_hat(ICoords,SOUTH,state_north_hat_r);
+        getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
+        getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
 
     }
 
@@ -18721,36 +18974,36 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,LOWER,state_lower_hat_l,m_t_int);
     if(!bNoBoundary)
     {
-	state_lower_hat = state_lower_hat_l;
-	//getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
-	//getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
+        state_lower_hat = state_lower_hat_l;
+        //getFaceVelocity_middleStep_hat(icoords,SOUTH,state_south_hat_r);
+        //getRiemannSolution(COORD_Y,state_south_hat_l,state_south_hat_r,state_south_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] - 1;
-	getFaceVelocity_middleStep_hat(ICoords,UPPER,state_lower_hat_l);
-	getFaceVelocity_middleStep_hat(icoords,LOWER,state_lower_hat_r);
-	getRiemannSolution(COORD_Z,state_lower_hat_l,state_lower_hat_r,state_lower_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] - 1;
+        getFaceVelocity_middleStep_hat(ICoords,UPPER,state_lower_hat_l);
+        getFaceVelocity_middleStep_hat(icoords,LOWER,state_lower_hat_r);
+        getRiemannSolution(COORD_Z,state_lower_hat_l,state_lower_hat_r,state_lower_hat);
     }
 
     // NORTH
     bNoBoundary = getNeighborOrBoundaryState(icoords,UPPER,state_upper_hat_r,m_t_int);
     if(!bNoBoundary)
     {
-	state_upper_hat = state_upper_hat_r;
-	//getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
+        state_upper_hat = state_upper_hat_r;
+        //getFaceVelocity_middleStep_hat(icoords,NORTH,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,state_north_hat_l,state_north_hat_r,state_north_hat);
     }
     else
     {
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] + 1;
-	getFaceVelocity_middleStep_hat(ICoords,LOWER,state_upper_hat_r);
-	getFaceVelocity_middleStep_hat(icoords,UPPER,state_upper_hat_l);
-	getRiemannSolution(COORD_Z,state_upper_hat_l,state_upper_hat_r,state_upper_hat);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] + 1;
+        getFaceVelocity_middleStep_hat(ICoords,LOWER,state_upper_hat_r);
+        getFaceVelocity_middleStep_hat(icoords,UPPER,state_upper_hat_l);
+        getRiemannSolution(COORD_Z,state_upper_hat_l,state_upper_hat_r,state_upper_hat);
 
     }
 
@@ -18771,18 +19024,18 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,WEST,sl,m_t_int);
     if(!bNoBoundary)
     {
-	state_west_bar = sl;
-	//getFaceVelocity_middleStep_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
-	//getRiemannSolution(COORD_X,sl,sr,state_west_bar);
+        state_west_bar = sl;
+        //getFaceVelocity_middleStep_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
+        //getRiemannSolution(COORD_X,sl,sr,state_west_bar);
     }
     else
     {
-	ICoords[0] = icoords[0] - 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled_bar(ICoords,EAST,sl,transverseD,state_west_hat_l);
-	getFaceVelocity_middleStep_coupled_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
-	getRiemannSolution(COORD_X,sl,sr,state_west_bar);
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled_bar(ICoords,EAST,sl,transverseD,state_west_hat_l);
+        getFaceVelocity_middleStep_coupled_bar(icoords,WEST,sr,transverseD,state_west_hat_r);
+        getRiemannSolution(COORD_X,sl,sr,state_west_bar);
     }
 
     // EAST
@@ -18801,20 +19054,20 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,EAST,sr,m_t_int);
     if(!bNoBoundary)
     {
-	state_east_bar = sr;
-	//getFaceVelocity_middleStep_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
-	//getRiemannSolution(COORD_X,sl,sr,state_east_bar);
+        state_east_bar = sr;
+        //getFaceVelocity_middleStep_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
+        //getRiemannSolution(COORD_X,sl,sr,state_east_bar);
 
     }
     else
     {
 
-	ICoords[0] = icoords[0] + 1;
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled_bar(ICoords,WEST,sr,transverseD,state_east_hat_r);
-	getFaceVelocity_middleStep_coupled_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
-	getRiemannSolution(COORD_X,sl,sr,state_east_bar);
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled_bar(ICoords,WEST,sr,transverseD,state_east_hat_r);
+        getFaceVelocity_middleStep_coupled_bar(icoords,EAST,sl,transverseD,state_east_hat_l);
+        getRiemannSolution(COORD_X,sl,sr,state_east_bar);
     }
 
     // SOUTH
@@ -18834,19 +19087,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,SOUTH,sl,m_t_int);
     if(!bNoBoundary)
     {
-	state_south_bar = sl;
-	//getFaceVelocity_middleStep_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
-	//getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
+        state_south_bar = sl;
+        //getFaceVelocity_middleStep_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
+        //getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] - 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled_bar(ICoords,NORTH,sl,transverseD,state_south_hat_l);
-	getFaceVelocity_middleStep_coupled_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
-	getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled_bar(ICoords,NORTH,sl,transverseD,state_south_hat_l);
+        getFaceVelocity_middleStep_coupled_bar(icoords,SOUTH,sr,transverseD,state_south_hat_r);
+        getRiemannSolution(COORD_Y,sl,sr,state_south_bar);
     }
 
     // NORTH
@@ -18865,19 +19118,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,NORTH,sr,m_t_int);
     if(!bNoBoundary)
     {
-	state_north_bar = sr;
-	//getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        state_north_bar = sr;
+        //getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1] + 1;
-	ICoords[2] = icoords[2];
-	getFaceVelocity_middleStep_coupled_bar(ICoords,SOUTH,sr,transverseD,state_north_hat_r);
-	getFaceVelocity_middleStep_coupled_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceVelocity_middleStep_coupled_bar(ICoords,SOUTH,sr,transverseD,state_north_hat_r);
+        getFaceVelocity_middleStep_coupled_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
 
     }
 
@@ -18896,19 +19149,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,LOWER,sl,m_t_int);
     if(!bNoBoundary)
     {
-	state_lower_bar = sl;
-	//getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        state_lower_bar = sl;
+        //getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] - 1;
-	getFaceVelocity_middleStep_coupled_bar(ICoords,UPPER,sl,transverseD,state_lower_hat_l);
-	getFaceVelocity_middleStep_coupled_bar(icoords,LOWER,sr,transverseD,state_lower_hat_r);
-	getRiemannSolution(COORD_Z,sl,sr,state_lower_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] - 1;
+        getFaceVelocity_middleStep_coupled_bar(ICoords,UPPER,sl,transverseD,state_lower_hat_l);
+        getFaceVelocity_middleStep_coupled_bar(icoords,LOWER,sr,transverseD,state_lower_hat_r);
+        getRiemannSolution(COORD_Z,sl,sr,state_lower_bar);
 
     }
 
@@ -18927,41 +19180,41 @@ void Incompress_Solver_Smooth_3D_Cartesian::getAdvectionTerm_coupled_upgraded(
     bNoBoundary = getNeighborOrBoundaryState(icoords,UPPER,sr,m_t_int);
     if(!bNoBoundary)
     {
-	state_upper_bar = sr;
-	//getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
-	//getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
+        state_upper_bar = sr;
+        //getFaceVelocity_middleStep_bar(icoords,NORTH,sl,transverseD,state_north_hat_l);
+        //getRiemannSolution(COORD_Y,sl,sr,state_north_bar);
     }
     else
     {
 
-	ICoords[0] = icoords[0];
-	ICoords[1] = icoords[1];
-	ICoords[2] = icoords[2] + 1;
-	getFaceVelocity_middleStep_coupled_bar(ICoords,LOWER,sr,transverseD,state_upper_hat_r);
-	getFaceVelocity_middleStep_coupled_bar(icoords,UPPER,sl,transverseD,state_upper_hat_l);
-	getRiemannSolution(COORD_Z,sl,sr,state_upper_bar);
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2] + 1;
+        getFaceVelocity_middleStep_coupled_bar(ICoords,LOWER,sr,transverseD,state_upper_hat_r);
+        getFaceVelocity_middleStep_coupled_bar(icoords,UPPER,sl,transverseD,state_upper_hat_l);
+        getRiemannSolution(COORD_Z,sl,sr,state_upper_bar);
 
     }
 
     convectionTerm[0] =
-	    1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[0]-state_west_bar.m_U[0])/dx +
-	    1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[0]-state_south_bar.m_U[0])/dy +
-	    1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[0]-state_lower_bar.m_U[0])/dz;
+        1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[0]-state_west_bar.m_U[0])/dx +
+        1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[0]-state_south_bar.m_U[0])/dy +
+        1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[0]-state_lower_bar.m_U[0])/dz;
     convectionTerm[1] =
-	    1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[1]-state_west_bar.m_U[1])/dx +
-	    1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[1]-state_south_bar.m_U[1])/dy +
-	    1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[1]-state_lower_bar.m_U[1])/dz;
+        1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[1]-state_west_bar.m_U[1])/dx +
+        1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[1]-state_south_bar.m_U[1])/dy +
+        1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[1]-state_lower_bar.m_U[1])/dz;
     convectionTerm[2] =
-	    1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[2]-state_west_bar.m_U[2])/dx +
-	    1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[2]-state_south_bar.m_U[2])/dy +
-	    1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[2]-state_lower_bar.m_U[2])/dz;
+        1.0/2*(state_east_bar.m_U[0]+state_west_bar.m_U[0]) * (state_east_bar.m_U[2]-state_west_bar.m_U[2])/dx +
+        1.0/2*(state_north_bar.m_U[1]+state_south_bar.m_U[1]) * (state_north_bar.m_U[2]-state_south_bar.m_U[2])/dy +
+        1.0/2*(state_upper_bar.m_U[2]+state_lower_bar.m_U[2]) * (state_upper_bar.m_U[2]-state_lower_bar.m_U[2])/dz;
 }
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_hat(
-	int *icoords,
-	GRID_DIRECTION dir,
-	L_STATE &state_hat)
+        int *icoords,
+        GRID_DIRECTION dir,
+        L_STATE &state_hat)
 {
     L_STATE  state_orig;
     int index;
@@ -18975,91 +19228,91 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_hat(
 
     switch(dir)
     {
-    case WEST:
-	getLimitedSlope(icoords,COORD_X,slope_x_limited);
-	dx = top_h[0];
-	if (state_orig.m_U[0] <= 0)
-	    sL = 1.0;
-	else
-	    sL = 0.0;
-	state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[0];
-	state_hat.m_U[1] = state_orig.m_U[1] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[1];
-	state_hat.m_U[2] = state_orig.m_U[2] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[2];
-	break;
+        case WEST:
+            getLimitedSlope(icoords,COORD_X,slope_x_limited);
+            dx = top_h[0];
+            if (state_orig.m_U[0] <= 0)
+                sL = 1.0;
+            else
+                sL = 0.0;
+            state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[0];
+            state_hat.m_U[1] = state_orig.m_U[1] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[1];
+            state_hat.m_U[2] = state_orig.m_U[2] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[2];
+            break;
 
 
-    case EAST:
-	getLimitedSlope(icoords,COORD_X,slope_x_limited);
-	dx = top_h[0];
-	if (state_orig.m_U[0] >= 0)
-	    sL = 1.0;
-	else
-	    sL = 0.0;
-	state_hat.m_U[0] = state_orig.m_U[0] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[0];
-	state_hat.m_U[1] = state_orig.m_U[1] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[1];
-	state_hat.m_U[2] = state_orig.m_U[2] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[2];
-	break;
+        case EAST:
+            getLimitedSlope(icoords,COORD_X,slope_x_limited);
+            dx = top_h[0];
+            if (state_orig.m_U[0] >= 0)
+                sL = 1.0;
+            else
+                sL = 0.0;
+            state_hat.m_U[0] = state_orig.m_U[0] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[0];
+            state_hat.m_U[1] = state_orig.m_U[1] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[1];
+            state_hat.m_U[2] = state_orig.m_U[2] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_x_limited[2];
+            break;
 
 
-    case SOUTH:
-	getLimitedSlope(icoords,COORD_Y,slope_y_limited);
-	dy = top_h[1];
-	if (state_orig.m_U[1] <= 0)
-	    sL = 1.0;
-	else
-	    sL = 0.0;
-	state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[0];
-	state_hat.m_U[1] = state_orig.m_U[1] + sL*(-dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[1];
-	state_hat.m_U[2] = state_orig.m_U[2] + sL*(-dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[2];
-	break;
+        case SOUTH:
+            getLimitedSlope(icoords,COORD_Y,slope_y_limited);
+            dy = top_h[1];
+            if (state_orig.m_U[1] <= 0)
+                sL = 1.0;
+            else
+                sL = 0.0;
+            state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[0];
+            state_hat.m_U[1] = state_orig.m_U[1] + sL*(-dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[1];
+            state_hat.m_U[2] = state_orig.m_U[2] + sL*(-dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[2];
+            break;
 
-    case NORTH:
-	getLimitedSlope(icoords,COORD_Y,slope_y_limited);
-	dy = top_h[1];
-	if (state_orig.m_U[1] >= 0)
-	    sL = 1.0;
-	else
-	    sL = 0.0;
-	state_hat.m_U[0] = state_orig.m_U[0] + sL*(dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[0];
-	state_hat.m_U[1] = state_orig.m_U[1] + sL*(dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[1];
-	state_hat.m_U[2] = state_orig.m_U[2] + sL*(dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[2];
-	break;
+        case NORTH:
+            getLimitedSlope(icoords,COORD_Y,slope_y_limited);
+            dy = top_h[1];
+            if (state_orig.m_U[1] >= 0)
+                sL = 1.0;
+            else
+                sL = 0.0;
+            state_hat.m_U[0] = state_orig.m_U[0] + sL*(dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[0];
+            state_hat.m_U[1] = state_orig.m_U[1] + sL*(dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[1];
+            state_hat.m_U[2] = state_orig.m_U[2] + sL*(dy/2.0 - m_dt/2.0 * state_orig.m_U[1])*slope_y_limited[2];
+            break;
 
-    case LOWER:
-	getLimitedSlope(icoords,COORD_Z,slope_z_limited);
-	dz = top_h[2];
-	if (state_orig.m_U[2] <= 0)
-	    sL = 1.0;
-	else
-	    sL = 0.0;
-	state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[0];
-	state_hat.m_U[1] = state_orig.m_U[1] + sL*(-dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[1];
-	state_hat.m_U[2] = state_orig.m_U[2] + sL*(-dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[2];
-	break;
+        case LOWER:
+            getLimitedSlope(icoords,COORD_Z,slope_z_limited);
+            dz = top_h[2];
+            if (state_orig.m_U[2] <= 0)
+                sL = 1.0;
+            else
+                sL = 0.0;
+            state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[0];
+            state_hat.m_U[1] = state_orig.m_U[1] + sL*(-dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[1];
+            state_hat.m_U[2] = state_orig.m_U[2] + sL*(-dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[2];
+            break;
 
-    case UPPER:
-	getLimitedSlope(icoords,COORD_Z,slope_z_limited);
-	dz = top_h[2];
-	if (state_orig.m_U[2] >= 0)
-	    sL = 1.0;
-	else
-	    sL = 0.0;
-	state_hat.m_U[0] = state_orig.m_U[0] + sL*(dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[0];
-	state_hat.m_U[1] = state_orig.m_U[1] + sL*(dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[1];
-	state_hat.m_U[2] = state_orig.m_U[2] + sL*(dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[2];
-	break;
-    default:
-	assert(false);
+        case UPPER:
+            getLimitedSlope(icoords,COORD_Z,slope_z_limited);
+            dz = top_h[2];
+            if (state_orig.m_U[2] >= 0)
+                sL = 1.0;
+            else
+                sL = 0.0;
+            state_hat.m_U[0] = state_orig.m_U[0] + sL*(dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[0];
+            state_hat.m_U[1] = state_orig.m_U[1] + sL*(dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[1];
+            state_hat.m_U[2] = state_orig.m_U[2] + sL*(dz/2.0 - m_dt/2.0 * state_orig.m_U[2])*slope_z_limited[2];
+            break;
+        default:
+            assert(false);
     }
 }
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_bar(
-	int *icoords,
-	GRID_DIRECTION dir,
-	L_STATE &state_bar,
-	double transverseD[3],
-	L_STATE state_hat)
+        int *icoords,
+        GRID_DIRECTION dir,
+        L_STATE &state_bar,
+        double transverseD[3],
+        L_STATE state_hat)
 {
     int index;
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
@@ -19088,11 +19341,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_bar(
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_coupled_bar(
-	int *icoords,
-	GRID_DIRECTION dir,
-	L_STATE &state_bar,
-	double transverseD[3],
-	L_STATE state_hat)
+        int *icoords,
+        GRID_DIRECTION dir,
+        L_STATE &state_bar,
+        double transverseD[3],
+        L_STATE state_hat)
 {
     int index;
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
@@ -19121,9 +19374,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_coupled_b
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep(
-	int *icoords,
-	GRID_DIRECTION dir,
-	L_STATE &state_face)
+        int *icoords,
+        GRID_DIRECTION dir,
+        L_STATE &state_face)
 {
     int index;
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
@@ -19136,33 +19389,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep(
 
     switch(dir)
     {
-    case WEST:
-	dx = -top_h[0];
-	break;
-    case EAST:
-	dx =  top_h[0];
-	break;
-    case SOUTH:
-	dy = -top_h[1];
-	break;
-    case NORTH:
-	dy =  top_h[1];
-	break;
-    case LOWER:
-	dz = -top_h[2];
-	break;
-    case UPPER:
-	dz =  top_h[2];
-	break;
-    default:
-	assert(false);
+        case WEST:
+            dx = -top_h[0];
+            break;
+        case EAST:
+            dx =  top_h[0];
+            break;
+        case SOUTH:
+            dy = -top_h[1];
+            break;
+        case NORTH:
+            dy =  top_h[1];
+            break;
+        case LOWER:
+            dz = -top_h[2];
+            break;
+        case UPPER:
+            dz =  top_h[2];
+            break;
+        default:
+            assert(false);
     }
 
     state_face.m_U[0] = state.m_U[0];
     state_face.m_U[1] = state.m_U[1];
     state_face.m_U[2] = state.m_U[2];
 
-//    return;
+    //    return;
 
     getLimitedSlope(icoords,COORD_X,slope_x_limited);
     getLimitedSlope(icoords,COORD_Y,slope_y_limited);
@@ -19182,11 +19435,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep(
     gradP[2] = cell_center[index].m_state.grad_q[2];
 
     state_face.m_U[0] += m_dt/2 *
-	    (diffusion[0]/rho - state.m_U[0]*slope_x_limited[0] - state.m_U[1]*slope_y_limited[0] - state.m_U[2]*slope_z_limited[0] - gradP[0]/rho);
+        (diffusion[0]/rho - state.m_U[0]*slope_x_limited[0] - state.m_U[1]*slope_y_limited[0] - state.m_U[2]*slope_z_limited[0] - gradP[0]/rho);
     state_face.m_U[1] += m_dt/2 *
-	    (diffusion[1]/rho - state.m_U[0]*slope_x_limited[1] - state.m_U[1]*slope_y_limited[1] - state.m_U[2]*slope_z_limited[1] - gradP[1]/rho);
+        (diffusion[1]/rho - state.m_U[0]*slope_x_limited[1] - state.m_U[1]*slope_y_limited[1] - state.m_U[2]*slope_z_limited[1] - gradP[1]/rho);
     state_face.m_U[2] += m_dt/2 *
-    	    (diffusion[2]/rho - state.m_U[0]*slope_x_limited[2] - state.m_U[1]*slope_y_limited[2] - state.m_U[2]*slope_z_limited[2] - gradP[2]/rho);
+        (diffusion[2]/rho - state.m_U[0]*slope_x_limited[2] - state.m_U[1]*slope_y_limited[2] - state.m_U[2]*slope_z_limited[2] - gradP[2]/rho);
 
     //    return;
     // rhs
@@ -19202,9 +19455,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep(
 }
 
 void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_coupled(
-	int *icoords,
-	GRID_DIRECTION dir,
-	L_STATE &state_face)
+        int *icoords,
+        GRID_DIRECTION dir,
+        L_STATE &state_face)
 {
     int index;
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
@@ -19217,33 +19470,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_coupled(
 
     switch(dir)
     {
-    case WEST:
-	dx = -top_h[0];
-	break;
-    case EAST:
-	dx =  top_h[0];
-	break;
-    case SOUTH:
-	dy = -top_h[1];
-	break;
-    case NORTH:
-	dy =  top_h[1];
-	break;
-    case LOWER:
-	dz = -top_h[2];
-	break;
-    case UPPER:
-	dz =  top_h[2];
-	break;
-    default:
-	assert(false);
+        case WEST:
+            dx = -top_h[0];
+            break;
+        case EAST:
+            dx =  top_h[0];
+            break;
+        case SOUTH:
+            dy = -top_h[1];
+            break;
+        case NORTH:
+            dy =  top_h[1];
+            break;
+        case LOWER:
+            dz = -top_h[2];
+            break;
+        case UPPER:
+            dz =  top_h[2];
+            break;
+        default:
+            assert(false);
     }
 
     state_face.m_U[0] = state.m_U[0];
     state_face.m_U[1] = state.m_U[1];
     state_face.m_U[2] = state.m_U[2];
 
-//    return;
+    //    return;
 
     getLimitedSlope(icoords,COORD_X,slope_x_limited);
     getLimitedSlope(icoords,COORD_Y,slope_y_limited);
@@ -19263,11 +19516,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_coupled(
     gradP[2] = cell_center[index].m_state.grad_q[2];
 
     state_face.m_U[0] += m_dt/2 *
-	    (diffusion[0]/rho - state.m_U[0]*slope_x_limited[0] - state.m_U[1]*slope_y_limited[0] - state.m_U[2]*slope_z_limited[0] - gradP[0]/rho);
+        (diffusion[0]/rho - state.m_U[0]*slope_x_limited[0] - state.m_U[1]*slope_y_limited[0] - state.m_U[2]*slope_z_limited[0] - gradP[0]/rho);
     state_face.m_U[1] += m_dt/2 *
-	    (diffusion[1]/rho - state.m_U[0]*slope_x_limited[1] - state.m_U[1]*slope_y_limited[1] - state.m_U[2]*slope_z_limited[1] - gradP[1]/rho);
+        (diffusion[1]/rho - state.m_U[0]*slope_x_limited[1] - state.m_U[1]*slope_y_limited[1] - state.m_U[2]*slope_z_limited[1] - gradP[1]/rho);
     state_face.m_U[2] += m_dt/2 *
-    	    (diffusion[2]/rho - state.m_U[0]*slope_x_limited[2] - state.m_U[1]*slope_y_limited[2] - state.m_U[2]*slope_z_limited[2] - gradP[2]/rho);
+        (diffusion[2]/rho - state.m_U[0]*slope_x_limited[2] - state.m_U[1]*slope_y_limited[2] - state.m_U[2]*slope_z_limited[2] - gradP[2]/rho);
 
     //    return;
     // rhs
@@ -19285,16 +19538,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_middleStep_coupled(
 
 
 /**
-* compute mu * (Uxx+Uyy+Uzz)
-* @param icoords
-* @param diffusion
-* @param gradP
-*/
+ * compute mu * (Uxx+Uyy+Uzz)
+ * @param icoords
+ * @param diffusion
+ * @param gradP
+ */
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getDifffusion(
-	int *icoords,
-	double diffusion[3])
+        int *icoords,
+        double diffusion[3])
 {
     double Uxx[3], Uyy[3], Uzz[3];
     getDU2(icoords,COORD_X,Uxx);
@@ -19310,8 +19563,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDifffusion(
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
-	int *icoords,
-	double diffusion[3])
+        int *icoords,
+        double diffusion[3])
 {
     int index,index_nb[18];
     double mu[6],mu_edge[6],mu0;
@@ -19368,20 +19621,20 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     for (nb = 0; nb < 6; nb++)
     {
-	bNoBoundary[nb] = getNeighborOrBoundaryState(icoords,dir[nb],Unb,m_t_old);
-	U0_nb[nb] = Unb.m_U[0];
-	U1_nb[nb] = Unb.m_U[1];
-	U2_nb[nb] = Unb.m_U[2];
-	if(!bNoBoundary[nb])
-	{
-	    mu[nb] = mu0;
-	    mu_edge[nb] = mu0;
-	}
-	else
-	{
-	    mu[nb] = cell_center[index_nb[nb]].m_state.m_mu;
-	    mu_edge[nb] = 0.5*(mu[nb] + mu0);
-	}
+        bNoBoundary[nb] = getNeighborOrBoundaryState(icoords,dir[nb],Unb,m_t_old);
+        U0_nb[nb] = Unb.m_U[0];
+        U1_nb[nb] = Unb.m_U[1];
+        U2_nb[nb] = Unb.m_U[2];
+        if(!bNoBoundary[nb])
+        {
+            mu[nb] = mu0;
+            mu_edge[nb] = mu0;
+        }
+        else
+        {
+            mu[nb] = cell_center[index_nb[nb]].m_state.m_mu;
+            mu_edge[nb] = 0.5*(mu[nb] + mu0);
+        }
     }
 
     // non-cross derivative terms
@@ -19391,31 +19644,31 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
     dh[2] = top_h[2];
 
     if (bNoBoundary[0])
-	dh0[0] = top_h[0];
+        dh0[0] = top_h[0];
     else
-	dh0[0] = top_h[0]/2.0;
+        dh0[0] = top_h[0]/2.0;
     if (bNoBoundary[1])
-	dh1[0] = top_h[0];
+        dh1[0] = top_h[0];
     else
-	dh1[0] = top_h[0]/2.0;
+        dh1[0] = top_h[0]/2.0;
 
     if (bNoBoundary[2])
-	dh0[1] = top_h[1];
+        dh0[1] = top_h[1];
     else
-	dh0[1] = top_h[1]/2.0;
+        dh0[1] = top_h[1]/2.0;
     if (bNoBoundary[3])
-	dh1[1] = top_h[1];
+        dh1[1] = top_h[1];
     else
-	dh1[1] = top_h[1]/2.0;
+        dh1[1] = top_h[1]/2.0;
 
     if (bNoBoundary[4])
-	dh0[2] = top_h[2];
+        dh0[2] = top_h[2];
     else
-	dh0[2] = top_h[2]/2.0;
+        dh0[2] = top_h[2]/2.0;
     if (bNoBoundary[5])
-	dh1[2] = top_h[2];
+        dh1[2] = top_h[2];
     else
-	dh1[2] = top_h[2]/2.0;
+        dh1[2] = top_h[2]/2.0;
 
     diffusion[0] += 2.0*(mu_edge[1]*(U0_nb[1]-U0_center)/dh1[0] - mu_edge[0]*(U0_center-U0_nb[0])/dh0[0])/dh[0];// (2*mu*u_x)_x
     diffusion[1] +=     (mu_edge[1]*(U1_nb[1]-U1_center)/dh1[0] - mu_edge[0]*(U1_center-U1_nb[0])/dh0[0])/dh[0];// (mu*v_x)_x
@@ -19439,30 +19692,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i-1/2,j-1/2,k)
     /*
-    if (!bNoBoundary[0] && bNoBoundary[2])
-    {
-	U0_nb[6] = U0_nb[0];
-	U1_nb[6] = U1_nb[0];
-	U2_nb[6] = U2_nb[0];
-    }
-    else if(bNoBoundary[0] && !bNoBoundary[2])
-    {
-	U0_nb[6] = U0_nb[2];
-	U1_nb[6] = U1_nb[2];
-	U2_nb[6] = U2_nb[2];
-    }
-    else if(!bNoBoundary[0] && !bNoBoundary[2])
-    {
-	U0_nb[6] = U0_nb[0];
-	U1_nb[6] = U1_nb[0];
-	U2_nb[6] = U2_nb[0];
-    }
-    else
-    {
-	U0_nb[6] = (U0_nb[0]+U0_nb[2]+cell_center[index_nb[6]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[6] = (U1_nb[0]+U1_nb[2]+cell_center[index_nb[6]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[6] = (U2_nb[0]+U2_nb[2]+cell_center[index_nb[6]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[0] && bNoBoundary[2])
+       {
+       U0_nb[6] = U0_nb[0];
+       U1_nb[6] = U1_nb[0];
+       U2_nb[6] = U2_nb[0];
+       }
+       else if(bNoBoundary[0] && !bNoBoundary[2])
+       {
+       U0_nb[6] = U0_nb[2];
+       U1_nb[6] = U1_nb[2];
+       U2_nb[6] = U2_nb[2];
+       }
+       else if(!bNoBoundary[0] && !bNoBoundary[2])
+       {
+       U0_nb[6] = U0_nb[0];
+       U1_nb[6] = U1_nb[0];
+       U2_nb[6] = U2_nb[0];
+       }
+       else
+       {
+       U0_nb[6] = (U0_nb[0]+U0_nb[2]+cell_center[index_nb[6]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[6] = (U1_nb[0]+U1_nb[2]+cell_center[index_nb[6]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[6] = (U2_nb[0]+U2_nb[2]+cell_center[index_nb[6]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[0] && bNoBoundary[2])
     {
@@ -19483,30 +19736,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i+1/2,j-1/2,k)
     /*
-    if (!bNoBoundary[1] && bNoBoundary[2])
-    {
-	U0_nb[7] = U0_nb[1];
-	U1_nb[7] = U1_nb[1];
-	U2_nb[7] = U2_nb[1];
-    }
-    else if(bNoBoundary[1] && !bNoBoundary[2])
-    {
-	U0_nb[7] = U0_nb[2];
-	U1_nb[7] = U1_nb[2];
-	U2_nb[7] = U2_nb[2];
-    }
-    else if(!bNoBoundary[1] && !bNoBoundary[2])
-    {
-	U0_nb[7] = U0_nb[1];
-	U1_nb[7] = U1_nb[1];
-	U2_nb[7] = U2_nb[1];
-    }
-    else
-    {
-	U0_nb[7] = (U0_nb[1]+U0_nb[2]+cell_center[index_nb[7]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[7] = (U1_nb[1]+U1_nb[2]+cell_center[index_nb[7]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[7] = (U2_nb[1]+U2_nb[2]+cell_center[index_nb[7]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[1] && bNoBoundary[2])
+       {
+       U0_nb[7] = U0_nb[1];
+       U1_nb[7] = U1_nb[1];
+       U2_nb[7] = U2_nb[1];
+       }
+       else if(bNoBoundary[1] && !bNoBoundary[2])
+       {
+       U0_nb[7] = U0_nb[2];
+       U1_nb[7] = U1_nb[2];
+       U2_nb[7] = U2_nb[2];
+       }
+       else if(!bNoBoundary[1] && !bNoBoundary[2])
+       {
+       U0_nb[7] = U0_nb[1];
+       U1_nb[7] = U1_nb[1];
+       U2_nb[7] = U2_nb[1];
+       }
+       else
+       {
+       U0_nb[7] = (U0_nb[1]+U0_nb[2]+cell_center[index_nb[7]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[7] = (U1_nb[1]+U1_nb[2]+cell_center[index_nb[7]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[7] = (U2_nb[1]+U2_nb[2]+cell_center[index_nb[7]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[1] && bNoBoundary[2])
     {
@@ -19527,30 +19780,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i+1/2,j+1/2,k)
     /*
-    if (!bNoBoundary[1] && bNoBoundary[3])
-    {
-	U0_nb[8] = U0_nb[1];
-	U1_nb[8] = U1_nb[1];
-	U2_nb[8] = U2_nb[1];
-    }
-    else if(bNoBoundary[1] && !bNoBoundary[3])
-    {
-	U0_nb[8] = U0_nb[3];
-	U1_nb[8] = U1_nb[3];
-	U2_nb[8] = U2_nb[3];
-    }
-    else if(!bNoBoundary[1] && !bNoBoundary[3])
-    {
-	U0_nb[8] = U0_nb[1];
-	U1_nb[8] = U1_nb[1];
-	U2_nb[8] = U2_nb[1];
-    }
-    else
-    {
-	U0_nb[8] = (U0_nb[1]+U0_nb[3]+cell_center[index_nb[8]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[8] = (U1_nb[1]+U1_nb[3]+cell_center[index_nb[8]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[8] = (U2_nb[1]+U2_nb[3]+cell_center[index_nb[8]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[1] && bNoBoundary[3])
+       {
+       U0_nb[8] = U0_nb[1];
+       U1_nb[8] = U1_nb[1];
+       U2_nb[8] = U2_nb[1];
+       }
+       else if(bNoBoundary[1] && !bNoBoundary[3])
+       {
+       U0_nb[8] = U0_nb[3];
+       U1_nb[8] = U1_nb[3];
+       U2_nb[8] = U2_nb[3];
+       }
+       else if(!bNoBoundary[1] && !bNoBoundary[3])
+       {
+       U0_nb[8] = U0_nb[1];
+       U1_nb[8] = U1_nb[1];
+       U2_nb[8] = U2_nb[1];
+       }
+       else
+       {
+       U0_nb[8] = (U0_nb[1]+U0_nb[3]+cell_center[index_nb[8]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[8] = (U1_nb[1]+U1_nb[3]+cell_center[index_nb[8]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[8] = (U2_nb[1]+U2_nb[3]+cell_center[index_nb[8]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[1] && bNoBoundary[3])
     {
@@ -19571,30 +19824,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i-1/2,j+1/2,k)
     /*
-    if (!bNoBoundary[0] && bNoBoundary[3])
-    {
-	U0_nb[9] = U0_nb[0];
-	U1_nb[9] = U1_nb[0];
-	U2_nb[9] = U2_nb[0];
-    }
-    else if(bNoBoundary[0] && !bNoBoundary[3])
-    {
-	U0_nb[9] = U0_nb[3];
-	U1_nb[9] = U1_nb[3];
-	U2_nb[9] = U2_nb[3];
-    }
-    else if(!bNoBoundary[0] && !bNoBoundary[3])
-    {
-	U0_nb[9] = U0_nb[0];
-	U1_nb[9] = U1_nb[0];
-	U2_nb[9] = U2_nb[0];
-    }
-    else
-    {
-	U0_nb[9] = (U0_nb[0]+U0_nb[3]+cell_center[index_nb[9]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[9] = (U1_nb[0]+U1_nb[3]+cell_center[index_nb[9]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[9] = (U2_nb[0]+U2_nb[3]+cell_center[index_nb[9]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[0] && bNoBoundary[3])
+       {
+       U0_nb[9] = U0_nb[0];
+       U1_nb[9] = U1_nb[0];
+       U2_nb[9] = U2_nb[0];
+       }
+       else if(bNoBoundary[0] && !bNoBoundary[3])
+       {
+       U0_nb[9] = U0_nb[3];
+       U1_nb[9] = U1_nb[3];
+       U2_nb[9] = U2_nb[3];
+       }
+       else if(!bNoBoundary[0] && !bNoBoundary[3])
+       {
+       U0_nb[9] = U0_nb[0];
+       U1_nb[9] = U1_nb[0];
+       U2_nb[9] = U2_nb[0];
+       }
+       else
+       {
+       U0_nb[9] = (U0_nb[0]+U0_nb[3]+cell_center[index_nb[9]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[9] = (U1_nb[0]+U1_nb[3]+cell_center[index_nb[9]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[9] = (U2_nb[0]+U2_nb[3]+cell_center[index_nb[9]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[0] && bNoBoundary[3])
     {
@@ -19615,30 +19868,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i,j-1/2,k-1/2)
     /*
-    if (!bNoBoundary[2] && bNoBoundary[4])
-    {
-	U0_nb[10] = U0_nb[2];
-	U1_nb[10] = U1_nb[2];
-	U2_nb[10] = U2_nb[2];
-    }
-    else if(bNoBoundary[2] && !bNoBoundary[4])
-    {
-	U0_nb[10] = U0_nb[4];
-	U1_nb[10] = U1_nb[4];
-	U2_nb[10] = U2_nb[4];
-    }
-    else if(!bNoBoundary[2] && !bNoBoundary[4])
-    {
-	U0_nb[10] = U0_nb[2];
-	U1_nb[10] = U1_nb[2];
-	U2_nb[10] = U2_nb[2];
-    }
-    else
-    {
-	U0_nb[10] = (U0_nb[2]+U0_nb[4]+cell_center[index_nb[10]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[10] = (U1_nb[2]+U1_nb[4]+cell_center[index_nb[10]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[10] = (U2_nb[2]+U2_nb[4]+cell_center[index_nb[10]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[2] && bNoBoundary[4])
+       {
+       U0_nb[10] = U0_nb[2];
+       U1_nb[10] = U1_nb[2];
+       U2_nb[10] = U2_nb[2];
+       }
+       else if(bNoBoundary[2] && !bNoBoundary[4])
+       {
+       U0_nb[10] = U0_nb[4];
+       U1_nb[10] = U1_nb[4];
+       U2_nb[10] = U2_nb[4];
+       }
+       else if(!bNoBoundary[2] && !bNoBoundary[4])
+       {
+       U0_nb[10] = U0_nb[2];
+       U1_nb[10] = U1_nb[2];
+       U2_nb[10] = U2_nb[2];
+       }
+       else
+       {
+       U0_nb[10] = (U0_nb[2]+U0_nb[4]+cell_center[index_nb[10]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[10] = (U1_nb[2]+U1_nb[4]+cell_center[index_nb[10]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[10] = (U2_nb[2]+U2_nb[4]+cell_center[index_nb[10]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[2] && bNoBoundary[4])
     {
@@ -19659,30 +19912,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i,j+1/2,k-1/2)
     /*
-    if (!bNoBoundary[3] && bNoBoundary[4])
-    {
-	U0_nb[11] = U0_nb[3];
-	U1_nb[11] = U1_nb[3];
-	U2_nb[11] = U2_nb[3];
-    }
-    else if(bNoBoundary[3] && !bNoBoundary[4])
-    {
-	U0_nb[11] = U0_nb[4];
-	U1_nb[11] = U1_nb[4];
-	U2_nb[11] = U2_nb[4];
-    }
-    else if(!bNoBoundary[3] && !bNoBoundary[4])
-    {
-	U0_nb[11] = U0_nb[3];
-	U1_nb[11] = U1_nb[3];
-	U2_nb[11] = U2_nb[3];
-    }
-    else
-    {
-	U0_nb[11] = (U0_nb[3]+U0_nb[4]+cell_center[index_nb[11]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[11] = (U1_nb[3]+U1_nb[4]+cell_center[index_nb[11]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[11] = (U2_nb[3]+U2_nb[4]+cell_center[index_nb[11]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[3] && bNoBoundary[4])
+       {
+       U0_nb[11] = U0_nb[3];
+       U1_nb[11] = U1_nb[3];
+       U2_nb[11] = U2_nb[3];
+       }
+       else if(bNoBoundary[3] && !bNoBoundary[4])
+       {
+       U0_nb[11] = U0_nb[4];
+       U1_nb[11] = U1_nb[4];
+       U2_nb[11] = U2_nb[4];
+       }
+       else if(!bNoBoundary[3] && !bNoBoundary[4])
+       {
+       U0_nb[11] = U0_nb[3];
+       U1_nb[11] = U1_nb[3];
+       U2_nb[11] = U2_nb[3];
+       }
+       else
+       {
+       U0_nb[11] = (U0_nb[3]+U0_nb[4]+cell_center[index_nb[11]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[11] = (U1_nb[3]+U1_nb[4]+cell_center[index_nb[11]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[11] = (U2_nb[3]+U2_nb[4]+cell_center[index_nb[11]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[3] && bNoBoundary[4])
     {
@@ -19703,30 +19956,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i,j+1/2,k+1/2)
     /*
-    if (!bNoBoundary[3] && bNoBoundary[5])
-    {
-	U0_nb[12] = U0_nb[3];
-	U1_nb[12] = U1_nb[3];
-	U2_nb[12] = U2_nb[3];
-    }
-    else if(bNoBoundary[3] && !bNoBoundary[5])
-    {
-	U0_nb[12] = U0_nb[5];
-	U1_nb[12] = U1_nb[5];
-	U2_nb[12] = U2_nb[5];
-    }
-    else if(!bNoBoundary[3] && !bNoBoundary[5])
-    {
-	U0_nb[12] = U0_nb[3];
-	U1_nb[12] = U1_nb[3];
-	U2_nb[12] = U2_nb[3];
-    }
-    else
-    {
-	U0_nb[12] = (U0_nb[3]+U0_nb[5]+cell_center[index_nb[12]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[12] = (U1_nb[3]+U1_nb[5]+cell_center[index_nb[12]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[12] = (U2_nb[3]+U2_nb[5]+cell_center[index_nb[12]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[3] && bNoBoundary[5])
+       {
+       U0_nb[12] = U0_nb[3];
+       U1_nb[12] = U1_nb[3];
+       U2_nb[12] = U2_nb[3];
+       }
+       else if(bNoBoundary[3] && !bNoBoundary[5])
+       {
+       U0_nb[12] = U0_nb[5];
+       U1_nb[12] = U1_nb[5];
+       U2_nb[12] = U2_nb[5];
+       }
+       else if(!bNoBoundary[3] && !bNoBoundary[5])
+       {
+       U0_nb[12] = U0_nb[3];
+       U1_nb[12] = U1_nb[3];
+       U2_nb[12] = U2_nb[3];
+       }
+       else
+       {
+       U0_nb[12] = (U0_nb[3]+U0_nb[5]+cell_center[index_nb[12]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[12] = (U1_nb[3]+U1_nb[5]+cell_center[index_nb[12]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[12] = (U2_nb[3]+U2_nb[5]+cell_center[index_nb[12]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[3] && bNoBoundary[5])
     {
@@ -19748,30 +20001,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i,j-1/2,k+1/2)
     /*
-    if (!bNoBoundary[2] && bNoBoundary[5])
-    {
-	U0_nb[13] = U0_nb[2];
-	U1_nb[13] = U1_nb[2];
-	U2_nb[13] = U2_nb[2];
-    }
-    else if(bNoBoundary[2] && !bNoBoundary[5])
-    {
-	U0_nb[13] = U0_nb[5];
-	U1_nb[13] = U1_nb[5];
-	U2_nb[13] = U2_nb[5];
-    }
-    else if(!bNoBoundary[2] && !bNoBoundary[5])
-    {
-	U0_nb[13] = U0_nb[2];
-	U1_nb[13] = U1_nb[2];
-	U2_nb[13] = U2_nb[2];
-    }
-    else
-    {
-	U0_nb[13] = (U0_nb[2]+U0_nb[5]+cell_center[index_nb[13]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[13] = (U1_nb[2]+U1_nb[5]+cell_center[index_nb[13]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[13] = (U2_nb[2]+U2_nb[5]+cell_center[index_nb[13]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[2] && bNoBoundary[5])
+       {
+       U0_nb[13] = U0_nb[2];
+       U1_nb[13] = U1_nb[2];
+       U2_nb[13] = U2_nb[2];
+       }
+       else if(bNoBoundary[2] && !bNoBoundary[5])
+       {
+       U0_nb[13] = U0_nb[5];
+       U1_nb[13] = U1_nb[5];
+       U2_nb[13] = U2_nb[5];
+       }
+       else if(!bNoBoundary[2] && !bNoBoundary[5])
+       {
+       U0_nb[13] = U0_nb[2];
+       U1_nb[13] = U1_nb[2];
+       U2_nb[13] = U2_nb[2];
+       }
+       else
+       {
+       U0_nb[13] = (U0_nb[2]+U0_nb[5]+cell_center[index_nb[13]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[13] = (U1_nb[2]+U1_nb[5]+cell_center[index_nb[13]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[13] = (U2_nb[2]+U2_nb[5]+cell_center[index_nb[13]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[2] && bNoBoundary[5])
     {
@@ -19792,30 +20045,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i-1/2,j,k-1/2)
     /*
-    if (!bNoBoundary[0] && bNoBoundary[4])
-    {
-	U0_nb[14] = U0_nb[0];
-	U1_nb[14] = U1_nb[0];
-	U2_nb[14] = U2_nb[0];
-    }
-    else if(bNoBoundary[0] && !bNoBoundary[4])
-    {
-	U0_nb[14] = U0_nb[4];
-	U1_nb[14] = U1_nb[4];
-	U2_nb[14] = U2_nb[4];
-    }
-    else if(!bNoBoundary[0] && !bNoBoundary[4])
-    {
-	U0_nb[14] = U0_nb[0];
-	U1_nb[14] = U1_nb[0];
-	U2_nb[14] = U2_nb[0];
-    }
-    else
-    {
-	U0_nb[14] = (U0_nb[0]+U0_nb[4]+cell_center[index_nb[14]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[14] = (U1_nb[0]+U1_nb[4]+cell_center[index_nb[14]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[14] = (U2_nb[0]+U2_nb[4]+cell_center[index_nb[14]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[0] && bNoBoundary[4])
+       {
+       U0_nb[14] = U0_nb[0];
+       U1_nb[14] = U1_nb[0];
+       U2_nb[14] = U2_nb[0];
+       }
+       else if(bNoBoundary[0] && !bNoBoundary[4])
+       {
+       U0_nb[14] = U0_nb[4];
+       U1_nb[14] = U1_nb[4];
+       U2_nb[14] = U2_nb[4];
+       }
+       else if(!bNoBoundary[0] && !bNoBoundary[4])
+       {
+       U0_nb[14] = U0_nb[0];
+       U1_nb[14] = U1_nb[0];
+       U2_nb[14] = U2_nb[0];
+       }
+       else
+       {
+       U0_nb[14] = (U0_nb[0]+U0_nb[4]+cell_center[index_nb[14]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[14] = (U1_nb[0]+U1_nb[4]+cell_center[index_nb[14]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[14] = (U2_nb[0]+U2_nb[4]+cell_center[index_nb[14]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[0] && bNoBoundary[4])
     {
@@ -19836,30 +20089,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i+1/2,j,k-1/2)
     /*
-    if (!bNoBoundary[1] && bNoBoundary[4])
-    {
-	U0_nb[15] = U0_nb[1];
-	U1_nb[15] = U1_nb[1];
-	U2_nb[15] = U2_nb[1];
-    }
-    else if(bNoBoundary[1] && !bNoBoundary[4])
-    {
-	U0_nb[15] = U0_nb[4];
-	U1_nb[15] = U1_nb[4];
-	U2_nb[15] = U2_nb[4];
-    }
-    else if(!bNoBoundary[1] && !bNoBoundary[4])
-    {
-	U0_nb[15] = U0_nb[1];
-	U1_nb[15] = U1_nb[1];
-	U2_nb[15] = U2_nb[1];
-    }
-    else
-    {
-	U0_nb[15] = (U0_nb[1]+U0_nb[4]+cell_center[index_nb[15]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[15] = (U1_nb[1]+U1_nb[4]+cell_center[index_nb[15]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[15] = (U2_nb[1]+U2_nb[4]+cell_center[index_nb[15]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[1] && bNoBoundary[4])
+       {
+       U0_nb[15] = U0_nb[1];
+       U1_nb[15] = U1_nb[1];
+       U2_nb[15] = U2_nb[1];
+       }
+       else if(bNoBoundary[1] && !bNoBoundary[4])
+       {
+       U0_nb[15] = U0_nb[4];
+       U1_nb[15] = U1_nb[4];
+       U2_nb[15] = U2_nb[4];
+       }
+       else if(!bNoBoundary[1] && !bNoBoundary[4])
+       {
+       U0_nb[15] = U0_nb[1];
+       U1_nb[15] = U1_nb[1];
+       U2_nb[15] = U2_nb[1];
+       }
+       else
+       {
+       U0_nb[15] = (U0_nb[1]+U0_nb[4]+cell_center[index_nb[15]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[15] = (U1_nb[1]+U1_nb[4]+cell_center[index_nb[15]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[15] = (U2_nb[1]+U2_nb[4]+cell_center[index_nb[15]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[1] && bNoBoundary[4])
     {
@@ -19880,30 +20133,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i+1/2,j,k+1/2)
     /*
-    if (!bNoBoundary[1] && bNoBoundary[5])
-    {
-	U0_nb[16] = U0_nb[1];
-	U1_nb[16] = U1_nb[1];
-	U2_nb[16] = U2_nb[1];
-    }
-    else if(bNoBoundary[1] && !bNoBoundary[5])
-    {
-	U0_nb[16] = U0_nb[5];
-	U1_nb[16] = U1_nb[5];
-	U2_nb[16] = U2_nb[5];
-    }
-    else if(!bNoBoundary[1] && !bNoBoundary[5])
-    {
-	U0_nb[16] = U0_nb[1];
-	U1_nb[16] = U1_nb[1];
-	U2_nb[16] = U2_nb[1];
-    }
-    else
-    {
-	U0_nb[16] = (U0_nb[1]+U0_nb[5]+cell_center[index_nb[16]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[16] = (U1_nb[1]+U1_nb[5]+cell_center[index_nb[16]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[16] = (U2_nb[1]+U2_nb[5]+cell_center[index_nb[16]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[1] && bNoBoundary[5])
+       {
+       U0_nb[16] = U0_nb[1];
+       U1_nb[16] = U1_nb[1];
+       U2_nb[16] = U2_nb[1];
+       }
+       else if(bNoBoundary[1] && !bNoBoundary[5])
+       {
+       U0_nb[16] = U0_nb[5];
+       U1_nb[16] = U1_nb[5];
+       U2_nb[16] = U2_nb[5];
+       }
+       else if(!bNoBoundary[1] && !bNoBoundary[5])
+       {
+       U0_nb[16] = U0_nb[1];
+       U1_nb[16] = U1_nb[1];
+       U2_nb[16] = U2_nb[1];
+       }
+       else
+       {
+       U0_nb[16] = (U0_nb[1]+U0_nb[5]+cell_center[index_nb[16]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[16] = (U1_nb[1]+U1_nb[5]+cell_center[index_nb[16]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[16] = (U2_nb[1]+U2_nb[5]+cell_center[index_nb[16]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[1] && bNoBoundary[5])
     {
@@ -19924,30 +20177,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
     //corner (i-1/2,j,k+1/2)
     /*
-    if (!bNoBoundary[0] && bNoBoundary[5])
-    {
-	U0_nb[17] = U0_nb[0];
-	U1_nb[17] = U1_nb[0];
-	U2_nb[17] = U2_nb[0];
-    }
-    else if(bNoBoundary[0] && !bNoBoundary[5])
-    {
-	U0_nb[17] = U0_nb[5];
-	U1_nb[17] = U1_nb[5];
-	U2_nb[17] = U2_nb[5];
-    }
-    else if(!bNoBoundary[0] && !bNoBoundary[5])
-    {
-	U0_nb[17] = U0_nb[0];
-	U1_nb[17] = U1_nb[0];
-	U2_nb[17] = U2_nb[0];
-    }
-    else
-    {
-	U0_nb[17] = (U0_nb[0]+U0_nb[5]+cell_center[index_nb[17]].m_state.m_U[0]+U0_center)/4.0;
-	U1_nb[17] = (U1_nb[0]+U1_nb[5]+cell_center[index_nb[17]].m_state.m_U[1]+U1_center)/4.0;
-	U2_nb[17] = (U2_nb[0]+U2_nb[5]+cell_center[index_nb[17]].m_state.m_U[2]+U2_center)/4.0;
-    } */
+       if (!bNoBoundary[0] && bNoBoundary[5])
+       {
+       U0_nb[17] = U0_nb[0];
+       U1_nb[17] = U1_nb[0];
+       U2_nb[17] = U2_nb[0];
+       }
+       else if(bNoBoundary[0] && !bNoBoundary[5])
+       {
+       U0_nb[17] = U0_nb[5];
+       U1_nb[17] = U1_nb[5];
+       U2_nb[17] = U2_nb[5];
+       }
+       else if(!bNoBoundary[0] && !bNoBoundary[5])
+       {
+       U0_nb[17] = U0_nb[0];
+       U1_nb[17] = U1_nb[0];
+       U2_nb[17] = U2_nb[0];
+       }
+       else
+       {
+       U0_nb[17] = (U0_nb[0]+U0_nb[5]+cell_center[index_nb[17]].m_state.m_U[0]+U0_center)/4.0;
+       U1_nb[17] = (U1_nb[0]+U1_nb[5]+cell_center[index_nb[17]].m_state.m_U[1]+U1_center)/4.0;
+       U2_nb[17] = (U2_nb[0]+U2_nb[5]+cell_center[index_nb[17]].m_state.m_U[2]+U2_center)/4.0;
+       } */
 
     if (bNoBoundary[0] && bNoBoundary[5])
     {
@@ -19980,16 +20233,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusion_coupled(
 
 
 /**
-* calculate Uxx,Uyy,Uzz and Px,Py,Pz.
-* @param dir
-* @param icoords
-* @param dU2
-* @param dP
-*/
+ * calculate Uxx,Uyy,Uzz and Px,Py,Pz.
+ * @param dir
+ * @param icoords
+ * @param dU2
+ * @param dP
+ */
 void Incompress_Solver_Smooth_3D_Cartesian::getDU2(
-	int *icoords,
-	EBM_COORD xyz,
-	double dU2[3])
+        int *icoords,
+        EBM_COORD xyz,
+        double dU2[3])
 {
     double dh0, dh1, dh;
     L_STATE U0, U1, U2;
@@ -20000,51 +20253,51 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDU2(
 
     if(xyz==COORD_X)
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,WEST,U0,m_t_old);
-	if(bNoBoundary[0])
-	    dh0 = top_h[0];
-	else
-	    dh0 = top_h[0]/2;
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,WEST,U0,m_t_old);
+        if(bNoBoundary[0])
+            dh0 = top_h[0];
+        else
+            dh0 = top_h[0]/2;
 
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,EAST,U2,m_t_old);
-	if(bNoBoundary[1])
-	    dh1 = top_h[0];
-	else
-	    dh1 = top_h[0]/2;
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,EAST,U2,m_t_old);
+        if(bNoBoundary[1])
+            dh1 = top_h[0];
+        else
+            dh1 = top_h[0]/2;
 
-	dh = top_h[0];
+        dh = top_h[0];
     }
     else if(xyz==COORD_Y)	//
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,SOUTH,U0,m_t_old);
-	if(bNoBoundary[0])
-	    dh0 = top_h[1];
-	else
-	    dh0 = top_h[1]/2;
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,SOUTH,U0,m_t_old);
+        if(bNoBoundary[0])
+            dh0 = top_h[1];
+        else
+            dh0 = top_h[1]/2;
 
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,NORTH,U2,m_t_old);
-	if(bNoBoundary[1])
-	    dh1 = top_h[1];
-	else
-	    dh1 = top_h[1]/2;
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,NORTH,U2,m_t_old);
+        if(bNoBoundary[1])
+            dh1 = top_h[1];
+        else
+            dh1 = top_h[1]/2;
 
-	dh = top_h[1];
+        dh = top_h[1];
     }
     else
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,LOWER,U0,m_t_old);
-	if(bNoBoundary[0])
-	    dh0 = top_h[2];
-	else
-	    dh0 = top_h[2]/2;
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,LOWER,U0,m_t_old);
+        if(bNoBoundary[0])
+            dh0 = top_h[2];
+        else
+            dh0 = top_h[2]/2;
 
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,UPPER,U2,m_t_old);
-	if(bNoBoundary[1])
-	    dh1 = top_h[2];
-	else
-	    dh1 = top_h[2]/2;
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,UPPER,U2,m_t_old);
+        if(bNoBoundary[1])
+            dh1 = top_h[2];
+        else
+            dh1 = top_h[2]/2;
 
-	dh = top_h[2];
+        dh = top_h[2];
     }
 
     dU2[0] = ((U2.m_U[0] - U1.m_U[0])/dh1 - (U1.m_U[0] - U0.m_U[0])/dh0) / dh;
@@ -20055,9 +20308,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDU2(
 
 // Minmod slope limiter
 void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope(
-	int *icoords,
-	EBM_COORD xyz,
-	double slope[3])
+        int *icoords,
+        EBM_COORD xyz,
+        double slope[3])
 {
     double dh0, dh1;
     L_STATE U0, U1, U2;
@@ -20068,45 +20321,45 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope(
 
     if(xyz==COORD_X)
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,WEST,U0,m_t_old);
-	if(bNoBoundary[0])
-	    dh0 = top_h[0];
-	else
-	    dh0 = top_h[0]/2;
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,WEST,U0,m_t_old);
+        if(bNoBoundary[0])
+            dh0 = top_h[0];
+        else
+            dh0 = top_h[0]/2;
 
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,EAST,U2,m_t_old);
-	if(bNoBoundary[1])
-	    dh1 = top_h[0];
-	else
-	    dh1 = top_h[0]/2;
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,EAST,U2,m_t_old);
+        if(bNoBoundary[1])
+            dh1 = top_h[0];
+        else
+            dh1 = top_h[0]/2;
     }
     else if(xyz==COORD_Y)	//
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,SOUTH,U0,m_t_old);
-	if(bNoBoundary[0])
-	    dh0 = top_h[1];
-	else
-	    dh0 = top_h[1]/2;
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,SOUTH,U0,m_t_old);
+        if(bNoBoundary[0])
+            dh0 = top_h[1];
+        else
+            dh0 = top_h[1]/2;
 
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,NORTH,U2,m_t_old);
-	if(bNoBoundary[1])
-	    dh1 = top_h[1];
-	else
-	    dh1 = top_h[1]/2;
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,NORTH,U2,m_t_old);
+        if(bNoBoundary[1])
+            dh1 = top_h[1];
+        else
+            dh1 = top_h[1]/2;
     }
     else  //xyz == COORD_Z
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,LOWER,U0,m_t_old);
-	if(bNoBoundary[0])
-	    dh0 = top_h[1];
-	else
-	    dh0 = top_h[1]/2;
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,LOWER,U0,m_t_old);
+        if(bNoBoundary[0])
+            dh0 = top_h[1];
+        else
+            dh0 = top_h[1]/2;
 
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,UPPER,U2,m_t_old);
-	if(bNoBoundary[1])
-	    dh1 = top_h[1];
-	else
-	    dh1 = top_h[1]/2;
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,UPPER,U2,m_t_old);
+        if(bNoBoundary[1])
+            dh1 = top_h[1];
+        else
+            dh1 = top_h[1]/2;
     }
     slope[0] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dh0, (U2.m_U[0]-U1.m_U[0])/dh1);
     slope[1] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dh0, (U2.m_U[1]-U1.m_U[1])/dh1);
@@ -20117,9 +20370,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope(
 
 
 void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Vanleer(
-	int *icoords,
-	EBM_COORD xyz,
-	double slope[3])
+        int *icoords,
+        EBM_COORD xyz,
+        double slope[3])
 {
     double dx,dy,dz;
     L_STATE U0, U1, U2;
@@ -20138,212 +20391,212 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Vanleer(
 
     if(xyz==COORD_X)
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,WEST,U0,m_t_old);
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,EAST,U2,m_t_old);
-	if(bNoBoundary[0] || bNoBoundary[1])
-	{
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,WEST,U0,m_t_old);
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,EAST,U2,m_t_old);
+        if(bNoBoundary[0] || bNoBoundary[1])
+        {
 
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dx, 2.0*(U1.m_U[0]-U0.m_U[0])/dx);
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dx, 2.0*(U1.m_U[1]-U0.m_U[1])/dx);
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dx, 2.0*(U1.m_U[2]-U0.m_U[2])/dx);
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dx, 2.0*(U1.m_U[0]-U0.m_U[0])/dx);
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dx, 2.0*(U1.m_U[1]-U0.m_U[1])/dx);
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dx, 2.0*(U1.m_U[2]-U0.m_U[2])/dx);
 
-	    u_slope = (U2.m_U[0] - U0.m_U[0])/(2*dx);
-	    v_slope = (U2.m_U[1] - U0.m_U[1])/(2*dx);
-	    w_slope = (U2.m_U[2] - U0.m_U[2])/(2*dx);
+            u_slope = (U2.m_U[0] - U0.m_U[0])/(2*dx);
+            v_slope = (U2.m_U[1] - U0.m_U[1])/(2*dx);
+            w_slope = (U2.m_U[2] - U0.m_U[2])/(2*dx);
 
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
 
-	}
-	else if ( (!bNoBoundary[0]) || bNoBoundary[1])
-	{
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dx, 2.0*(U1.m_U[0]-U0.m_U[0])/(dx/2.0));
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dx, 2.0*(U1.m_U[1]-U0.m_U[1])/(dx/2.0));
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dx, 2.0*(U1.m_U[2]-U0.m_U[2])/(dx/2.0));
+        }
+        else if ( (!bNoBoundary[0]) || bNoBoundary[1])
+        {
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dx, 2.0*(U1.m_U[0]-U0.m_U[0])/(dx/2.0));
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dx, 2.0*(U1.m_U[1]-U0.m_U[1])/(dx/2.0));
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dx, 2.0*(U1.m_U[2]-U0.m_U[2])/(dx/2.0));
 
-	    u_slope = (U2.m_U[0] + U1.m_U[0] + 2.0*U0.m_U[0])/(2.0*dx);
-	    v_slope = (U2.m_U[1] + U1.m_U[1] + 2.0*U0.m_U[1])/(2.0*dx);
-	    w_slope = (U2.m_U[2] + U1.m_U[2] + 2.0*U0.m_U[2])/(2.0*dx);
+            u_slope = (U2.m_U[0] + U1.m_U[0] + 2.0*U0.m_U[0])/(2.0*dx);
+            v_slope = (U2.m_U[1] + U1.m_U[1] + 2.0*U0.m_U[1])/(2.0*dx);
+            w_slope = (U2.m_U[2] + U1.m_U[2] + 2.0*U0.m_U[2])/(2.0*dx);
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
-	}
-	else if ( (!bNoBoundary[1]) || bNoBoundary[0])
-	{
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/(dx/2.0), 2.0*(U1.m_U[0]-U0.m_U[0])/dx);
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/(dx/2.0), 2.0*(U1.m_U[1]-U0.m_U[1])/dx);
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/(dx/2.0), 2.0*(U1.m_U[2]-U0.m_U[2])/dx);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
+        }
+        else if ( (!bNoBoundary[1]) || bNoBoundary[0])
+        {
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/(dx/2.0), 2.0*(U1.m_U[0]-U0.m_U[0])/dx);
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/(dx/2.0), 2.0*(U1.m_U[1]-U0.m_U[1])/dx);
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/(dx/2.0), 2.0*(U1.m_U[2]-U0.m_U[2])/dx);
 
-	    u_slope = (2.0*U2.m_U[0] - U1.m_U[0] - U0.m_U[0])/(2.0*dx);
-	    v_slope = (2.0*U2.m_U[1] - U1.m_U[1] - U0.m_U[1])/(2.0*dx);
-	    w_slope = (2.0*U2.m_U[2] - U1.m_U[2] - U0.m_U[2])/(2.0*dx);
+            u_slope = (2.0*U2.m_U[0] - U1.m_U[0] - U0.m_U[0])/(2.0*dx);
+            v_slope = (2.0*U2.m_U[1] - U1.m_U[1] - U0.m_U[1])/(2.0*dx);
+            w_slope = (2.0*U2.m_U[2] - U1.m_U[2] - U0.m_U[2])/(2.0*dx);
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
 
-	}
-	else
-	{
-	    printf("\nThe number of cell in x direction is less than 1!!\n");
-	    slope[0] = slope[1] = slope[2] = 0.0;
-	}
+        }
+        else
+        {
+            printf("\nThe number of cell in x direction is less than 1!!\n");
+            slope[0] = slope[1] = slope[2] = 0.0;
+        }
 
     }
     else if (xyz == COORD_Y)	//
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,SOUTH,U0,m_t_old);
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,NORTH,U2,m_t_old);
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,SOUTH,U0,m_t_old);
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,NORTH,U2,m_t_old);
 
-	if(bNoBoundary[0] || bNoBoundary[1])
-	{
+        if(bNoBoundary[0] || bNoBoundary[1])
+        {
 
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dy, 2.0*(U1.m_U[0]-U0.m_U[0])/dy);
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dy, 2.0*(U1.m_U[1]-U0.m_U[1])/dy);
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dy, 2.0*(U1.m_U[2]-U0.m_U[2])/dy);
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dy, 2.0*(U1.m_U[0]-U0.m_U[0])/dy);
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dy, 2.0*(U1.m_U[1]-U0.m_U[1])/dy);
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dy, 2.0*(U1.m_U[2]-U0.m_U[2])/dy);
 
-	    u_slope = (U2.m_U[0] - U0.m_U[0])/(2*dy);
-	    v_slope = (U2.m_U[1] - U0.m_U[1])/(2*dy);
-	    w_slope = (U2.m_U[2] - U0.m_U[2])/(2*dy);
+            u_slope = (U2.m_U[0] - U0.m_U[0])/(2*dy);
+            v_slope = (U2.m_U[1] - U0.m_U[1])/(2*dy);
+            w_slope = (U2.m_U[2] - U0.m_U[2])/(2*dy);
 
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
 
-	}
-	else if ( (!bNoBoundary[0]) || bNoBoundary[1])
-	{
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dy, 2.0*(U1.m_U[0]-U0.m_U[0])/(dy/2.0));
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dy, 2.0*(U1.m_U[1]-U0.m_U[1])/(dy/2.0));
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dy, 2.0*(U1.m_U[2]-U0.m_U[2])/(dy/2.0));
+        }
+        else if ( (!bNoBoundary[0]) || bNoBoundary[1])
+        {
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dy, 2.0*(U1.m_U[0]-U0.m_U[0])/(dy/2.0));
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dy, 2.0*(U1.m_U[1]-U0.m_U[1])/(dy/2.0));
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dy, 2.0*(U1.m_U[2]-U0.m_U[2])/(dy/2.0));
 
-	    u_slope = (U2.m_U[0] + U1.m_U[0] + 2.0*U0.m_U[0])/(2.0*dy);
-	    v_slope = (U2.m_U[1] + U1.m_U[1] + 2.0*U0.m_U[1])/(2.0*dy);
-	    w_slope = (U2.m_U[2] + U1.m_U[2] + 2.0*U0.m_U[2])/(2.0*dy);
+            u_slope = (U2.m_U[0] + U1.m_U[0] + 2.0*U0.m_U[0])/(2.0*dy);
+            v_slope = (U2.m_U[1] + U1.m_U[1] + 2.0*U0.m_U[1])/(2.0*dy);
+            w_slope = (U2.m_U[2] + U1.m_U[2] + 2.0*U0.m_U[2])/(2.0*dy);
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
-	}
-	else if ( (!bNoBoundary[1]) || bNoBoundary[0])
-	{
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/(dy/2.0), 2.0*(U1.m_U[0]-U0.m_U[0])/dy);
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/(dy/2.0), 2.0*(U1.m_U[1]-U0.m_U[1])/dy);
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/(dy/2.0), 2.0*(U1.m_U[2]-U0.m_U[2])/dy);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
+        }
+        else if ( (!bNoBoundary[1]) || bNoBoundary[0])
+        {
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/(dy/2.0), 2.0*(U1.m_U[0]-U0.m_U[0])/dy);
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/(dy/2.0), 2.0*(U1.m_U[1]-U0.m_U[1])/dy);
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/(dy/2.0), 2.0*(U1.m_U[2]-U0.m_U[2])/dy);
 
-	    u_slope = (2.0*U2.m_U[0] - U1.m_U[0] - U0.m_U[0])/(2.0*dy);
-	    v_slope = (2.0*U2.m_U[1] - U1.m_U[1] - U0.m_U[1])/(2.0*dy);
-	    w_slope = (2.0*U2.m_U[2] - U1.m_U[2] - U0.m_U[2])/(2.0*dy);
+            u_slope = (2.0*U2.m_U[0] - U1.m_U[0] - U0.m_U[0])/(2.0*dy);
+            v_slope = (2.0*U2.m_U[1] - U1.m_U[1] - U0.m_U[1])/(2.0*dy);
+            w_slope = (2.0*U2.m_U[2] - U1.m_U[2] - U0.m_U[2])/(2.0*dy);
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
 
-	}
-	else
-	{
-	    printf("\nThe number of cell in y direction is less than 1!!\n");
-	    slope[0] = slope[1] = slope[2] = 0.0;
-	}
+        }
+        else
+        {
+            printf("\nThe number of cell in y direction is less than 1!!\n");
+            slope[0] = slope[1] = slope[2] = 0.0;
+        }
     }
     else // xyz == COORD_Z
     {
-	bNoBoundary[0] = getNeighborOrBoundaryState(icoords,LOWER,U0,m_t_old);
-	bNoBoundary[1] = getNeighborOrBoundaryState(icoords,UPPER,U2,m_t_old);
+        bNoBoundary[0] = getNeighborOrBoundaryState(icoords,LOWER,U0,m_t_old);
+        bNoBoundary[1] = getNeighborOrBoundaryState(icoords,UPPER,U2,m_t_old);
 
-	if(bNoBoundary[0] || bNoBoundary[1])
-	{
+        if(bNoBoundary[0] || bNoBoundary[1])
+        {
 
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dz, 2.0*(U1.m_U[0]-U0.m_U[0])/dz);
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dz, 2.0*(U1.m_U[1]-U0.m_U[1])/dz);
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dz, 2.0*(U1.m_U[2]-U0.m_U[2])/dz);
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dz, 2.0*(U1.m_U[0]-U0.m_U[0])/dz);
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dz, 2.0*(U1.m_U[1]-U0.m_U[1])/dz);
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dz, 2.0*(U1.m_U[2]-U0.m_U[2])/dz);
 
-	    u_slope = (U2.m_U[0] - U0.m_U[0])/(2*dz);
-	    v_slope = (U2.m_U[1] - U0.m_U[1])/(2*dz);
-	    w_slope = (U2.m_U[2] - U0.m_U[2])/(2*dz);
+            u_slope = (U2.m_U[0] - U0.m_U[0])/(2*dz);
+            v_slope = (U2.m_U[1] - U0.m_U[1])/(2*dz);
+            w_slope = (U2.m_U[2] - U0.m_U[2])/(2*dz);
 
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
 
-	}
-	else if ( (!bNoBoundary[0]) || bNoBoundary[1])
-	{
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dz, 2.0*(U1.m_U[0]-U0.m_U[0])/(dz/2.0));
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dz, 2.0*(U1.m_U[1]-U0.m_U[1])/(dz/2.0));
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dz, 2.0*(U1.m_U[2]-U0.m_U[2])/(dz/2.0));
+        }
+        else if ( (!bNoBoundary[0]) || bNoBoundary[1])
+        {
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/dz, 2.0*(U1.m_U[0]-U0.m_U[0])/(dz/2.0));
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/dz, 2.0*(U1.m_U[1]-U0.m_U[1])/(dz/2.0));
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/dz, 2.0*(U1.m_U[2]-U0.m_U[2])/(dz/2.0));
 
-	    u_slope = (U2.m_U[0] + U1.m_U[0] + 2.0*U0.m_U[0])/(2.0*dz);
-	    v_slope = (U2.m_U[1] + U1.m_U[1] + 2.0*U0.m_U[1])/(2.0*dz);
-	    w_slope = (U2.m_U[2] + U1.m_U[2] + 2.0*U0.m_U[2])/(2.0*dz);
+            u_slope = (U2.m_U[0] + U1.m_U[0] + 2.0*U0.m_U[0])/(2.0*dz);
+            v_slope = (U2.m_U[1] + U1.m_U[1] + 2.0*U0.m_U[1])/(2.0*dz);
+            w_slope = (U2.m_U[2] + U1.m_U[2] + 2.0*U0.m_U[2])/(2.0*dz);
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
-	}
-	else if ( (!bNoBoundary[1]) || bNoBoundary[0])
-	{
-	    u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/(dz/2.0), 2.0*(U1.m_U[0]-U0.m_U[0])/dz);
-	    v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/(dz/2.0), 2.0*(U1.m_U[1]-U0.m_U[1])/dz);
-	    w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/(dz/2.0), 2.0*(U1.m_U[2]-U0.m_U[2])/dz);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
+        }
+        else if ( (!bNoBoundary[1]) || bNoBoundary[0])
+        {
+            u_lim = EBM_minmod(2.0*(U2.m_U[0]-U1.m_U[0])/(dz/2.0), 2.0*(U1.m_U[0]-U0.m_U[0])/dz);
+            v_lim = EBM_minmod(2.0*(U2.m_U[1]-U1.m_U[1])/(dz/2.0), 2.0*(U1.m_U[1]-U0.m_U[1])/dz);
+            w_lim = EBM_minmod(2.0*(U2.m_U[2]-U1.m_U[2])/(dz/2.0), 2.0*(U1.m_U[2]-U0.m_U[2])/dz);
 
-	    u_slope = (2.0*U2.m_U[0] - U1.m_U[0] - U0.m_U[0])/(2.0*dz);
-	    v_slope = (2.0*U2.m_U[1] - U1.m_U[1] - U0.m_U[1])/(2.0*dz);
-	    w_slope = (2.0*U2.m_U[2] - U1.m_U[2] - U0.m_U[2])/(2.0*dz);
+            u_slope = (2.0*U2.m_U[0] - U1.m_U[0] - U0.m_U[0])/(2.0*dz);
+            v_slope = (2.0*U2.m_U[1] - U1.m_U[1] - U0.m_U[1])/(2.0*dz);
+            w_slope = (2.0*U2.m_U[2] - U1.m_U[2] - U0.m_U[2])/(2.0*dz);
 
-	    slope[0] = EBM_minmod(u_slope, u_lim);
-	    slope[1] = EBM_minmod(v_slope, v_lim);
-	    slope[2] = EBM_minmod(w_slope, w_lim);
+            slope[0] = EBM_minmod(u_slope, u_lim);
+            slope[1] = EBM_minmod(v_slope, v_lim);
+            slope[2] = EBM_minmod(w_slope, w_lim);
 
-	}
-	else
-	{
-	    printf("\nThe number of cell in z direction is less than 1!!\n");
-	    slope[0] = slope[1] = slope[2] = 0.0;
-	}
+        }
+        else
+        {
+            printf("\nThe number of cell in z direction is less than 1!!\n");
+            slope[0] = slope[1] = slope[2] = 0.0;
+        }
     }
 }
 
 
 double Incompress_Solver_Smooth_3D_Cartesian::EBM_minmod(
-	double x,
-	double y)
+        double x,
+        double y)
 {
 
     double sign = x*y;
 
     if(sign<0)
-	return 0;
+        return 0;
     else if(sign>=0)
     {
-	if(fabs(x)<fabs(y))
-	    return x;
-	else
-	    return y;
+        if(fabs(x)<fabs(y))
+            return x;
+        else
+            return y;
     }
 
     return 0;
 }
 
 /**
-* get the state from the neighbor cell or boundary.
-* @param icoords
-* @param dir
-* @param comp
-* @param state
-* @return true,  valid state from neighbor cell
-* 	   false, valid state from boundary
-*/
+ * get the state from the neighbor cell or boundary.
+ * @param icoords
+ * @param dir
+ * @param comp
+ * @param state
+ * @return true,  valid state from neighbor cell
+ * 	   false, valid state from boundary
+ */
 bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryState(
-	int icoords[3],
-	GRID_DIRECTION dir,
-	L_STATE &state,
-	double t)
+        int icoords[3],
+        GRID_DIRECTION dir,
+        L_STATE &state,
+        double t)
 {
     double crx_coords[MAXD];
     static double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
@@ -20354,57 +20607,57 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryState(
     int comp = cell_center[index].comp;
 
     if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir,
-	    comp,&intfc_state,&hs,crx_coords,t) &&
-	    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+                comp,&intfc_state,&hs,crx_coords,t) &&
+            wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
     {
-	state.m_U[0] = getStateVel[0](intfc_state);
-	state.m_U[1] = getStateVel[1](intfc_state);
-	state.m_U[2] = getStateVel[2](intfc_state);
-	return false;
+        state.m_U[0] = getStateVel[0](intfc_state);
+        state.m_U[1] = getStateVel[1](intfc_state);
+        state.m_U[2] = getStateVel[2](intfc_state);
+        return false;
     }
     else
     {
-	int index_nb;
-	switch(dir)
-	{
-	case WEST:
-	    index_nb = d_index3d(icoords[0]-1,icoords[1],icoords[2],top_gmax);
-	    break;
-	case EAST:
-	    index_nb = d_index3d(icoords[0]+1,icoords[1],icoords[2],top_gmax);
-	    break;
-	case SOUTH:
-	    index_nb = d_index3d(icoords[0],icoords[1]-1,icoords[2],top_gmax);
-	    break;
-	case NORTH:
-	    index_nb = d_index3d(icoords[0],icoords[1]+1,icoords[2],top_gmax);
-	    break;
-	case LOWER:
-	    index_nb = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
-	    break;
-	case UPPER:
-	    index_nb = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
-	    break;
-	default:
-	    assert(false);
-	}
-	state = cell_center[index_nb].m_state;
-	return true;
+        int index_nb;
+        switch(dir)
+        {
+            case WEST:
+                index_nb = d_index3d(icoords[0]-1,icoords[1],icoords[2],top_gmax);
+                break;
+            case EAST:
+                index_nb = d_index3d(icoords[0]+1,icoords[1],icoords[2],top_gmax);
+                break;
+            case SOUTH:
+                index_nb = d_index3d(icoords[0],icoords[1]-1,icoords[2],top_gmax);
+                break;
+            case NORTH:
+                index_nb = d_index3d(icoords[0],icoords[1]+1,icoords[2],top_gmax);
+                break;
+            case LOWER:
+                index_nb = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
+                break;
+            case UPPER:
+                index_nb = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
+                break;
+            default:
+                assert(false);
+        }
+        state = cell_center[index_nb].m_state;
+        return true;
     }
 }
 
 
 /**
-*
-* @param state_left
-* @param state_right
-* @param ans
-*/
+ *
+ * @param state_left
+ * @param state_right
+ * @param ans
+ */
 void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution(
-	EBM_COORD xyz,
-	L_STATE &state_left,
-	L_STATE &state_right,
-	L_STATE &ans)
+        EBM_COORD xyz,
+        L_STATE &state_left,
+        L_STATE &state_right,
+        L_STATE &ans)
 {
     L_STATE sl, sr;
 
@@ -20412,33 +20665,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution(
     // rotate state
     if(xyz==COORD_X)
     {
-	sl.m_U[0] = state_left.m_U[0];
-	sl.m_U[1] = state_left.m_U[1];
-	sl.m_U[2] = state_left.m_U[2];
+        sl.m_U[0] = state_left.m_U[0];
+        sl.m_U[1] = state_left.m_U[1];
+        sl.m_U[2] = state_left.m_U[2];
 
-	sr.m_U[0] = state_right.m_U[0];
-	sr.m_U[1] = state_right.m_U[1];
-	sr.m_U[2] = state_right.m_U[2];
+        sr.m_U[0] = state_right.m_U[0];
+        sr.m_U[1] = state_right.m_U[1];
+        sr.m_U[2] = state_right.m_U[2];
     }
     else if(xyz==COORD_Y)
     {
-	sl.m_U[0] = state_left.m_U[1];
-	sl.m_U[1] = state_left.m_U[0];
-	sl.m_U[2] = state_left.m_U[2];
+        sl.m_U[0] = state_left.m_U[1];
+        sl.m_U[1] = state_left.m_U[0];
+        sl.m_U[2] = state_left.m_U[2];
 
-	sr.m_U[0] = state_right.m_U[1];
-	sr.m_U[1] = state_right.m_U[0];
-	sr.m_U[2] = state_right.m_U[2];
+        sr.m_U[0] = state_right.m_U[1];
+        sr.m_U[1] = state_right.m_U[0];
+        sr.m_U[2] = state_right.m_U[2];
     }
     else
     {
-	sl.m_U[0] = state_left.m_U[2];
-	sl.m_U[1] = state_left.m_U[1];
-	sl.m_U[2] = state_left.m_U[0];
+        sl.m_U[0] = state_left.m_U[2];
+        sl.m_U[1] = state_left.m_U[1];
+        sl.m_U[2] = state_left.m_U[0];
 
-	sr.m_U[0] = state_right.m_U[2];
-	sr.m_U[1] = state_right.m_U[1];
-	sr.m_U[2] = state_right.m_U[0];
+        sr.m_U[0] = state_right.m_U[2];
+        sr.m_U[1] = state_right.m_U[1];
+        sr.m_U[2] = state_right.m_U[0];
     }
 
     // calculate the Riemann solution
@@ -20448,34 +20701,34 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution(
     // BCG, JCP 85, 257-283 (1989)
     // ut + uux = 0
     if(uL>=0 && (uL+uR)>=0)
-	ans.m_U[0] = uL;
+        ans.m_U[0] = uL;
     else if(uL<0 && uR>0)
-	ans.m_U[0] = 0;
+        ans.m_U[0] = 0;
     else
-	ans.m_U[0] = uR;
+        ans.m_U[0] = uR;
 
     // vt + uvx = 0
     if(ans.m_U[0]>0)
-	ans.m_U[1] = sl.m_U[1];
+        ans.m_U[1] = sl.m_U[1];
     else if(ans.m_U[0]<0)
-	ans.m_U[1] = sr.m_U[1];
+        ans.m_U[1] = sr.m_U[1];
     else
-	ans.m_U[1] = 1.0/2*(sl.m_U[1]+sr.m_U[1]);
+        ans.m_U[1] = 1.0/2*(sl.m_U[1]+sr.m_U[1]);
 
     if(ans.m_U[0]>0)
-	ans.m_U[2] = sl.m_U[2];
+        ans.m_U[2] = sl.m_U[2];
     else if(ans.m_U[0]<0)
-	ans.m_U[2] = sr.m_U[2];
+        ans.m_U[2] = sr.m_U[2];
     else
-	ans.m_U[2] = 1.0/2*(sl.m_U[2]+sr.m_U[2]);
+        ans.m_U[2] = 1.0/2*(sl.m_U[2]+sr.m_U[2]);
 
     // rotate state
     if(xyz==COORD_X)
-	; // do nothing
+        ; // do nothing
     else if(xyz==COORD_Y)
-	std::swap(ans.m_U[0],ans.m_U[1]);
+        std::swap(ans.m_U[0],ans.m_U[1]);
     else
-	std::swap(ans.m_U[0],ans.m_U[2]);
+        std::swap(ans.m_U[0],ans.m_U[2]);
 }
 
 
@@ -20511,6 +20764,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     double ***ldeno, ***lnume;
     double ***cdeno, ***cnume;
     double delta2, tdelta2;
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
     delta2 = sqr(pow((top_h[0]*top_h[1]*top_h[2]),(1.0/3.0)));
     tdelta2 = sqr(pow((NB*top_h[0]*NB*top_h[1]*NB*top_h[2]),(1.0/3.0)));
 
@@ -20546,320 +20801,320 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     int   ppz = (myid-ppx-(ppgmax[0]*ppy))/(ppgmax[0]*ppgmax[1]);
 
     for (k = 0; k <= top_gmax[2]; k++)
-    for (j = 0; j <= top_gmax[1]; j++)
-    for (i = 0; i <= top_gmax[0]; i++)
-    {
-        index = d_index3d(i,j,k,top_gmax);
+        for (j = 0; j <= top_gmax[1]; j++)
+            for (i = 0; i <= top_gmax[0]; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
 
-        //LOWER bdry
-        if (ppz==0 && k==kmin-1)
-        {
-            index_nbb = d_index3d(i,j,kmin,top_gmax);
-            u[index] = -cell_center[index_nbb].m_state.m_U[0];
-            v[index] = -cell_center[index_nbb].m_state.m_U[1];
-            //w[4] = 0
-            w[index] = 0;
-            rho[index] = cell_center[index_nbb].m_state.m_rho;
-            c[index] = cell_center[index_nbb].m_state.m_c;
-            continue;
-        }
+                //LOWER bdry
+                if (ppz==0 && k==kmin-1)
+                {
+                    index_nbb = d_index3d(i,j,kmin,top_gmax);
+                    u[index] = -cell_center[index_nbb].m_state.m_U[0];
+                    v[index] = -cell_center[index_nbb].m_state.m_U[1];
+                    //w[4] = 0
+                    w[index] = 0;
+                    rho[index] = cell_center[index_nbb].m_state.m_rho;
+                    c[index] = cell_center[index_nbb].m_state.m_c;
+                    continue;
+                }
 
-        //UPPER bdry
-        if (ppz==ppgmax[2]-1 && k==kmax+1)
-        {
-            index_nbb = d_index3d(i,j,kmax,top_gmax);
-            u[index] = -cell_center[index_nbb].m_state.m_U[0];
-            v[index] = -cell_center[index_nbb].m_state.m_U[1];
-            rho[index] = cell_center[index_nbb].m_state.m_rho;
-            c[index] = cell_center[index_nbb].m_state.m_c;
-            //w[5] = -w[4]
-            index_nbb = d_index3d(i,j,kmax-1,top_gmax);
-            w[index] = -cell_center[index_nbb].m_state.m_U[2];
-            continue;
-        }
+                //UPPER bdry
+                if (ppz==ppgmax[2]-1 && k==kmax+1)
+                {
+                    index_nbb = d_index3d(i,j,kmax,top_gmax);
+                    u[index] = -cell_center[index_nbb].m_state.m_U[0];
+                    v[index] = -cell_center[index_nbb].m_state.m_U[1];
+                    rho[index] = cell_center[index_nbb].m_state.m_rho;
+                    c[index] = cell_center[index_nbb].m_state.m_c;
+                    //w[5] = -w[4]
+                    index_nbb = d_index3d(i,j,kmax-1,top_gmax);
+                    w[index] = -cell_center[index_nbb].m_state.m_U[2];
+                    continue;
+                }
 
-        u[index] = cell_center[index].m_state.m_U[0];
-        v[index] = cell_center[index].m_state.m_U[1];
-        w[index] = cell_center[index].m_state.m_U[2];
-        rho[index] = cell_center[index].m_state.m_rho;
-        c[index] = cell_center[index].m_state.m_c;
-    }
+                u[index] = cell_center[index].m_state.m_U[0];
+                v[index] = cell_center[index].m_state.m_U[1];
+                w[index] = cell_center[index].m_state.m_U[2];
+                rho[index] = cell_center[index].m_state.m_rho;
+                c[index] = cell_center[index].m_state.m_c;
+            }
 
     //calc turbulent viscosities and diffusities on 3 cell-faces/cell center in each cell
     for (coord = 0; coord < MAXD+1; coord++)
     {
         for (k = kmin; k <= kmax; k++)
-        for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
 
-            //6 neighbours of the center cell
-            index_nb[0] = d_index3d(i-1,j,k,top_gmax);
-            index_nb[1] = d_index3d(i+1,j,k,top_gmax);
-            index_nb[2] = d_index3d(i,j-1,k,top_gmax);
-            index_nb[3] = d_index3d(i,j+1,k,top_gmax);
-            index_nb[4] = d_index3d(i,j,k-1,top_gmax);
-            index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+                    //6 neighbours of the center cell
+                    index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+                    index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+                    index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+                    index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+                    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+                    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-            //xy cut neighbours
-            index_nb[6] = d_index3d(i-1,j-1,k,top_gmax);
-            index_nb[7] = d_index3d(i+1,j-1,k,top_gmax);
-            index_nb[8] = d_index3d(i+1,j+1,k,top_gmax);
-            index_nb[9] = d_index3d(i-1,j+1,k,top_gmax);
+                    //xy cut neighbours
+                    index_nb[6] = d_index3d(i-1,j-1,k,top_gmax);
+                    index_nb[7] = d_index3d(i+1,j-1,k,top_gmax);
+                    index_nb[8] = d_index3d(i+1,j+1,k,top_gmax);
+                    index_nb[9] = d_index3d(i-1,j+1,k,top_gmax);
 
-            //yz cut neighbours
-            index_nb[10] = d_index3d(i,j-1,k-1,top_gmax);
-            index_nb[11] = d_index3d(i,j+1,k-1,top_gmax);
-            index_nb[12] = d_index3d(i,j+1,k+1,top_gmax);
-            index_nb[13] = d_index3d(i,j-1,k+1,top_gmax);
+                    //yz cut neighbours
+                    index_nb[10] = d_index3d(i,j-1,k-1,top_gmax);
+                    index_nb[11] = d_index3d(i,j+1,k-1,top_gmax);
+                    index_nb[12] = d_index3d(i,j+1,k+1,top_gmax);
+                    index_nb[13] = d_index3d(i,j-1,k+1,top_gmax);
 
-            //xz cut neighbours
-            index_nb[14] = d_index3d(i-1,j,k-1,top_gmax);
-            index_nb[15] = d_index3d(i+1,j,k-1,top_gmax);
-            index_nb[16] = d_index3d(i+1,j,k+1,top_gmax);
-            index_nb[17] = d_index3d(i-1,j,k+1,top_gmax);
+                    //xz cut neighbours
+                    index_nb[14] = d_index3d(i-1,j,k-1,top_gmax);
+                    index_nb[15] = d_index3d(i+1,j,k-1,top_gmax);
+                    index_nb[16] = d_index3d(i+1,j,k+1,top_gmax);
+                    index_nb[17] = d_index3d(i-1,j,k+1,top_gmax);
 
-            //u-face
-            if (coord==0) {
-                ux = (u[index_nb[1]]-u[index_nb[0]]) / (2.0*top_h[0]);
-                uy = (u[index_nb[3]]-u[index_nb[2]]) / (2.0*top_h[1]);
-                uz = (u[index_nb[5]]-u[index_nb[4]]) / (2.0*top_h[2]);
+                    //u-face
+                    if (coord==0) {
+                        ux = (u[index_nb[1]]-u[index_nb[0]]) / (2.0*top_h[0]);
+                        uy = (u[index_nb[3]]-u[index_nb[2]]) / (2.0*top_h[1]);
+                        uz = (u[index_nb[5]]-u[index_nb[4]]) / (2.0*top_h[2]);
 
-                vx = (v[index_nb[1]]+v[index_nb[7]]-v[index_nb[2]]-v[index]) / (2.0*top_h[0]);
-                vy = (v[index_nb[1]]+v[index]-v[index_nb[2]]-v[index_nb[7]]) / (2.0*top_h[1]);
-                index1 = d_index3d(i+1,j-1,k+1,top_gmax);
-                index2 = d_index3d(i+1,j-1,k-1,top_gmax);
-                vz = (v[index_nb[5]]+v[index_nb[16]]+v[index_nb[13]]+v[index1]
-                     -v[index_nb[4]]-v[index_nb[15]]-v[index_nb[10]]-v[index2]) / (8.0*top_h[2]);
+                        vx = (v[index_nb[1]]+v[index_nb[7]]-v[index_nb[2]]-v[index]) / (2.0*top_h[0]);
+                        vy = (v[index_nb[1]]+v[index]-v[index_nb[2]]-v[index_nb[7]]) / (2.0*top_h[1]);
+                        index1 = d_index3d(i+1,j-1,k+1,top_gmax);
+                        index2 = d_index3d(i+1,j-1,k-1,top_gmax);
+                        vz = (v[index_nb[5]]+v[index_nb[16]]+v[index_nb[13]]+v[index1]
+                                -v[index_nb[4]]-v[index_nb[15]]-v[index_nb[10]]-v[index2]) / (8.0*top_h[2]);
 
-                wx = (w[index_nb[1]]+w[index_nb[15]]-w[index_nb[4]]-w[index]) / (2.0*top_h[0]);
-                index1 = d_index3d(i+1,j+1,k-1,top_gmax);
-                index2 = d_index3d(i+1,j-1,k-1,top_gmax);
-                wy = (w[index_nb[3]]+w[index_nb[11]]+w[index_nb[8]]+w[index1]
-                     -w[index_nb[2]]-w[index_nb[10]]-w[index_nb[7]]-w[index2]) / (8.0*top_h[1]);
-                wz = (w[index_nb[1]]+w[index]-w[index_nb[4]]-w[index_nb[15]]) / (2.0*top_h[2]);
+                        wx = (w[index_nb[1]]+w[index_nb[15]]-w[index_nb[4]]-w[index]) / (2.0*top_h[0]);
+                        index1 = d_index3d(i+1,j+1,k-1,top_gmax);
+                        index2 = d_index3d(i+1,j-1,k-1,top_gmax);
+                        wy = (w[index_nb[3]]+w[index_nb[11]]+w[index_nb[8]]+w[index1]
+                                -w[index_nb[2]]-w[index_nb[10]]-w[index_nb[7]]-w[index2]) / (8.0*top_h[1]);
+                        wz = (w[index_nb[1]]+w[index]-w[index_nb[4]]-w[index_nb[15]]) / (2.0*top_h[2]);
 
-                cx[index] = (c[index_nb[1]]-c[index]) / top_h[0];
-                cy[index] = (c[index_nb[3]]+c[index_nb[8]]-c[index_nb[2]]-c[index_nb[7]]) / (4.0*top_h[1]);
-                cz[index] = (c[index_nb[5]]+c[index_nb[16]]-c[index_nb[4]]-c[index_nb[15]]) / (4.0*top_h[2]);
+                        cx[index] = (c[index_nb[1]]-c[index]) / top_h[0];
+                        cy[index] = (c[index_nb[3]]+c[index_nb[8]]-c[index_nb[2]]-c[index_nb[7]]) / (4.0*top_h[1]);
+                        cz[index] = (c[index_nb[5]]+c[index_nb[16]]-c[index_nb[4]]-c[index_nb[15]]) / (4.0*top_h[2]);
 
-                vel_u[index] = u[index];
-                vel_v[index] = (v[index_nb[1]]+v[index_nb[7]]+v[index_nb[2]]+v[index])/4;
-                vel_w[index] = (w[index_nb[1]]+w[index_nb[15]]+w[index_nb[4]]+w[index])/4;
-            }
+                        vel_u[index] = u[index];
+                        vel_v[index] = (v[index_nb[1]]+v[index_nb[7]]+v[index_nb[2]]+v[index])/4;
+                        vel_w[index] = (w[index_nb[1]]+w[index_nb[15]]+w[index_nb[4]]+w[index])/4;
+                    }
 
-            //v-face
-            else if (coord==1) {
-                ux = (u[index_nb[3]]+u[index]-u[index_nb[0]]-u[index_nb[9]]) / (2.0*top_h[0]);
-                uy = (u[index_nb[3]]+u[index_nb[9]]-u[index_nb[0]]-u[index]) / (2.0*top_h[1]);
-                index1 = d_index3d(i-1,j+1,k+1,top_gmax);
-                index2 = d_index3d(i-1,j+1,k-1,top_gmax);
-                uz = (u[index_nb[5]]+u[index_nb[17]]+u[index_nb[12]]+u[index1]
-                     -u[index_nb[4]]-u[index_nb[14]]-u[index_nb[11]]-u[index2]) / (8.0*top_h[2]);
+                    //v-face
+                    else if (coord==1) {
+                        ux = (u[index_nb[3]]+u[index]-u[index_nb[0]]-u[index_nb[9]]) / (2.0*top_h[0]);
+                        uy = (u[index_nb[3]]+u[index_nb[9]]-u[index_nb[0]]-u[index]) / (2.0*top_h[1]);
+                        index1 = d_index3d(i-1,j+1,k+1,top_gmax);
+                        index2 = d_index3d(i-1,j+1,k-1,top_gmax);
+                        uz = (u[index_nb[5]]+u[index_nb[17]]+u[index_nb[12]]+u[index1]
+                                -u[index_nb[4]]-u[index_nb[14]]-u[index_nb[11]]-u[index2]) / (8.0*top_h[2]);
 
-                vx = (v[index_nb[1]]-v[index_nb[0]]) / (2.0*top_h[0]);
-                vy = (v[index_nb[3]]-v[index_nb[2]]) / (2.0*top_h[1]);
-                vz = (v[index_nb[5]]-v[index_nb[4]]) / (2.0*top_h[2]);
+                        vx = (v[index_nb[1]]-v[index_nb[0]]) / (2.0*top_h[0]);
+                        vy = (v[index_nb[3]]-v[index_nb[2]]) / (2.0*top_h[1]);
+                        vz = (v[index_nb[5]]-v[index_nb[4]]) / (2.0*top_h[2]);
 
-                index1 = d_index3d(i+1,j+1,k-1,top_gmax);
-                index2 = d_index3d(i-1,j+1,k-1,top_gmax);
-                wx = (w[index_nb[1]]+w[index_nb[15]]+w[index_nb[8]]+w[index1]
-                     -w[index_nb[0]]-w[index_nb[14]]-w[index_nb[9]]-w[index2]) / (8.0*top_h[0]);
-                wy = (w[index_nb[3]]+w[index_nb[11]]-w[index_nb[4]]-w[index]) / (2.0*top_h[1]);
-                wz = (w[index_nb[3]]+w[index]-w[index_nb[4]]-w[index_nb[11]]) / (2.0*top_h[2]);
+                        index1 = d_index3d(i+1,j+1,k-1,top_gmax);
+                        index2 = d_index3d(i-1,j+1,k-1,top_gmax);
+                        wx = (w[index_nb[1]]+w[index_nb[15]]+w[index_nb[8]]+w[index1]
+                                -w[index_nb[0]]-w[index_nb[14]]-w[index_nb[9]]-w[index2]) / (8.0*top_h[0]);
+                        wy = (w[index_nb[3]]+w[index_nb[11]]-w[index_nb[4]]-w[index]) / (2.0*top_h[1]);
+                        wz = (w[index_nb[3]]+w[index]-w[index_nb[4]]-w[index_nb[11]]) / (2.0*top_h[2]);
 
-                cx[index] = (c[index_nb[1]]+c[index_nb[8]]-c[index_nb[0]]-c[index_nb[9]]) / (4.0*top_h[0]);
-                cy[index] = (c[index_nb[3]]-c[index]) / top_h[1];
-                cz[index] = (c[index_nb[5]]+c[index_nb[12]]-c[index_nb[4]]-c[index_nb[11]]) / (4.0*top_h[2]);
+                        cx[index] = (c[index_nb[1]]+c[index_nb[8]]-c[index_nb[0]]-c[index_nb[9]]) / (4.0*top_h[0]);
+                        cy[index] = (c[index_nb[3]]-c[index]) / top_h[1];
+                        cz[index] = (c[index_nb[5]]+c[index_nb[12]]-c[index_nb[4]]-c[index_nb[11]]) / (4.0*top_h[2]);
 
-                vel_u[index] = (u[index_nb[0]]+u[index_nb[9]]+u[index_nb[3]]+u[index])/4;
-                vel_v[index] = v[index];
-                vel_w[index] = (w[index_nb[4]]+w[index_nb[11]]+w[index_nb[3]]+w[index])/4;
-            }
+                        vel_u[index] = (u[index_nb[0]]+u[index_nb[9]]+u[index_nb[3]]+u[index])/4;
+                        vel_v[index] = v[index];
+                        vel_w[index] = (w[index_nb[4]]+w[index_nb[11]]+w[index_nb[3]]+w[index])/4;
+                    }
 
-            //w-face
-            else if (coord==2) {
-                ux = (u[index_nb[5]]+u[index]-u[index_nb[0]]-u[index_nb[17]]) / (2.0*top_h[0]);
-                index1 = d_index3d(i-1,j+1,k+1,top_gmax);
-                index2 = d_index3d(i-1,j-1,k+1,top_gmax);
-                uy = (u[index_nb[3]]+u[index_nb[9]]+u[index_nb[12]]+u[index1]
-                     -u[index_nb[2]]-u[index_nb[6]]-u[index_nb[13]]-u[index2]) / (8.0*top_h[1]);
-                uz = (u[index_nb[5]]+u[index_nb[17]]-u[index_nb[0]]-u[index]) / (2.0*top_h[2]);
+                    //w-face
+                    else if (coord==2) {
+                        ux = (u[index_nb[5]]+u[index]-u[index_nb[0]]-u[index_nb[17]]) / (2.0*top_h[0]);
+                        index1 = d_index3d(i-1,j+1,k+1,top_gmax);
+                        index2 = d_index3d(i-1,j-1,k+1,top_gmax);
+                        uy = (u[index_nb[3]]+u[index_nb[9]]+u[index_nb[12]]+u[index1]
+                                -u[index_nb[2]]-u[index_nb[6]]-u[index_nb[13]]-u[index2]) / (8.0*top_h[1]);
+                        uz = (u[index_nb[5]]+u[index_nb[17]]-u[index_nb[0]]-u[index]) / (2.0*top_h[2]);
 
-                index1 = d_index3d(i+1,j-1,k+1,top_gmax);
-                index2 = d_index3d(i-1,j-1,k+1,top_gmax);
-                vx = (v[index_nb[1]]+v[index_nb[7]]+v[index_nb[16]]+v[index1]
-                     -v[index_nb[0]]-v[index_nb[6]]-v[index_nb[17]]-v[index2]) / (8.0*top_h[0]);
-                vy = (v[index_nb[5]]+v[index]-v[index_nb[2]]-v[index_nb[13]]) / (2.0*top_h[1]);
-                vz = (v[index_nb[5]]+v[index_nb[13]]-v[index_nb[2]]-v[index]) / (2.0*top_h[2]);
+                        index1 = d_index3d(i+1,j-1,k+1,top_gmax);
+                        index2 = d_index3d(i-1,j-1,k+1,top_gmax);
+                        vx = (v[index_nb[1]]+v[index_nb[7]]+v[index_nb[16]]+v[index1]
+                                -v[index_nb[0]]-v[index_nb[6]]-v[index_nb[17]]-v[index2]) / (8.0*top_h[0]);
+                        vy = (v[index_nb[5]]+v[index]-v[index_nb[2]]-v[index_nb[13]]) / (2.0*top_h[1]);
+                        vz = (v[index_nb[5]]+v[index_nb[13]]-v[index_nb[2]]-v[index]) / (2.0*top_h[2]);
 
-                wx = (w[index_nb[1]]-w[index_nb[0]]) / (2.0*top_h[0]);
-                wy = (w[index_nb[3]]-w[index_nb[2]]) / (2.0*top_h[1]);
-                wz = (w[index_nb[5]]-w[index_nb[4]]) / (2.0*top_h[2]);
+                        wx = (w[index_nb[1]]-w[index_nb[0]]) / (2.0*top_h[0]);
+                        wy = (w[index_nb[3]]-w[index_nb[2]]) / (2.0*top_h[1]);
+                        wz = (w[index_nb[5]]-w[index_nb[4]]) / (2.0*top_h[2]);
 
-                cx[index] = (c[index_nb[1]]+c[index_nb[16]]-c[index_nb[0]]-c[index_nb[17]]) / (4.0*top_h[0]);
-                cy[index] = (c[index_nb[3]]+c[index_nb[12]]-c[index_nb[2]]-c[index_nb[13]]) / (4.0*top_h[1]);
-                cz[index] = (c[index_nb[5]]-c[index]) / top_h[2];
+                        cx[index] = (c[index_nb[1]]+c[index_nb[16]]-c[index_nb[0]]-c[index_nb[17]]) / (4.0*top_h[0]);
+                        cy[index] = (c[index_nb[3]]+c[index_nb[12]]-c[index_nb[2]]-c[index_nb[13]]) / (4.0*top_h[1]);
+                        cz[index] = (c[index_nb[5]]-c[index]) / top_h[2];
 
-                vel_u[index] = (u[index_nb[0]]+u[index_nb[17]]+u[index_nb[5]]+u[index])/4;
-                vel_v[index] = (v[index_nb[5]]+v[index_nb[13]]+v[index_nb[2]]+v[index])/4;
-                vel_w[index] = w[index];
-            }
+                        vel_u[index] = (u[index_nb[0]]+u[index_nb[17]]+u[index_nb[5]]+u[index])/4;
+                        vel_v[index] = (v[index_nb[5]]+v[index_nb[13]]+v[index_nb[2]]+v[index])/4;
+                        vel_w[index] = w[index];
+                    }
 
-            //cell center
-            else if (coord==3) {
-                ux = (u[index]-u[index_nb[0]]) / top_h[0];
-                uy = (u[index_nb[3]]+u[index_nb[9]]-u[index_nb[2]]-u[index_nb[6]]) / (2.0*top_h[1]);
-                uz = (u[index_nb[5]]+u[index_nb[17]]-u[index_nb[4]]-u[index_nb[14]]) / (2.0*top_h[2]);
+                    //cell center
+                    else if (coord==3) {
+                        ux = (u[index]-u[index_nb[0]]) / top_h[0];
+                        uy = (u[index_nb[3]]+u[index_nb[9]]-u[index_nb[2]]-u[index_nb[6]]) / (2.0*top_h[1]);
+                        uz = (u[index_nb[5]]+u[index_nb[17]]-u[index_nb[4]]-u[index_nb[14]]) / (2.0*top_h[2]);
 
-                vx = (v[index_nb[1]]+v[index_nb[7]]-v[index_nb[0]]-v[index_nb[6]]) / (2.0*top_h[0]);
-                vy = (v[index]-v[index_nb[2]]) / top_h[1];
-                vz = (v[index_nb[5]]+v[index_nb[13]]-v[index_nb[4]]-v[index_nb[10]]) / (2.0*top_h[2]);
+                        vx = (v[index_nb[1]]+v[index_nb[7]]-v[index_nb[0]]-v[index_nb[6]]) / (2.0*top_h[0]);
+                        vy = (v[index]-v[index_nb[2]]) / top_h[1];
+                        vz = (v[index_nb[5]]+v[index_nb[13]]-v[index_nb[4]]-v[index_nb[10]]) / (2.0*top_h[2]);
 
-                wx = (w[index_nb[1]]+w[index_nb[15]]-w[index_nb[0]]-w[index_nb[14]]) / (2.0*top_h[0]);
-                wy = (w[index_nb[3]]+w[index_nb[11]]-w[index_nb[2]]-w[index_nb[10]]) / (2.0*top_h[1]);
-                wz = (w[index]-w[index_nb[4]]) / top_h[2];
+                        wx = (w[index_nb[1]]+w[index_nb[15]]-w[index_nb[0]]-w[index_nb[14]]) / (2.0*top_h[0]);
+                        wy = (w[index_nb[3]]+w[index_nb[11]]-w[index_nb[2]]-w[index_nb[10]]) / (2.0*top_h[1]);
+                        wz = (w[index]-w[index_nb[4]]) / top_h[2];
 
-                cx[index] = (c[index_nb[1]]-c[index_nb[0]]) / (2.0*top_h[0]);
-                cy[index] = (c[index_nb[3]]-c[index_nb[2]]) / (2.0*top_h[1]);
-                cz[index] = (c[index_nb[5]]-c[index_nb[4]]) / (2.0*top_h[2]);
+                        cx[index] = (c[index_nb[1]]-c[index_nb[0]]) / (2.0*top_h[0]);
+                        cy[index] = (c[index_nb[3]]-c[index_nb[2]]) / (2.0*top_h[1]);
+                        cz[index] = (c[index_nb[5]]-c[index_nb[4]]) / (2.0*top_h[2]);
 
-                vel_u[index] = (u[index_nb[0]]+u[index])/2;
-                vel_v[index] = (v[index_nb[2]]+v[index])/2;
-                vel_w[index] = (w[index_nb[4]]+w[index])/2;
-            }
+                        vel_u[index] = (u[index_nb[0]]+u[index])/2;
+                        vel_v[index] = (v[index_nb[2]]+v[index])/2;
+                        vel_w[index] = (w[index_nb[4]]+w[index])/2;
+                    }
 
-            //S_ij
-            s11[index] = ux;
-            s12[index] = (uy+vx)/2.0;
-            s13[index] = (uz+wx)/2.0;
-            s22[index] = vy;
-            s23[index] = (vz+wy)/2.0;
-            s33[index] = wz;
-            s[index] = sqrt(2*( sqr(s11[index]) + sqr(s12[index])
-                         + sqr(s13[index]) + sqr(s22[index])
-                         + sqr(s23[index]) + sqr(s33[index])
-                         + sqr(s12[index]) + sqr(s13[index])
-                         + sqr(s23[index]) ));
+                    //S_ij
+                    s11[index] = ux;
+                    s12[index] = (uy+vx)/2.0;
+                    s13[index] = (uz+wx)/2.0;
+                    s22[index] = vy;
+                    s23[index] = (vz+wy)/2.0;
+                    s33[index] = wz;
+                    s[index] = sqrt(2*( sqr(s11[index]) + sqr(s12[index])
+                                + sqr(s13[index]) + sqr(s22[index])
+                                + sqr(s23[index]) + sqr(s33[index])
+                                + sqr(s12[index]) + sqr(s13[index])
+                                + sqr(s23[index]) ));
 
-            //Sa_ij
-            s11[index] -= (ux+vy+wz)/3.0;
-            s22[index] -= (ux+vy+wz)/3.0;
-            s33[index] -= (ux+vy+wz)/3.0;
-        }
+                    //Sa_ij
+                    s11[index] -= (ux+vy+wz)/3.0;
+                    s22[index] -= (ux+vy+wz)/3.0;
+                    s33[index] -= (ux+vy+wz)/3.0;
+                }
 
         for (k = 0; k <= ((kmax-kmin+1)/NB)-1; k++)
-        for (j = 0; j <= ((jmax-jmin+1)/NB)-1; j++)
-        for (i = 0; i <= ((imax-imin+1)/NB)-1; i++)
-        {
-            kk = (NB*k)+kmin;
-            jj = (NB*j)+jmin;
-            ii = (NB*i)+imin;
+            for (j = 0; j <= ((jmax-jmin+1)/NB)-1; j++)
+                for (i = 0; i <= ((imax-imin+1)/NB)-1; i++)
+                {
+                    kk = (NB*k)+kmin;
+                    jj = (NB*j)+jmin;
+                    ii = (NB*i)+imin;
 
-            sum_p = sum_pu = sum_pv = sum_pw = sum_pc = 0.0;
-            sum_puu = sum_pvv = sum_pww = 0.0;
-            sum_puv = sum_pvw = sum_puw = 0.0;
-            sum_puc = sum_pvc = sum_pwc = 0.0;
-            sum_s11 = sum_s12 = sum_s13 = sum_s22 = sum_s23 = sum_s33 = 0.0;
-            sum_pss11 = sum_pss12 = sum_pss13 = sum_pss22 = sum_pss23 = sum_pss33 = 0.0;
-            sum_pscx = sum_pscy = sum_pscz = sum_cx = sum_cy = sum_cz = 0.0;
-            sum_s = 0.0;
-            for (kkk = kk; kkk < kk+NB; kkk++)
-            for (jjj = jj; jjj < jj+NB; jjj++)
-            for (iii = ii; iii < ii+NB; iii++)
-            {
-                index = d_index3d(iii,jjj,kkk,top_gmax);
-                if (coord==0)		index_nbb = d_index3d(iii+1,jjj,kkk,top_gmax);
-                else if (coord==1)	index_nbb = d_index3d(iii,jjj+1,kkk,top_gmax);
-                else if (coord==2)	index_nbb = d_index3d(iii,jjj,kkk+1,top_gmax);
+                    sum_p = sum_pu = sum_pv = sum_pw = sum_pc = 0.0;
+                    sum_puu = sum_pvv = sum_pww = 0.0;
+                    sum_puv = sum_pvw = sum_puw = 0.0;
+                    sum_puc = sum_pvc = sum_pwc = 0.0;
+                    sum_s11 = sum_s12 = sum_s13 = sum_s22 = sum_s23 = sum_s33 = 0.0;
+                    sum_pss11 = sum_pss12 = sum_pss13 = sum_pss22 = sum_pss23 = sum_pss33 = 0.0;
+                    sum_pscx = sum_pscy = sum_pscz = sum_cx = sum_cy = sum_cz = 0.0;
+                    sum_s = 0.0;
+                    for (kkk = kk; kkk < kk+NB; kkk++)
+                        for (jjj = jj; jjj < jj+NB; jjj++)
+                            for (iii = ii; iii < ii+NB; iii++)
+                            {
+                                index = d_index3d(iii,jjj,kkk,top_gmax);
+                                if (coord==0)		index_nbb = d_index3d(iii+1,jjj,kkk,top_gmax);
+                                else if (coord==1)	index_nbb = d_index3d(iii,jjj+1,kkk,top_gmax);
+                                else if (coord==2)	index_nbb = d_index3d(iii,jjj,kkk+1,top_gmax);
 
-                if (coord < 3) { //3 cell faces
-                    rho_face = 2.0/(1.0/rho[index] + 1.0/rho[index_nbb]);
-                    c_face = (c[index] + c[index_nbb])/2;
-                }
-                else { //cell center
-                    rho_face = rho[index];
-                    c_face = c[index];
-                }
+                                if (coord < 3) { //3 cell faces
+                                    rho_face = 2.0/(1.0/rho[index] + 1.0/rho[index_nbb]);
+                                    c_face = (c[index] + c[index_nbb])/2;
+                                }
+                                else { //cell center
+                                    rho_face = rho[index];
+                                    c_face = c[index];
+                                }
 
-                sum_p += rho_face;
-                sum_pu += rho_face*vel_u[index];
-                sum_pv += rho_face*vel_v[index];
-                sum_pw += rho_face*vel_w[index];
-                sum_pc += rho_face*c_face;
-                sum_puu += rho_face*vel_u[index]*vel_u[index];
-                sum_pvv += rho_face*vel_v[index]*vel_v[index];
-                sum_pww += rho_face*vel_w[index]*vel_w[index];
-                sum_puv += rho_face*vel_u[index]*vel_v[index];
-                sum_puw += rho_face*vel_u[index]*vel_w[index];
-                sum_pvw += rho_face*vel_v[index]*vel_w[index];
-                sum_puc += rho_face*vel_u[index]*c_face;
-                sum_pvc += rho_face*vel_v[index]*c_face;
-                sum_pwc += rho_face*vel_w[index]*c_face;
-                sum_s11 += s11[index];
-                sum_s12 += s12[index];
-                sum_s13 += s13[index];
-                sum_s22 += s22[index];
-                sum_s23 += s23[index];
-                sum_s33 += s33[index];
-                sum_pss11 += rho_face*s[index]*s11[index];
-                sum_pss12 += rho_face*s[index]*s12[index];
-                sum_pss13 += rho_face*s[index]*s13[index];
-                sum_pss22 += rho_face*s[index]*s22[index];
-                sum_pss23 += rho_face*s[index]*s23[index];
-                sum_pss33 += rho_face*s[index]*s33[index];
-                sum_pscx += rho_face*s[index]*cx[index];
-                sum_pscy += rho_face*s[index]*cy[index];
-                sum_pscz += rho_face*s[index]*cz[index];
-                sum_cx += cx[index];
-                sum_cy += cy[index];
-                sum_cz += cz[index];
-                sum_s += s[index];
-            }
-            //TODO: ma_ij differs from Eq.(37) of Tingguang Ma's PhD thesis in sum_s/(NBC), which is an approx.
-            ma11 = (2.0*delta2*(sum_pss11/(NBC)))
-                    - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s11/(NBC)));
-            ma12 = (2.0*delta2*(sum_pss12/(NBC)))
-                    - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s12/(NBC)));
-            ma13 = (2.0*delta2*(sum_pss13/(NBC)))
-                    - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s13/(NBC)));
-            ma22 = (2.0*delta2*(sum_pss22/(NBC)))
-                    - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s22/(NBC)));
-            ma23 = (2.0*delta2*(sum_pss23/(NBC)))
-                    - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s23/(NBC)));
-            ma33 = (2.0*delta2*(sum_pss33/(NBC)))
-                    - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s33/(NBC)));
-            la11 = (sum_puu/(NBC))-((sum_pu/(NBC))*(sum_pu/(NBC))/(sum_p/(NBC)));
-            la12 = (sum_puv/(NBC))-((sum_pu/(NBC))*(sum_pv/(NBC))/(sum_p/(NBC)));
-            la13 = (sum_puw/(NBC))-((sum_pu/(NBC))*(sum_pw/(NBC))/(sum_p/(NBC)));
-            la22 = (sum_pvv/(NBC))-((sum_pv/(NBC))*(sum_pv/(NBC))/(sum_p/(NBC)));
-            la23 = (sum_pvw/(NBC))-((sum_pv/(NBC))*(sum_pw/(NBC))/(sum_p/(NBC)));
-            la33 = (sum_pww/(NBC))-((sum_pw/(NBC))*(sum_pw/(NBC))/(sum_p/(NBC)));
+                                sum_p += rho_face;
+                                sum_pu += rho_face*vel_u[index];
+                                sum_pv += rho_face*vel_v[index];
+                                sum_pw += rho_face*vel_w[index];
+                                sum_pc += rho_face*c_face;
+                                sum_puu += rho_face*vel_u[index]*vel_u[index];
+                                sum_pvv += rho_face*vel_v[index]*vel_v[index];
+                                sum_pww += rho_face*vel_w[index]*vel_w[index];
+                                sum_puv += rho_face*vel_u[index]*vel_v[index];
+                                sum_puw += rho_face*vel_u[index]*vel_w[index];
+                                sum_pvw += rho_face*vel_v[index]*vel_w[index];
+                                sum_puc += rho_face*vel_u[index]*c_face;
+                                sum_pvc += rho_face*vel_v[index]*c_face;
+                                sum_pwc += rho_face*vel_w[index]*c_face;
+                                sum_s11 += s11[index];
+                                sum_s12 += s12[index];
+                                sum_s13 += s13[index];
+                                sum_s22 += s22[index];
+                                sum_s23 += s23[index];
+                                sum_s33 += s33[index];
+                                sum_pss11 += rho_face*s[index]*s11[index];
+                                sum_pss12 += rho_face*s[index]*s12[index];
+                                sum_pss13 += rho_face*s[index]*s13[index];
+                                sum_pss22 += rho_face*s[index]*s22[index];
+                                sum_pss23 += rho_face*s[index]*s23[index];
+                                sum_pss33 += rho_face*s[index]*s33[index];
+                                sum_pscx += rho_face*s[index]*cx[index];
+                                sum_pscy += rho_face*s[index]*cy[index];
+                                sum_pscz += rho_face*s[index]*cz[index];
+                                sum_cx += cx[index];
+                                sum_cy += cy[index];
+                                sum_cz += cz[index];
+                                sum_s += s[index];
+                            }
+                    //TODO: ma_ij differs from Eq.(37) of Tingguang Ma's PhD thesis in sum_s/(NBC), which is an approx.
+                    ma11 = (2.0*delta2*(sum_pss11/(NBC)))
+                        - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s11/(NBC)));
+                    ma12 = (2.0*delta2*(sum_pss12/(NBC)))
+                        - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s12/(NBC)));
+                    ma13 = (2.0*delta2*(sum_pss13/(NBC)))
+                        - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s13/(NBC)));
+                    ma22 = (2.0*delta2*(sum_pss22/(NBC)))
+                        - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s22/(NBC)));
+                    ma23 = (2.0*delta2*(sum_pss23/(NBC)))
+                        - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s23/(NBC)));
+                    ma33 = (2.0*delta2*(sum_pss33/(NBC)))
+                        - (2.0*tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_s33/(NBC)));
+                    la11 = (sum_puu/(NBC))-((sum_pu/(NBC))*(sum_pu/(NBC))/(sum_p/(NBC)));
+                    la12 = (sum_puv/(NBC))-((sum_pu/(NBC))*(sum_pv/(NBC))/(sum_p/(NBC)));
+                    la13 = (sum_puw/(NBC))-((sum_pu/(NBC))*(sum_pw/(NBC))/(sum_p/(NBC)));
+                    la22 = (sum_pvv/(NBC))-((sum_pv/(NBC))*(sum_pv/(NBC))/(sum_p/(NBC)));
+                    la23 = (sum_pvw/(NBC))-((sum_pv/(NBC))*(sum_pw/(NBC))/(sum_p/(NBC)));
+                    la33 = (sum_pww/(NBC))-((sum_pw/(NBC))*(sum_pw/(NBC))/(sum_p/(NBC)));
 
-//            printf("trace of L_ij = %20.16g\n", la11+la22+la33);
+                    //            printf("trace of L_ij = %20.16g\n", la11+la22+la33);
 
-            //suppose k=1
-            //TODO: my_1i differs from Eq.(48) of Tingguang Ma's PhD thesis in sum_s/(NBC) and sum_cxi/(NBC), which are approx.
-            my1 = (delta2*(sum_pscx/(NBC)))
-                    - (tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_cx/(NBC)));
-            my2 = (delta2*(sum_pscy/(NBC)))
-                    - (tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_cy/(NBC)));
-            my3 = (delta2*(sum_pscz/(NBC)))
-                    - (tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_cz/(NBC)));
-            ly1 = (sum_puc/(NBC))-((sum_pu/(NBC))*(sum_pc/(NBC))/(sum_p/(NBC)));
-            ly2 = (sum_pvc/(NBC))-((sum_pv/(NBC))*(sum_pc/(NBC))/(sum_p/(NBC)));
-            ly3 = (sum_pwc/(NBC))-((sum_pw/(NBC))*(sum_pc/(NBC))/(sum_p/(NBC)));
+                    //suppose k=1
+                    //TODO: my_1i differs from Eq.(48) of Tingguang Ma's PhD thesis in sum_s/(NBC) and sum_cxi/(NBC), which are approx.
+                    my1 = (delta2*(sum_pscx/(NBC)))
+                        - (tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_cx/(NBC)));
+                    my2 = (delta2*(sum_pscy/(NBC)))
+                        - (tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_cy/(NBC)));
+                    my3 = (delta2*(sum_pscz/(NBC)))
+                        - (tdelta2*(sum_p/(NBC))*(sum_s/(NBC))*(sum_cz/(NBC)));
+                    ly1 = (sum_puc/(NBC))-((sum_pu/(NBC))*(sum_pc/(NBC))/(sum_p/(NBC)));
+                    ly2 = (sum_pvc/(NBC))-((sum_pv/(NBC))*(sum_pc/(NBC))/(sum_p/(NBC)));
+                    ly3 = (sum_pwc/(NBC))-((sum_pw/(NBC))*(sum_pc/(NBC))/(sum_p/(NBC)));
 
-            ldeno[i][j][k] = ((ma11*ma11) + (ma12*ma12)
+                    ldeno[i][j][k] = ((ma11*ma11) + (ma12*ma12)
                             + (ma13*ma13) + (ma22*ma22)
                             + (ma23*ma23));
-            lnume[i][j][k] = ((la11*ma11) + (la12*ma12)
+                    lnume[i][j][k] = ((la11*ma11) + (la12*ma12)
                             + (la13*ma13) + (la22*ma22)
                             + (la23*ma23));
-            cnume[i][j][k] = ((my1*my1) + (my2*my2) + (my3*my3));
-            cdeno[i][j][k] = ((ly1*my1) + (ly2*my2) + (ly3*my3));
-        }
+                    cnume[i][j][k] = ((my1*my1) + (my2*my2) + (my3*my3));
+                    cdeno[i][j][k] = ((ly1*my1) + (ly2*my2) + (ly3*my3));
+                }
 
         max_cs[coord] = 0;
         max_cc[coord] = 0;
@@ -20867,86 +21122,86 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
         max_turbulent_diffusity[coord] = 0;
         avg_turbulent_kinematic_viscosity[coord] = 0;
         avg_turbulent_diffusity[coord] = 0;
-	count = 0;
+        count = 0;
 
         for (k = 0; k <= ((kmax-kmin+1)/NB)-1; k++)
-        for (j = 0; j <= ((jmax-jmin+1)/NB)-1; j++)
-        for (i = 0; i <= ((imax-imin+1)/NB)-1; i++)
-        {
-            kk = (NB*k)+kmin;
-            jj = (NB*j)+jmin;
-            ii = (NB*i)+imin;
-            cs = lnume[i][j][k]/ldeno[i][j][k];
-            cc = cdeno[i][j][k]/cnume[i][j][k];
+            for (j = 0; j <= ((jmax-jmin+1)/NB)-1; j++)
+                for (i = 0; i <= ((imax-imin+1)/NB)-1; i++)
+                {
+                    kk = (NB*k)+kmin;
+                    jj = (NB*j)+jmin;
+                    ii = (NB*i)+imin;
+                    cs = lnume[i][j][k]/ldeno[i][j][k];
+                    cc = cdeno[i][j][k]/cnume[i][j][k];
 
-            if (cs < 0 || fabs(ldeno[i][j][k]) < 1e-16)	cs = 0;
-            if (fabs(cnume[i][j][k]) < 1e-16)		cc = 0;
-            if (cs > max_cs[coord])                     max_cs[coord] = cs;
-            if (cc > max_cc[coord])                     max_cc[coord] = cc;
+                    if (cs < 0 || fabs(ldeno[i][j][k]) < 1e-16)	cs = 0;
+                    if (fabs(cnume[i][j][k]) < 1e-16)		cc = 0;
+                    if (cs > max_cs[coord])                     max_cs[coord] = cs;
+                    if (cc > max_cc[coord])                     max_cc[coord] = cc;
 
 
-            for (kkk = kk; kkk < kk+NB; kkk++)
-            for (jjj = jj; jjj < jj+NB; jjj++)
-            for (iii = ii; iii < ii+NB; iii++)
-            {
-                index = d_index3d(iii,jjj,kkk,top_gmax);
-                if (coord==0)           index_nbb = d_index3d(iii+1,jjj,kkk,top_gmax);
-                else if (coord==1)      index_nbb = d_index3d(iii,jjj+1,kkk,top_gmax);
-                else if (coord==2)	index_nbb = d_index3d(iii,jjj,kkk+1,top_gmax);
+                    for (kkk = kk; kkk < kk+NB; kkk++)
+                        for (jjj = jj; jjj < jj+NB; jjj++)
+                            for (iii = ii; iii < ii+NB; iii++)
+                            {
+                                index = d_index3d(iii,jjj,kkk,top_gmax);
+                                if (coord==0)           index_nbb = d_index3d(iii+1,jjj,kkk,top_gmax);
+                                else if (coord==1)      index_nbb = d_index3d(iii,jjj+1,kkk,top_gmax);
+                                else if (coord==2)	index_nbb = d_index3d(iii,jjj,kkk+1,top_gmax);
 
-                if (coord < 3) { //3 cell faces
-                    rho_face = 2.0/(1.0/rho[index] + 1.0/rho[index_nbb]);
+                                if (coord < 3) { //3 cell faces
+                                    rho_face = 2.0/(1.0/rho[index] + 1.0/rho[index_nbb]);
+                                }
+                                else { //cell center
+                                    rho_face = rho[index];
+                                }
+
+                                //(rho*nu_t)
+                                cell_center[index].m_state.m_mu_turbulent[coord] = rho_face*cs*delta2*s[index];
+                                //(nu_t/Sc_t)
+                                if (cc*s[index] < 0)	cc = 0;
+                                cell_center[index].m_state.m_Dcoef_turbulent[coord] = cc*delta2*s[index];
+
+                                if (cs*delta2*s[index] > max_turbulent_kinematic_viscosity[coord])
+                                    max_turbulent_kinematic_viscosity[coord] = cs*delta2*s[index];
+
+                                if (cc*delta2*s[index] > max_turbulent_diffusity[coord])
+                                    max_turbulent_diffusity[coord] = cc*delta2*s[index];
+
+                                // calculate the average nu_t and Diff_t in the mixing layer
+                                double z_coord = cell_center[index].m_coords[2];
+                                if (z_coord >= zmin_vf && z_coord <= zmax_vf)
+                                {
+                                    count++;
+                                    avg_turbulent_kinematic_viscosity[coord] += cs*delta2*s[index];
+                                    avg_turbulent_diffusity[coord] += cc*delta2*s[index];
+                                }
+                            }
                 }
-                else { //cell center
-                    rho_face = rho[index];
-                }
-
-                //(rho*nu_t)
-                cell_center[index].m_state.m_mu_turbulent[coord] = rho_face*cs*delta2*s[index];
-                //(nu_t/Sc_t)
-                if (cc*s[index] < 0)	cc = 0;
-                cell_center[index].m_state.m_Dcoef_turbulent[coord] = cc*delta2*s[index];
-
-                if (cs*delta2*s[index] > max_turbulent_kinematic_viscosity[coord])
-                    max_turbulent_kinematic_viscosity[coord] = cs*delta2*s[index];
-
-                if (cc*delta2*s[index] > max_turbulent_diffusity[coord])
-                    max_turbulent_diffusity[coord] = cc*delta2*s[index];
-
-		// calculate the average nu_t and Diff_t in the mixing layer
-                double z_coord = cell_center[index].m_coords[2];
-		if (z_coord >= zmin_vf && z_coord <= zmax_vf)
-		{
-		    count++;
-		    avg_turbulent_kinematic_viscosity[coord] += cs*delta2*s[index];
-		    avg_turbulent_diffusity[coord] += cc*delta2*s[index];
-		}
-            }
-        }
 
         if (pp_numnodes() > 1)
-	{
+        {
             pp_global_max(&max_cs[coord],1);
             pp_global_max(&max_cc[coord],1);
             pp_global_max(&max_turbulent_kinematic_viscosity[coord],1);
             pp_global_max(&max_turbulent_diffusity[coord],1);
 
-	    pp_global_isum(&count,1);
+            pp_global_isum(&count,1);
             pp_global_sum(&avg_turbulent_kinematic_viscosity[coord],1);
             pp_global_sum(&avg_turbulent_diffusity[coord],1);
-	}
+        }
 
-	if (count > 0)
-	{
-	    avg_turbulent_kinematic_viscosity[coord] /= count;
-	    avg_turbulent_diffusity[coord] /= count;
-	}
+        if (count > 0)
+        {
+            avg_turbulent_kinematic_viscosity[coord] /= count;
+            avg_turbulent_diffusity[coord] /= count;
+        }
 
         if (coord == 0)
-	{
-	    printf("\nIn computeSubgridModel_vd(): \n");
+        {
+            printf("\nIn computeSubgridModel_vd(): \n");
             printf("zmin_vf = %lf, zmax_vf = %lf, count = %d\n", zmin_vf ,zmax_vf, count);
-	}
+        }
         printf("max cs[%d] = %20.16g\n", coord, max_cs[coord]);
         printf("max cc[%d] = %20.16g\n", coord, max_cc[coord]);
         printf("max nu_t[%d] = %20.16g\n", coord, max_turbulent_kinematic_viscosity[coord]);
@@ -20964,7 +21219,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     double A, g, H, tau;
     A = fabs(m_rho[1]-m_rho[0])/(m_rho[1]+m_rho[0]);
     g = fabs(iFparams->gravity[2]);
-    H = 32;
+    H = 32;//TODO: Hardwired but No effect on physical parameters.
     tau = sqrt(A*g/H)*front->time;
     if (pp_mynode() == 0)
     {
@@ -20987,36 +21242,36 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     for (coord = 0; coord < MAXD+1; coord++)
     {
         for (k = kmin; k <= kmax; k++)
-        for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            array[index] = cell_center[index].m_state.m_mu_turbulent[coord];
-        }
-        scatMeshArray();
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.m_mu_turbulent[coord];
+                }
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
-        for (j = 0; j <= top_gmax[1]; j++)
-        for (i = 0; i <= top_gmax[0]; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            cell_center[index].m_state.m_mu_turbulent[coord] = array[index];
-        }
+            for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.m_mu_turbulent[coord] = array[index];
+                }
 
         for (k = kmin; k <= kmax; k++)
-        for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            array[index] = cell_center[index].m_state.m_Dcoef_turbulent[coord];
-        }
-        scatMeshArray();
+            for (j = jmin; j <= jmax; j++)
+                for (i = imin; i <= imax; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    array[index] = cell_center[index].m_state.m_Dcoef_turbulent[coord];
+                }
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
-        for (j = 0; j <= top_gmax[1]; j++)
-        for (i = 0; i <= top_gmax[0]; i++)
-        {
-            index = d_index3d(i,j,k,top_gmax);
-            cell_center[index].m_state.m_Dcoef_turbulent[coord] = array[index];
-        }
+            for (j = 0; j <= top_gmax[1]; j++)
+                for (i = 0; i <= top_gmax[0]; i++)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    cell_center[index].m_state.m_Dcoef_turbulent[coord] = array[index];
+                }
     }
 
     FT_FreeThese(4,ldeno,lnume,cdeno,cnume);
@@ -21052,274 +21307,197 @@ void Incompress_Solver_Smooth_3D_Cartesian::debugPrintStates(
     crd1 = cell_center[index1].m_coords;
     crd2 = cell_center[index2].m_coords;
     if ((st1.m_Dcoef != st2.m_Dcoef || st1.m_P != st2.m_P || st1.m_c != st2.m_c || st1.m_rho != st2.m_rho) && (fabs(crd1[2] - 1.875) < 0.2))
-        {
-            printf("DIRECTION = %d SIDE = %d\n", dir, side);
-            printf("coords1 = (%24.24f %24.24f %24.24f)\t", crd1[0], crd1[1], crd1[2]);
-            printf("coords2 = (%24.24f %24.24f %24.24f)\n", crd2[0], crd2[1], crd2[2]);
-            printf("Velo u:  %24.24f ==  %24.24f\n", st1.m_U[0], st2.m_U[0]);
-            printf("Velo z:  %24.24f ==  %24.24f\n", st1.m_U[2], st2.m_U[2]);
-            printf("Pressure: %24.24f == %24.24f\n", st1.m_P, st2.m_P);
-            printf("Bi Diffu: %24.24f == %24.24f\n", st1.m_Dcoef, st2.m_Dcoef);
-            printf("Concentr: %24.24f == %24.24f\n", st1.m_c, st2.m_c);
-            printf("Dens: %24.24f == %24.24f\n", st1.m_rho, st2.m_rho);
-        }
-}
-void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC_DEBUG(
-        int dim,
-        int dir,
-        int side,
-        int *gmax,
-        int *lbuf,
-        int *ubuf,
-        double *solute)
-{
-    if (dim != 3)
     {
-        printf("The function %s is for dim = %d ONLY. ERROR!", __func__, dim);
-        exit(1);
-    }
-
-
-    int i, j, k;
-    int index1, index2;
-
-    // This is where the code takes care of Reflecting Boundary Condition.
-    if (side == 0)
-    {
-        switch (dir)
-        {
-            case 0:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (i = 0; i < lbuf[0]; ++i)
-                        {
-                            index1 = d_index3d(lbuf[0]-1-i,j,k,gmax);
-                            index2 = d_index3d(lbuf[0]+i,j,k,gmax);
-                            debugPrintStates(dir, side, index1, index2);
-                        }
-                break;
-            case 1:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (i = 0; i <= gmax[0]; ++i)
-                        for (j = 0; j < lbuf[1]; ++j)
-                        {
-                            index1 = d_index3d(i,lbuf[1]-1-j,k,gmax);
-                            index2 = d_index3d(i,lbuf[1]+j,k,gmax);
-                            debugPrintStates(dir, side, index1, index2);
-                        }
-                break;
-            case 2:
-                for (i = 0; i <= gmax[0]; ++i)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (k = 0; k < lbuf[2]; ++k)
-                        {
-                            index1 = d_index3d(i,j,lbuf[2]-1-k,gmax);
-                            index2 = d_index3d(i,j,lbuf[2]+k,gmax);
-                            debugPrintStates(dir, side, index1, index2);
-                        }
-                break;
-        }
-    }
-    else
-    {
-        switch (dir)
-        {
-            case 0:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (i = 0; i < ubuf[0]; ++i)
-                        {
-                            index1 = d_index3d(gmax[0]-ubuf[0]+i,j,k,gmax);
-                            index2 = d_index3d(gmax[0]-ubuf[0]-i+1,j,k,gmax);
-                            debugPrintStates(dir, side, index1,index2);
-                        }
-                break;
-            case 1:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (i = 0; i <= gmax[0]; ++i)
-                        for (j = 0; j < ubuf[1]; ++j)
-                        {
-                            index1 = d_index3d(i,gmax[1]-ubuf[1]+j,k,gmax);
-                            index2 = d_index3d(i,gmax[1]-ubuf[1]-j+1,k,gmax);
-                            debugPrintStates(dir, side, index1, index2);
-                        }
-                break;
-            case 2:
-                for (i = 0; i <= gmax[0]; ++i)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (k = 0; k < ubuf[2]; ++k)
-                        {
-                            index1 = d_index3d(i,j,gmax[2]-ubuf[2]+k,gmax);
-                            index2 = d_index3d(i,j,gmax[2]-ubuf[2]-k+1,gmax);
-                            debugPrintStates(dir, side, index1, index2);
-                        }
-                break;
-        }
+        printf("DIRECTION = %d SIDE = %d\n", dir, side);
+        printf("coords1 = (%24.24f %24.24f %24.24f)\t", crd1[0], crd1[1], crd1[2]);
+        printf("coords2 = (%24.24f %24.24f %24.24f)\n", crd2[0], crd2[1], crd2[2]);
+        printf("Velo u:  %24.24f ==  %24.24f\n", st1.m_U[0], st2.m_U[0]);
+        printf("Velo z:  %24.24f ==  %24.24f\n", st1.m_U[2], st2.m_U[2]);
+        printf("Pressure: %24.24f == %24.24f\n", st1.m_P, st2.m_P);
+        printf("Bi Diffu: %24.24f == %24.24f\n", st1.m_Dcoef, st2.m_Dcoef);
+        printf("Concentr: %24.24f == %24.24f\n", st1.m_c, st2.m_c);
+        printf("Dens: %24.24f == %24.24f\n", st1.m_rho, st2.m_rho);
     }
 }
 
 
-//THIS IS A DEBUG PRINT FUNC
+//FUNC REFLECTION BOUNDARY CONDITION REVISED!
 void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
-        int dim,
         int dir,
         int side,
-        int *gmax,
-        int *lbuf,
-        int *ubuf,
-        double *solute)
+        double *solute,
+        int *reflect)
 {
     if (dim != 3)
     {
         printf("The function %s is for dim = %d ONLY. ERROR!", __func__, dim);
         exit(1);
     }
-
+    printf("WARNING function %s is not in use. Function should be deleted\n", __func__);
+    return;
     int i, j, k;
-    int index;
+    int InIndex, BIndex;
+    //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
 
     // This is where the code takes care of Reflecting Boundary Condition.
     if (side == 0)
     {
         switch (dir)
         {
-            case 0:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (i = 0; i < lbuf[0]; ++i)
-                        {
-                            index = d_index3d(lbuf[0]-1-i,j,k,gmax);
-                            solute[index] = -solute[index];
-                        }
-                break;
-            case 1:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (i = 0; i <= gmax[0]; ++i)
-                        for (j = 0; j < lbuf[1]; ++j)
-                        {
-                            index = d_index3d(i,lbuf[1]-1-j,k,gmax);
-                            solute[index] = -solute[index];
-                        }
-                break;
-            case 2:
-                for (i = 0; i <= gmax[0]; ++i)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (k = 0; k < lbuf[2]; ++k)
-                        {
-                            index = d_index3d(i,j,lbuf[2]-1-k,gmax);
-                            solute[index] = -solute[index];
-                        }
-                break;
+            case 0: // X Lower
+                 for (j = jmin; j <= jmax; j++)
+                     for (k = kmin; k <= kmax; k++)
+                         for (i = imin; i < imin+lbuf[0]; i++)
+                         {
+                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+                              BIndex = d_index3d(lbuf[0]-1-i+imin,j,k,top_gmax);//This is Boundary State index
+                              if (reflect[dir] == YES)
+                                solute[BIndex] = solute[InIndex];
+                              if (reflect[dir] == NO)
+                                solute[BIndex] = -solute[InIndex];
+                         }
+                 break;
+            case 1: // Y Lower
+                 for (i = imin; i <= imax; i++)
+                     for (k = kmin; k <= kmax; k++)
+                         for (j = jmin; j < jmin+lbuf[1]; j++)
+                         {
+                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+                              BIndex = d_index3d(i,lbuf[1]-1-j+jmin,k,top_gmax);//This is Boundary State index
+                              if (reflect[dir] == YES)
+                                solute[BIndex] = solute[InIndex];
+                              if (reflect[dir] == NO)
+                                solute[BIndex] = -solute[InIndex];
+                         }
+                 break;
+            case 2: // Z Lower
+                 for (i = imin; i <= imax; i++)
+                     for (j = jmin; j <= jmax; j++)
+                         for (k = kmin; k < kmin+lbuf[2]; k++)
+                         {
+                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+                              BIndex = d_index3d(i,j,lbuf[2]-1-k+kmin,top_gmax);//This is Boundary State index
+                              if (reflect[dir] == YES)
+                                solute[BIndex] = solute[InIndex];
+                              if (reflect[dir] == NO)
+                                solute[BIndex] = -solute[InIndex];
+                         }
+                 break;
         }
     }
     else
     {
         switch (dir)
         {
-            case 0:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (i = 0; i < ubuf[0]; ++i)
-                        {
-                            index = d_index3d(gmax[0]-ubuf[0]+1+i,j,k,gmax);
-                            solute[index] = -solute[index];
-                        }
-                break;
-            case 1:
-                for (k = 0; k <= gmax[2]; ++k)
-                    for (i = 0; i <= gmax[0]; ++i)
-                        for (j = 0; j < ubuf[1]; ++j)
-                        {
-                            index = d_index3d(i,gmax[1]-ubuf[1]+1+j,k,gmax);
-                            solute[index] = -solute[index];
-                        }
-                break;
-            case 2:
-                for (i = 0; i <= gmax[0]; ++i)
-                    for (j = 0; j <= gmax[1]; ++j)
-                        for (k = 0; k < ubuf[2]; ++k)
-                        {
-                            index = d_index3d(i,j,gmax[2]-ubuf[2]+1+k,gmax);
-                            solute[index] = -solute[index];
-                        }
-                break;
+            case 0: // X Upper
+                 for (j = jmin; j <= jmax; j++)
+                     for (k = kmin; k <= kmax; k++)
+                         for (i = imax-ubuf[0]+1; i <= imax; i++)// X Upper
+                         {
+                             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+                             BIndex = d_index3d(imax+ubuf[0]-i,j,k,top_gmax);//This is Boundary State index
+                              if (reflect[dir] == YES)
+                                solute[BIndex] = solute[InIndex];
+                              if (reflect[dir] == NO)
+                                solute[BIndex] = -solute[InIndex];
+
+                         }
+                 break;
+            case 1: // Y Upper
+                 for(i = imin; i <= imax; i++)
+                     for (k = kmin; k <= kmax; k++)
+                         for (j = jmax-ubuf[1]+1; j <= jmax; j++)//Y Upper
+                         {
+                             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+                             BIndex = d_index3d(i,jmax+ubuf[1]-j,k,top_gmax);//This is Boundary State index
+                              if (reflect[dir] == YES)
+                                solute[BIndex] = solute[InIndex];
+                              if (reflect[dir] == NO)
+                                solute[BIndex] = -solute[InIndex];
+                         }
+                 break;
+            case 2: // Z Upper
+                 for (i = imin; i <= imax; i++)
+                     for (j = jmin; j <= jmax; j++)
+                         for (k = kmax-ubuf[2]+1; k <= kmax; k++)//Z Upper
+                         {
+                             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+                             BIndex = d_index3d(i,j,kmax+ubuf[2]-k,top_gmax);//This is Boundary State index
+                              if (reflect[dir] == YES)
+                                solute[BIndex] = solute[InIndex];
+                              if (reflect[dir] == NO)
+                                solute[BIndex] = -solute[InIndex];
+                         }
+                 break;
         }
     }
 }
 
 void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
         int dir,
-        double *solute)
+        double *solute,
+        int *reflect)
 {
      int side, i;
      INTERFACE *intfc = front->grid_intfc;
-     RECT_GRID *comp_grid, *top_grid;
-     int lbuf[MAXD], ubuf[MAXD], *gmax;
-
-     comp_grid = computational_grid(intfc);
-     top_grid = &topological_grid(intfc);
-     gmax = top_grid->gmax;
-
-
-     for (i = 0; i < dim; i++)
-     {
-          lbuf[i] = comp_grid->lbuf[i];
-          ubuf[i] = comp_grid->ubuf[i];
-     }
 
      for (side = 0; side < 2; side++)
      {
          if (rect_boundary_type(intfc,dir,side) == REFLECTION_BOUNDARY)
          {
-              //ReflectBC(dim, dir, side, gmax, lbuf, ubuf, solute);
-              ReflectBC_DEBUG(dim, dir, side, gmax, lbuf, ubuf, solute);
+              ReflectBC(dir, side, solute, reflect);
          }
      }
 }
 
-// TODO && FIXME: print out velocity and feed it to Smeeton Youngs 105 Experiment
-// This is to check divergence.
-extern void saveOutputVelocity(double** vel,
-        int dim,
-        int *top_gmax)
+//Reflection Boundary Condition Treatment
+void Incompress_Solver_Smooth_3D_Cartesian::enforceReflectionState(void)
 {
-    FILE *fp;
-    int i, j, k, l, index;
-    char name[256];
-    sprintf(name, "RSRV-Velocity-%d",countingnow);
-    fp = fopen(name, "w+");
-    for (l = 0; l < dim; ++l)
-    for (k = 0; k <= top_gmax[2]; k++)
-    for (j = 0; j <= top_gmax[1]; j++)
-    for (i = 0; i <= top_gmax[0]; i++)
-    {
-        index = d_index3d(i,j,k,top_gmax);
-        fprintf(fp, "%.16g\n", vel[l][index]);
+     double **vel = field->vel;
+     int    InIndex, BIndex;
+     int    reflect[MAXD];
+     int    dir, jj;
+
+     for (dir = 0; dir < dim; dir++)
+     {
+         reflect[0] = reflect[1] = reflect[2] = YES;
+         reflect[dir] = NO;
+         Solute_Reflect(dir,vel[dir],reflect);
     }
-    fclose(fp);
-    printf("Velocities were filled up in file. EXIT! \n");
-    countingnow += 1;
 }
 
-// TODO && FIXME: get  velocity and feed it to Smeeton Youngs 105 Experiment
-// This is to check divergence.
-void Incompress_Solver_Smooth_3D_Cartesian::readOutputVelocity(double **vel)
+// Convert GRID_DIRECTION into dir and side.
+// A helper function
+extern void convertGridDirectionToDirSide(GRID_DIRECTION direct, int *dir, int *side)
 {
-    FILE *fp;
-    int i, j, k, l, index;
-    double tmpvel;
-    char name[256];
-    sprintf(name, "RSRV-Velocity-%d",countingnow);
-    fp = fopen(name, "w+");
-    for (l = 0; l < dim; ++l)
-    for (k = 0; k <= top_gmax[2]; k++)
-    for (j = 0; j <= top_gmax[1]; j++)
-    for (i = 0; i <= top_gmax[0]; i++)
-    {
-        index = d_index3d(i,j,k,top_gmax);
-        fscanf(fp, "%.16g", &tmpvel);
-        vel[l][index] = cell_center[index].m_state.m_U[l] = tmpvel;
-    }
-    fclose(fp);
-    printf("Velocities from RS-RV were read. \n");
+     if (direct == WEST)
+     {
+         *dir = 0;
+         *side = 0;
+     }
+     if (direct == EAST)
+     {
+          *dir = 0;
+          *side = 1;
+     }
+     if (direct == SOUTH)
+     {
+         *dir = 1;
+         *side = 0;
+     }
+     if (direct == NORTH)
+     {
+          *dir = 1;
+          *side = 1;
+     }
+     if (direct == LOWER)
+     {
+         *dir = 2;
+         *side = 0;
+     }
+     if (direct == UPPER)
+     {
+          *dir = 2;
+          *side = 1;
+     }
 }

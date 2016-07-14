@@ -2171,6 +2171,7 @@ LOCAL int preserve_front_advance_front3d(
 
 	start_clock("point_propagate");
 	set_copy_intfc_states(YES);
+    (*newfront)->interf->contactangle = front->interf->contactangle;// TODO: check contact angle value
 
             if (debugging("storage"))
             {
@@ -2286,10 +2287,12 @@ LOCAL int preserve_front_advance_front3d(
 
 
         //print P-node/intfc files for making plot
-        /* out_name = "/nfs/scratch/hiroshima596/RT_vd_singleBubble_hp/after";
+/*
+        char *out_name = "3d-SY-test";
         FT_AddMovieFrame(*newfront,out_name,NO);
         //print restart/intfc files
         FT_Save(*newfront,out_name);
+
         for (num_surfs=num_total_tris=0, s = (*newfront)->interf->surfaces; s && *s; ++s, ++num_surfs, num_total_tris+=num_tris) {
             for (num_tris=0, t = first_tri(*s); !at_end_of_tri_list(t,*s); t = t->next, ++num_tris) {}
             printf("Boundary(*s) = %d after\n", Boundary(*s));

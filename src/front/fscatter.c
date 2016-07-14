@@ -42,7 +42,7 @@ LOCAL 	void  	bundle_array_buffer(int,int*,int*,int*,double*,byte*);
 LOCAL 	void  	unbundle_array_buffer(int,int*,int*,int*,double*,byte*);
 LOCAL 	int 	set_send_buffer_limits(int,int*,int*,int,int,int*,int*,int*);
 LOCAL 	int 	set_recv_buffer_limits(int,int*,int*,int,int,int*,int*,int*);
-LOCAL   void    reflect_array_buffer(int,int,int,int*,int*,int*,double*);
+LOCAL   void    reflect_array_buffer(int,int,int,int*,int*,int*,double*,int*);
 
 /*
 *			scatter_front():
@@ -490,9 +490,13 @@ EXPORT	void set_front_pp_grid(
 }		/*end set_front_pp_grid*/
 
 
+// Flag 'reflect' will determine if vector arrays will change sign or no
+// Flag 'reflect' will make sure scalar array will not change sign.
+// This is for reflection boundary condition
 EXPORT void scatter_top_grid_float_array(
 	double *solute,
-	Front *front)
+	Front *front,
+    int *reflect)
 {
 	INTERFACE *intfc = front->grid_intfc;
 	PP_GRID	*pp_grid = front->pp_grid;
@@ -561,7 +565,7 @@ EXPORT void scatter_top_grid_float_array(
                 else if (rect_boundary_type(intfc,dir,side) ==
                                 REFLECTION_BOUNDARY)
                 {
-                    reflect_array_buffer(dim,dir,side,gmax,lbuf,ubuf,solute);
+                    reflect_array_buffer(dim,dir,side,gmax,lbuf,ubuf,solute, reflect);
                 }
 		if (rect_boundary_type(intfc,dir,(side+1)%2) ==
 					SUBDOMAIN_BOUNDARY)
@@ -1179,7 +1183,8 @@ LOCAL   void reflect_array_buffer(
         int *gmax,
         int *lbuf,
         int *ubuf,
-        double *solute)
+        double *solute,
+        int *reflect)
 {
         int i,j,k;
         int isend,irecv;
@@ -1192,7 +1197,6 @@ LOCAL   void reflect_array_buffer(
                 {
                     isend = d_index1d(lbuf[0]+i,gmax);
                     irecv = d_index1d(lbuf[0]-1-i,gmax);
-                    solute[irecv] = solute[isend];
                 }
             }
             else
@@ -1255,6 +1259,7 @@ LOCAL   void reflect_array_buffer(
 		}
             }
             break;
+        // TODO && FIXME: For the time being, 3D FULL REFLECTION BOUNDARY CONDITION.
         case 3:
             if (side == 0)
             {
@@ -1265,9 +1270,12 @@ LOCAL   void reflect_array_buffer(
 		    for (j = 0; j <= gmax[1]; ++j)
                     for (i = 0; i < lbuf[0]; ++i)
 		    {
-                    	isend = d_index3d(lbuf[0]+i,j,k,gmax);
-                    	irecv = d_index3d(lbuf[0]-1-i,j,k,gmax);
-                    	solute[irecv] = solute[isend];
+                    	isend = d_index3d(lbuf[0]+i,j,k,gmax);// This is Interior State Index
+                    	irecv = d_index3d(lbuf[0]-1-i,j,k,gmax);// This is Boundary State Index
+                        if (reflect[dir] == YES)
+                    	    solute[irecv] = solute[isend];
+                        if (reflect[dir] == NO)
+                    	    solute[irecv] = -solute[isend];
 		    }
 		    break;
 		case 1:
@@ -1275,9 +1283,12 @@ LOCAL   void reflect_array_buffer(
 		    for (i = 0; i <= gmax[0]; ++i)
                     for (j = 0; j < lbuf[1]; ++j)
 		    {
-                    	isend = d_index3d(i,lbuf[1]+j,k,gmax);
-                    	irecv = d_index3d(i,lbuf[1]-1-j,k,gmax);
-                    	solute[irecv] = solute[isend];
+                    	isend = d_index3d(i,lbuf[1]+j,k,gmax);// This is Interior State Index
+                    	irecv = d_index3d(i,lbuf[1]-1-j,k,gmax);// This is Boundary State Index
+                        if (reflect[dir] == YES)
+                    	    solute[irecv] = solute[isend];
+                        if (reflect[dir] == NO)
+                    	    solute[irecv] = -solute[isend];
 		    }
 		    break;
 		case 2:
@@ -1285,9 +1296,12 @@ LOCAL   void reflect_array_buffer(
 		    for (j = 0; j <= gmax[1]; ++j)
                     for (k = 0; k < lbuf[2]; ++k)
 		    {
-                    	isend = d_index3d(i,j,lbuf[2]+k,gmax);
-                    	irecv = d_index3d(i,j,lbuf[2]-1-k,gmax);
-                    	solute[irecv] = solute[isend];
+                    	isend = d_index3d(i,j,lbuf[2]+k,gmax);//This is Interior State Index
+                    	irecv = d_index3d(i,j,lbuf[2]-1-k,gmax);// This is Boundary State Index
+                        if (reflect[dir] == YES)
+                    	    solute[irecv] = solute[isend];
+                        if (reflect[dir] == NO)
+                    	    solute[irecv] = -solute[isend];
 		    }
 		    break;
 		}
@@ -1301,9 +1315,12 @@ LOCAL   void reflect_array_buffer(
 		    for (j = 0; j <= gmax[1]; ++j)
                     for (i = 0; i < ubuf[0]; ++i)
 		    {
-                    	isend = d_index3d(gmax[0]-ubuf[0]-i,j,k,gmax);
-                    	irecv = d_index3d(gmax[0]-ubuf[0]+1+i,j,k,gmax);
-                    	solute[irecv] = solute[isend];
+                    	isend = d_index3d(gmax[0]-ubuf[0]-i,j,k,gmax);//This is Interior State Index
+                    	irecv = d_index3d(gmax[0]-ubuf[0]+1+i,j,k,gmax);//This is Boundary State Index
+                        if (reflect[dir] == YES)
+                    	    solute[irecv] = solute[isend];
+                        if (reflect[dir] == NO)
+                    	    solute[irecv] = -solute[isend];
 		    }
 		    break;
 		case 1:
@@ -1311,9 +1328,12 @@ LOCAL   void reflect_array_buffer(
 		    for (i = 0; i <= gmax[0]; ++i)
                     for (j = 0; j < ubuf[1]; ++j)
 		    {
-                    	isend = d_index3d(i,gmax[1]-ubuf[1]-j,k,gmax);
-                    	irecv = d_index3d(i,gmax[1]-ubuf[1]+1+j,k,gmax);
-                    	solute[irecv] = solute[isend];
+                    	isend = d_index3d(i,gmax[1]-ubuf[1]-j,k,gmax);//This is Interior State Index
+                    	irecv = d_index3d(i,gmax[1]-ubuf[1]+1+j,k,gmax);// This is Boundary State Index
+                        if (reflect[dir] == YES)
+                    	    solute[irecv] = solute[isend];
+                        if (reflect[dir] == NO)
+                    	    solute[irecv] = -solute[isend];
 		    }
 		    break;
 		case 2:
@@ -1321,9 +1341,12 @@ LOCAL   void reflect_array_buffer(
 		    for (j = 0; j <= gmax[1]; ++j)
                     for (k = 0; k < ubuf[2]; ++k)
 		    {
-                    	isend = d_index3d(i,j,gmax[2]-ubuf[2]-k,gmax);
-                    	irecv = d_index3d(i,j,gmax[2]-ubuf[2]+1+k,gmax);
-                    	solute[irecv] = solute[isend];
+                    	isend = d_index3d(i,j,gmax[2]-ubuf[2]-k,gmax);//This is Interior State Index
+                    	irecv = d_index3d(i,j,gmax[2]-ubuf[2]+1+k,gmax);//This is Boundary State Index
+                        if (reflect[dir] == YES)
+                    	    solute[irecv] = solute[isend];
+                        if (reflect[dir] == NO)
+                    	    solute[irecv] = -solute[isend];
 		    }
 		    break;
 		}

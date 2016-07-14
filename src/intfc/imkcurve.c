@@ -33,7 +33,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
 
-
+// Meniscus was configured in two ways, as VERSIONONE, a simple one, and VERSIONTWO, an improved one on top of VERSIONONE.
+// Only turn on one version at a time.
+// VERSIONTWO will be used eventually. VERSIONONE will be dropped.
+// Another way to clean up this section is to simply delete the rest versions and keep VERSIONTWO.
+// VERSIONTWO has more complicated geometry
+#define VERSIONONE NO
+#define VERSIONTWO NO
+#define VERSIONTHREE YES
 #define DEBUG_STRING "i_make_curve"
 
 #include <intfc/int.h>
@@ -96,14 +103,23 @@ LOCAL   double adjust_for_z_grid_spacing(double,double,double);
 
 //for Meniscus Linear Profile
 LOCAL   double dist_line_meniscus(double,double,double,double);
+LOCAL   double dist_line_meniscus2Dlike(double,double,double);
+//VERSION ONE
 LOCAL   boolean areaOne(double,double,double);
 LOCAL   boolean areaTwo(double,double,double);
+//VERSION TWO
+LOCAL   boolean areaSquare(double,double,double);
+LOCAL   boolean areaLeft(double,double,double);
+LOCAL   boolean areaRight(double,double,double);
 
 //meniscus linear profile function
 // Three points
 // where alpha is contact angle
 // where m is meniscus
 // where b is -meniscus/tan(alpha)
+
+
+// VERSIONONE
 LOCAL  double dist_line_meniscus(
             double angle,
             double meniscus,
@@ -146,6 +162,52 @@ LOCAL boolean areaTwo(double x, double y, double meniscus)
     }
     else
         return NO;
+}
+//VERSION TWO
+LOCAL boolean areaSquare(double x, double y, double meniscus)
+{
+    //if ((x >= 0.0) && (y >= 0.0) && (x <= meniscus) && (y <= meniscus))
+    if (x >= 0.0 && y >= 0.0)
+    {
+        if (x <= meniscus && y <= meniscus)
+            return YES;
+        else
+            return NO;
+    }
+    return NO;
+}
+LOCAL boolean areaLeft(double x, double y, double meniscus)
+{
+    //if ((x > meniscus) && (y >= 0.0 && y <= meniscus))
+    if (x > meniscus && y >= 0.0 && y <= meniscus)
+        return YES;
+    return NO;
+}
+
+LOCAL boolean areaRight(double x, double y, double meniscus)
+{
+    //if ((y > meniscus) && (x >= 0.0 && x <= meniscus))
+    if (y > meniscus && x >= 0.0 && x <= meniscus)
+        return YES;
+    return NO;
+}
+//VERSION THREE
+LOCAL  double dist_line_meniscus2Dlike(
+            double angle,
+            double meniscus,
+            double x)
+{
+     angle = angle * 1.0 / 180.0 * PI;
+     double tmp = meniscus - x;
+     double anotherangle = PI * 1.0 / 2.0 - angle;
+     if (anotherangle < 0.0)
+     {
+         printf("contact angle larger than PI/2 not support yet!\n");
+         fflush(stdout);
+         clean_up(ERROR);
+     }
+     double height = tan(anotherangle) * tmp;
+     return height;
 }
 #define		MAX_NUM_SEGMENTS		100
 
@@ -1783,9 +1845,12 @@ EXPORT double level_wave_func_Meniscus(
         double meniscus = wave_params->Meniscus; // position of Meniscus
         int iii, jjj, n, m[2], k[3];
         unsigned short int xsubi_a[3], xsubi_p[3];
+        double height1 = meniscus * 1.0 / tan(angle*1.0/180.0*PI);
 
         dim = wave_params->dim;
         z = wave_params->z0;
+        // FOCUS ON EDGE AND CORNER EFFECTS. NO FOURIER MODES. Smeeton Youngs' 105 Experiment.
+//Comment Start NO FOURIER MODE
 /*
         av_phase = radians(av_phase);
         P_sd = radians(P_sd);
@@ -1833,20 +1898,96 @@ EXPORT double level_wave_func_Meniscus(
             z += A[iii] * exp(sigma*t)*cos(arg);
         }
 */
+//Comment End NO FOURIER MODE
         dist = coords[dim-1] - z;
         // TODO && FIXME: copy 3D meniscus back here.
-        if (areaOne(coords[0], coords[1], meniscus))
+        double x = coords[0];
+        double y = coords[1];
+        if (dim == 2)
         {
-            dist = dist - dist_line_meniscus(angle, meniscus, coords[0], coords[1]);
             return dist;
         }
-        else if (areaTwo(coords[0], coords[1], meniscus))
+        else if (dim == 3)
         {
-            dist = dist - dist_line_meniscus(angle, meniscus, coords[1], coords[0]);
-            return dist;
+            if (VERSIONONE)
+            {
+                if (areaOne(x, y, meniscus))
+                {
+                    dist = dist - dist_line_meniscus(angle, meniscus, x, y);
+                    return dist;
+                }
+                else if (areaTwo(x, y, meniscus))
+                {
+                    dist = dist - dist_line_meniscus(angle, meniscus, y, x);
+                    return dist;
+                }
+                else
+                    return dist;
+            }
+            else if (VERSIONTWO)
+            {
+                if (areaSquare(x, y, meniscus))
+                {
+                    if (x + y <= meniscus)
+                    {
+                        double ac = meniscus * sqrt(2) * 0.5;
+                        double theta = atan(y/x);
+                        double ab = ac / cos(PI/4.0 - theta);
+                        double ad = sqrt(x*x + y*y);
+                        double bd = ab - ad;
+                        double deltah = bd / ab * height1;
+                        return dist = dist - deltah - height1;
+
+                    }
+                    else
+                    {
+                        double ab = meniscus - y;
+                        double ad = meniscus - x;
+                        double theta = atan(ad/ab);
+                        double bd = sqrt(ab*ab + ad*ad);
+                        double alpha = fabs(PI/4.0 - theta);
+                        double be = 0.5 * sqrt(2) * meniscus / cos(alpha);
+                        double deltah = height1 * bd / be;
+                        return dist = dist -deltah;
+                    }
+                }
+                else if (areaLeft(x, y, meniscus))
+                {
+                     double deltah = height1 * (1.0 * meniscus - y) / (1.0 * meniscus);
+                     return dist = dist - deltah;
+                }
+                else if (areaRight(x, y, meniscus))
+                {
+                     double deltah = height1 * (1.0 * meniscus - x) / (1.0 * meniscus);
+                     return dist = dist - deltah;
+                }
+                else
+                    return dist;
+            }
+            else if (VERSIONTHREE)
+            {
+                // This version of meniscus is for test ONLY. Specially for input file in-SY3dx, in which we consider a 2D like simulation.
+                if (x <= meniscus)
+                {
+                    dist = dist - dist_line_meniscus2Dlike(angle, meniscus, x);
+                    return dist;
+                }
+                else
+                {
+                    return dist;
+                }
+            }
+            else
+            {
+                 return dist;
+            }
         }
         else
-            return dist;
+        {
+             printf("NO VERSION OF MENISCUS WERE CHOSEN.\n");
+             fflush(stdout);
+             clean_up(ERROR);
+        }
 }
 
 

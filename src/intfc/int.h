@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -236,7 +236,7 @@ struct _TRI
 	struct _TRI *prev;
 	struct _TRI *next;
 	int boundary;		/* tri bonds on interface curves? */
-	int order;		/* used as an identification for a tri, avoid 
+	int order;		/* used as an identification for a tri, avoid
 				   the conflict with _index in private_data. */
     	int local_index;
 	int global_index;
@@ -330,7 +330,7 @@ struct _WEDGE{
 	TRI	**tris;
 	int	n_tris;
 
-};  
+};
 typedef struct _WEDGE WEDGE;
 
 struct _NEIGHBORHOOD{
@@ -434,6 +434,8 @@ struct _INTERFACE
 
 	int		dim;		/* Dimension of Imbedding Space */
 	int		num_points;	/* Total from curves */
+    // Introduce Contact Angle Parameter for Smeeton Youngs' Experiment 105
+    double contactangle;
 
 	/* Internal Variables: */
 	struct Table	*table;	/* Pointer to Interface Table */
@@ -727,10 +729,10 @@ struct _Cross
 typedef struct _Cross CROSS;
 
 struct _INDEX {
-	int I1, I2, I3;  
-	int tempspace;   
+	int I1, I2, I3;
+	int tempspace;
 	POINTER  tri_workspace;
-};		         
+};
 typedef struct _INDEX INDEX;
 
 /* Grid line crossing structures */
@@ -800,7 +802,7 @@ enum {
         MAX_CRX_FILL = 5000  /* Maximum number of missing crxings to be filled */
 };
 
-        /* compass directions on grid */ 
+        /* compass directions on grid */
         /* NOTE: These side and corner definitions allow bitwise comparisons */        /* ie:   NORTH_WEST == NORTH & WEST,  etc */
 
 enum _GRID_DIRECTION {
@@ -849,7 +851,7 @@ typedef enum _GRID_DIRECTION GRID_DIRECTION;
 *		Node, Curve and Surface Boundary Flags:
 *
 *	These flags use 6 bits, 2 per coordinate direction.
-*	The boundary flags are stored in bits, the first 2 for the x 
+*	The boundary flags are stored in bits, the first 2 for the x
 *	coordinate, the next 2 for the y and the third 2 for z. A two bit
 *	flag is thus 0 = INSIDE, 1 = BOTTOM, 2 = TOP, 3 unft_assigned. Thus
 *	the upper x,y,z corner has the binary flag: 101010 = (octal) 022,
@@ -881,7 +883,7 @@ typedef enum _GRID_DIRECTION GRID_DIRECTION;
 *	only locally. These fields may need to be preserved globally, however,
 *	which is the reason for the BDRY_MASK macros below.  One cannot
 *	simply set theboundary field to YES or NO, as this will not preserve
-*	the higher order bits.	
+*	the higher order bits.
 */
 
 enum {
@@ -1343,10 +1345,10 @@ typedef struct {
 	int     gmax[MAXD];     /* # of subdomains in each dir */
 	int	buf[MAXD];	/* shaded subdomain extension. every mesh
 				block has the same buffer extension.	*/
-	int	nn;		/* total number of nodes 		*/	
+	int	nn;		/* total number of nodes 		*/
 	RECT_GRID Global_grid;	/* Rect_grid of total region		*/
 	RECT_GRID Zoom_grid;	/* Rect_grid for subdomain		*/
-} PP_GRID; 
+} PP_GRID;
 
 /*
 *	Initialization structure for interface library
@@ -1426,31 +1428,31 @@ struct _BLK_CRX2 {
         int             ***ix;
         int             ***iy;
         int             ***iz;
-        COMPONENT       comps[4];   /* save different comp index of this 
+        COMPONENT       comps[4];   /* save different comp index of this
 				     * blk corner */
-        int             num_comps; 
+        int             num_comps;
         int             num_curves; /* Number of curves inside this blk */
-        int             num_waves;  /* The number of different waves inside 
+        int             num_waves;  /* The number of different waves inside
 				     * blk*/
-                                    /* Different curves may belong to the 
+                                    /* Different curves may belong to the
 				     * same wave */
         COMPONENT       pos_comp;
         COMPONENT       neg_comp;
-        BBI_POINT2      ****crx;    /* For the record, current max. # of 
+        BBI_POINT2      ****crx;    /* For the record, current max. # of
 				     * crx on a grid line
                                      * is limited to 5 */
         BBI_POINT2      *crx_store;
-        int             ***n_crx;   /* Number of CRX on each grid line, multi 
+        int             ***n_crx;   /* Number of CRX on each grid line, multi
 			    	     * crxs are possible */
-        BLK_TYPE        blk_type;   
-        int             bdry;       /* The flags whether the boundary curves 
+        BLK_TYPE        blk_type;
+        int             bdry;       /* The flags whether the boundary curves
 				     * appear in blk */
-        int             m_crx;      /* If there are mixed types of 
-				     * crxings(tracked, untracked), 
+        int             m_crx;      /* If there are mixed types of
+				     * crxings(tracked, untracked),
                                      * m_crx = YES */
         void        (*assign_2dblk_type)(struct _BLK_CRX2*,int,
 					BBI_POINT2 *crxs[]);
-        int         (*trk_wv_val)(CURVE*); 
+        int         (*trk_wv_val)(CURVE*);
 };
 typedef struct _BLK_CRX2 BLK_CRX2;
 

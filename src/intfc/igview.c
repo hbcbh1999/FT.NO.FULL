@@ -44,8 +44,8 @@ LOCAL   void    cgns_plot_surfaces(INTERFACE*,const double*,
                                   const double*,boolean,
                                   const char*,const char*,
                                   boolean,SURFACE_COLOR,SURFACE_COLOR,boolean,double,int);
-LOCAL   void    cgns_plot_curves( INTERFACE*, const double*, 
-                                 const double*, const char*, 
+LOCAL   void    cgns_plot_curves( INTERFACE*, const double*,
+                                 const double*, const char*,
                                  const char*,SURFACE_COLOR,int,boolean,double,int);
 #endif
 /*****************************************************************/
@@ -60,8 +60,8 @@ LOCAL   void    vtk_plot_surfaces(INTERFACE*,const double*,
                                   const double*,boolean,
                                   const char*,const char*,
                                   boolean,SURFACE_COLOR,SURFACE_COLOR,boolean,double,int,char);
-LOCAL   void    vtk_plot_curves( INTERFACE*, const double*, 
-                                 const double*, const char*, 
+LOCAL   void    vtk_plot_curves( INTERFACE*, const double*,
+                                 const double*, const char*,
                                  const char*,SURFACE_COLOR,int,boolean,double,int);
 LOCAL	void    tecplot_surface_special(const char*,FILE*,SURFACE*);
 LOCAL	void	tecplot_plot_surfaces(INTERFACE*,RECT_GRID*,const double*,
@@ -72,7 +72,7 @@ LOCAL	void 	tecplot_surface_in_box(const char*,int*,int*,SURFACE*,FILE*);
 
 /* tmp for amr_overture 2d,infc geomview plot */
 
-LOCAL   void    gview_plot_intfc2d(const char*,const char*, INTERFACE*, 
+LOCAL   void    gview_plot_intfc2d(const char*,const char*, INTERFACE*,
 				RECT_GRID*);
 /*For GD Movie plots */
 #if defined(__GD__)
@@ -207,7 +207,7 @@ LOCAL void gview_plot_intfc2d(
 }
 
 EXPORT  void tecplot_show_box_tris(
-	const char	*fname, 
+	const char	*fname,
 	TRI		**tris,
 	int		num_tris,
 	RECT_GRID	*gr,
@@ -226,10 +226,10 @@ EXPORT  void tecplot_show_box_tris(
 	    crds_st[i] = L[i] + icrds[i]*h[i];
 	    crds_ed[i] = crds_st[i] + h[i];
 	}
-	
+
 	sprintf(s,"%s-%d.plt",fname,pp_mynode());
 	printf("tecplot_show_box_tris fname %s \n",s);
-	
+
 	if ((file = fopen(s,"w")) == NULL)
         {
             (void) printf("WARNING in tecplot_tris(), "
@@ -240,7 +240,7 @@ EXPORT  void tecplot_show_box_tris(
 	tecplot_box(NULL, file, crds_st, crds_ed);
 	sprintf(tname, "%d_%d_%d", icrds[0], icrds[1], icrds[2]);
 	tecplot_show_tris(tname, tris, num_tris, file);
-	
+
 	fclose(file);
 }
 
@@ -258,14 +258,14 @@ EXPORT	void	set_shift_for_tecplot(
 }
 
 EXPORT  void tecplot_show_tris(
-	const char	*tname, 
+	const char	*tname,
 	TRI		**tris,
 	int		num_tris,
 	FILE		*file)
 {
 	POINT 	*p;
 	int 	i,j;
-	
+
 	if(num_tris == 0)
 	    return;
 
@@ -349,7 +349,7 @@ EXPORT	void	tecplot_blk_intfc_plot(
 
 
 EXPORT  void tecplot_triad(
-	const char *fname, 
+	const char *fname,
 	double	   *p,
 	double      *x,
 	double      *y,
@@ -362,14 +362,14 @@ EXPORT  void tecplot_triad(
 
 	sprintf(s,"%s-%d.plt",fname,pp_mynode());
 	printf("tecplot_triad fname %s \n",s);
-	
+
 	if ((file = fopen(s,"w")) == NULL)
         {
             (void) printf("WARNING in tecplot_triad(), "
                           "can't open %s\n",fname);
             return;
         }
-        
+
 	fprintf(file,"TITLE = \"tecview\"\n"
 		       	    "VARIABLES = \"x\", \"y\", \"z\"\n"
 			    "ZONE T=\"x\" I = 2 \n");
@@ -385,7 +385,7 @@ EXPORT  void tecplot_triad(
 	pt[1] = p[1] + ds*y[1];
 	pt[2] = p[2] + ds*y[2];
 	fprintf(file, "%24.16e  %24.16e  %24.16e\n", pt[0], pt[1], pt[2]);
- 	
+
 	fprintf(file, "ZONE T=\"z\" I = 2 \n");
 	fprintf(file, "%24.16e  %24.16e  %24.16e\n", p[0], p[1], p[2]);
 	pt[0] = p[0] + ds*z[0];
@@ -398,17 +398,17 @@ EXPORT  void tecplot_triad(
 
 EXPORT	void	tecplot_tris(
 	const char *fname,
-	TRI        **tris, 
+	TRI        **tris,
 	int        num_tris)
 {
 	int 	j, k;
 	POINT	*p;
 	FILE 	*file=NULL;
 	char	s[256];
-	
+
 	sprintf(s,"%s-%d.plt",fname,pp_mynode());
 	printf("tecplot_tris fname %s \n",s);
-	
+
 	if ((file = fopen(s,"w")) == NULL)
 	{
 	    (void) printf("WARNING in tecplot_tris(), "
@@ -417,7 +417,7 @@ EXPORT	void	tecplot_tris(
 	}
 
 	tecplot_show_tris("tec_tris", tris, num_tris, file);
-	
+
 	(void) fclose(file);
 }	/* end tecplot_blk_intfc_plot */
 
@@ -437,11 +437,11 @@ EXPORT	void	tecplot_box(
 	L[0] += shx;
 	L[1] += shy;
 	L[2] += shz;
-	
+
 	U[0] += shx;
 	U[1] += shy;
 	U[2] += shz;
-	
+
 	if (bname != NULL)/*direct call */
 	{
 	    if ((file = fopen(bname,"w")) == NULL)
@@ -469,7 +469,7 @@ EXPORT	void	tecplot_box(
 	(void) fprintf(file, "%-9g %-9g %-9g\n", U[0],U[1],U[2]);
 	(void) fprintf(file, "%-9g %-9g %-9g\n", L[0],U[1],U[2]);
 	(void) fprintf(file, "%d %d %d %d %d %d %d %d\n",1,2,3,4,5,6,7,8);
-	
+
 	if(bname != NULL)
 	    fclose(file);
 }	/* end tecplot_box */
@@ -581,11 +581,11 @@ EXPORT  void    tecplot_surface_in_ball(
 	TRI	*tri, *tris[TEC_MAX_TRIS];
 	double	*pt;
 	int	i,num_tris;
-	
+
 	double	tst_pt[3] = {  0.5227539526042586,     0.6525225774422274,       2.1854392147488 };
 	double	tst_pt1[3] = { 0.5227539526042586,     0.6525225774422274,       2.1854392147488 };
 	double	tol = 1.0/40.0;
-	
+
 	if (!(first_tri(s)))
 	{
 	    screen("WARNING, first bond of the curve is NULL\n");
@@ -600,7 +600,7 @@ EXPORT  void    tecplot_surface_in_ball(
 	    for (i = 0; i < 3; i++)
 	    {
 		pt = Coords(Point_of_tri(tri)[i]);
-		if(distance_between_positions(pt, tst_pt, 3) < tol || 
+		if(distance_between_positions(pt, tst_pt, 3) < tol ||
 		   distance_between_positions(pt, tst_pt1, 3) < tol)
 		{
 		    if(distance_between_positions(pt, tst_pt, 3) < 0.002)
@@ -664,7 +664,7 @@ LOCAL	void tecplot_surface_in_box(
 	    tri_bound_block(fbox, tri);
 	    if(!blocks_sect(fbox, bbox))
 		continue;
-	    
+
 	    tris[num_tris] = tri;
 	    num_tris++;
 	    if(num_tris > TEC_MAX_TRIS)
@@ -744,7 +744,7 @@ EXPORT  void    tecplot_surface(
 	    }
 	}
 	/*end counting */
-	
+
 	if (Boundary(s))
 	    (void) fprintf(file, "ZONE T=\"BOUNDARY SURFACE\" N=%d E=%d\nF=FEPOINT, ET=TRIANGLE\n",
 			     npts,ntri);
@@ -783,7 +783,7 @@ EXPORT  void    tecplot_surface(
 
 	if (ntri != s->num_tri)
 	{
-	    printf("WARNING, num of tri in surface is wrong\n"); 
+	    printf("WARNING, num of tri in surface is wrong\n");
 	}
 	if (bname != NULL)
 	    fclose(file);
@@ -859,7 +859,7 @@ LOCAL  void    tecplot_surface_special(
 	    }
 	}
 	/*end counting */
-	
+
 	if (npts ==0 && num_tris ==0)
 	{
 	    if (bname != NULL)
@@ -953,7 +953,7 @@ LOCAL  void    tecplot_surface_special(
 
 	if (ntri != s->num_tri)
 	{
-	    printf("WARNING, num of tri in surface is wrong\n"); 
+	    printf("WARNING, num of tri in surface is wrong\n");
 	}
 	if (bname != NULL)
 	    fclose(file);
@@ -990,7 +990,7 @@ LOCAL	void	tecplot_plot_surfaces(
 	static size_t     fname_len = 0;
 
 	fname = get_list_file_name(fname,dname,name,&fname_len);
-	
+
 	for (num_tris = 0, s = intfc->surfaces; s && *s; ++s)
 	{
 	    num_tris += (*s)->num_tri;
@@ -1000,7 +1000,7 @@ LOCAL	void	tecplot_plot_surfaces(
 		    Index_of_point(Point_of_tri(tri)[k]) = -1;
 	    }
 	}
-	
+
 	if (alloc_len_pts < 3*intfc->num_points)
 	{
 	    if (pts != NULL)
@@ -1025,13 +1025,13 @@ LOCAL	void	tecplot_plot_surfaces(
         for (npts=0, ntris=0, num_surfs=0, s = intfc->surfaces; s && *s; ++s)
 	{
 	    if (bdry == YES  &&  !Boundary(*s))
-		continue; 
+		continue;
 	    if (bdry == NO  &&  Boundary(*s))
 		continue;
 	    if (clip == YES)
 	    {
 		plot_surf = NO;
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 		    plot_tri = NO;
@@ -1039,7 +1039,7 @@ LOCAL	void	tecplot_plot_surfaces(
 		    {
 			crds = Coords(Point_of_tri(tri)[k]);
 	                for (l = 0; l < 3; ++l)
-			    if ((crds[l] < L[l] - tol[l]) || 
+			    if ((crds[l] < L[l] - tol[l]) ||
 			        (crds[l] > U[l] + tol[l]))
 				break;
 			if (l == 3) /* a point is inside the domain */
@@ -1071,7 +1071,7 @@ LOCAL	void	tecplot_plot_surfaces(
 	    }
 	    else
 	    {
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 	            for (k = 0; k < 3; ++k)
@@ -1104,7 +1104,7 @@ LOCAL	void	tecplot_plot_surfaces(
 
 	fprintf(file, "TITLE = \"tecview\"\n");
 	fprintf(file, "VARIABLES = \"x\", \"y\", \"z\"\n");
-	fprintf(file, "ZONE N=%d,  E=%d,\n", npts, ntris); 
+	fprintf(file, "ZONE N=%d,  E=%d,\n", npts, ntris);
 	fprintf(file, "DATAPACKING = POINT \n");
 	fprintf(file, "ZONETYPE=FETRIANGLE \n\n");
 
@@ -1113,10 +1113,10 @@ LOCAL	void	tecplot_plot_surfaces(
 	    (void) fprintf(file,"%-9g %-9g %-9g\n",
 			   pts[3*i],pts[3*i+1],pts[3*i+2]);
 	}
-	
+
 	for (j = 0; j < ntris; ++j)
 	{
-	    (void) fprintf(file," %-4d %-4d %-4d \n", 
+	    (void) fprintf(file," %-4d %-4d %-4d \n",
 			   verts[4*j]+1,verts[4*j+1]+1,verts[4*j+2]+1);
 	}
 
@@ -1183,7 +1183,7 @@ EXPORT void geomview_interface_plot(
  *	p. It assumes that one triangle is attached to the point.    */
 
 EXPORT	void gview_point_tri_rings(
-	const char *filename,         
+	const char *filename,
 	POINT *p)
 {
 	FILE *file = fopen(filename,"w");
@@ -1352,7 +1352,7 @@ LOCAL	void	gview_plot_surfaces(
 		    Index_of_point(Point_of_tri(tri)[k]) = -1;
 	    }
 	}
-	
+
 	if (alloc_len_pts < 3*intfc->num_points)
 	{
 	    if (pts != NULL)
@@ -1377,13 +1377,13 @@ LOCAL	void	gview_plot_surfaces(
         for (npts=0, ntris=0, num_surfs=0, s = intfc->surfaces; s && *s; ++s)
 	{
 	    if (bdry == YES  &&  !Boundary(*s))
-		continue; 
+		continue;
 	    if (bdry == NO  &&  Boundary(*s))
 		continue;
 	    if (clip == YES)
 	    {
 		plot_surf = NO;
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 		    plot_tri = NO;
@@ -1391,7 +1391,7 @@ LOCAL	void	gview_plot_surfaces(
 		    {
 			crds = Coords(Point_of_tri(tri)[k]);
 	                for (l = 0; l < 3; ++l)
-			    if ((crds[l] < L[l] - tol[l]) || 
+			    if ((crds[l] < L[l] - tol[l]) ||
 			        (crds[l] > U[l] + tol[l]))
 				break;
 			if (l == 3) /* a point is inside the domain */
@@ -1423,7 +1423,7 @@ LOCAL	void	gview_plot_surfaces(
 	    }
 	    else
 	    {
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 	            for (k = 0; k < 3; ++k)
@@ -1950,7 +1950,7 @@ LOCAL void write_interpolated_color(
 	    { 1.0, 0.0, 0.0, 0.75 }, /* red       */
 	    { 0.0, 1.0, 0.0, 0.75 }, /* green     */
 	    { 1.0, 1.0, 0.0, 0.75 }, /* yellow    */
-	    { 0.0, 0.0, 1.0, 0.75 }, /* blue      */ 
+	    { 0.0, 0.0, 1.0, 0.75 }, /* blue      */
 	    { 1.0, 0.0, 1.0, 0.75 }, /* magenta   */
 	    { 0.0, 1.0, 1.0, 0.75 }, /* cyan      */
 	    { 1.0, 1.0, 1.0, 0.75 }, /* white     */
@@ -2248,7 +2248,7 @@ LOCAL  void    print_polyline_description(
 			   indent,coords[i][0],coords[i][1],coords[i][2],
 			   coords[i+1][0],coords[i+1][1],coords[i+1][2]);
 	}
-	
+
 	(void) fprintf(file,"%s",indent);
 	write_color(file,color,alpha);
 	(void) fprintf(file,"%s}\n",indent);
@@ -2257,10 +2257,10 @@ LOCAL  void    print_polyline_description(
 /*
 *  			gview_local_surface()
 *
-*	draws the surface only within a ball with specified 
-*	radius and center.  Warning, this function is not 
+*	draws the surface only within a ball with specified
+*	radius and center.  Warning, this function is not
 *	fully implemented: it only draws tris with at least one
-*	point within the ball.  It is possible for a large 
+*	point within the ball.  It is possible for a large
 *	triangle to contain points within the ball but not be drawn.
 */
 
@@ -2368,7 +2368,7 @@ LOCAL 	void 	write_color( 		/* for geomview files */
 	    (void) fprintf(file,"0.0 0.0 0.0 %g\n",alpha);
 	    break;
 	case pRED:
-	    (void) fprintf(file,"1.0 0.0 0.0 %g\n",alpha); 
+	    (void) fprintf(file,"1.0 0.0 0.0 %g\n",alpha);
 	    break;
 	case pGREEN:
 	    (void) fprintf(file,"0.0 1.0 0.0 %g\n",alpha);
@@ -2431,7 +2431,7 @@ EXPORT	void	gview_surface(
 	(void) fprintf(file,"%s{\n%s%sOFF\n%s%s%6d %6d %6d\n",indent,
 		indent,indent,indent,indent,
 		3*num_tris,num_tris,0);
-	for (tri = first_tri(surface); !at_end_of_tri_list(tri,surface); 
+	for (tri = first_tri(surface); !at_end_of_tri_list(tri,surface);
 	     tri = tri->next)
 	{
 	    ++tri_count;
@@ -2445,7 +2445,7 @@ EXPORT	void	gview_surface(
 	}
 
 	i = 0;
-	for (tri = first_tri(surface); !at_end_of_tri_list(tri,surface); 
+	for (tri = first_tri(surface); !at_end_of_tri_list(tri,surface);
 	     tri = tri->next)
 	{
 	    (void) fprintf(file,"%s%s%-4d %-4d %-4d %-4d ",
@@ -2622,8 +2622,8 @@ EXPORT void gview_plot_c_curve(
 	int	          isurf,j, index, num_c_bonds;
 	static const char *indent = "    ";
 	static const char red[10] = " 200 0 0", green[10] = " 0 200 0";
-	
-	
+
+
 	if (create_directory(dname,YES) == FUNCTION_FAILED)
 	{
 	    screen("WARNING in gview_plot_c_curve(), "
@@ -2639,7 +2639,7 @@ EXPORT void gview_plot_c_curve(
 	}
 
 	num_c_bonds=0;
-	for (cb = c_curve->first; cb != NULL; cb = cb->next) 
+	for (cb = c_curve->first; cb != NULL; cb = cb->next)
 	    ++num_c_bonds;
 
 	(void) fprintf(file,"{ LIST\n");
@@ -2649,14 +2649,14 @@ EXPORT void gview_plot_c_curve(
 	(void) fprintf(file,"%s{\n%s%sOFF\n%s%s%6d %6d %6d\n",
 		       indent,indent,indent,
 		       indent,indent,6*num_c_bonds,2*num_c_bonds,0);
-	
-	
+
+
 	for (cb=c_curve->first; cb != NULL; cb=cb->next)
 	{
 	    for (isurf=0; isurf<2; ++isurf)
 	    {
-		tri = cb->s[isurf].t; 
-	      
+		tri = cb->s[isurf].t;
+
 		for (j = 0; j < 3; ++j)
 		{
 		    p = Point_of_tri(tri)[j];
@@ -2665,19 +2665,19 @@ EXPORT void gview_plot_c_curve(
 		}
 	    }
 	}
-	   
+
 	for (j=0; j < num_c_bonds; ++j)
 	{
 	    for (isurf=0; isurf<2; ++isurf)
 	    {
 		index = (6*j)+(3*isurf);
 		color = (isurf)? red : green ;
-	      
+
 		(void) fprintf(file,"%s%s%-4d %-4d %-4d %-4d%s\n",indent,
 			       indent,3,index,index+1,index+2,color);
 	    }
 	}
-	
+
 	(void) fprintf(file,"%s}\n",indent);
 	(void) fprintf(file,"}\n");
 	(void) fclose(file);
@@ -2880,7 +2880,7 @@ LOCAL   void gview_plot_color_surfaces(
                                 crds = Coords(p);
                                 for (l = 0; l < 3; ++l)
                                 {
-                                    pos_pts[3*npt[is]+l] = crds[l]+delta*nor[l];                                           neg_pts[3*npt[is]+l] = crds[l]-delta*nor[l];  
+                                    pos_pts[3*npt[is]+l] = crds[l]+delta*nor[l];                                           neg_pts[3*npt[is]+l] = crds[l]-delta*nor[l];
 				}
                                 Index_of_point(p) = npt[is]++;
                             }
@@ -2888,7 +2888,7 @@ LOCAL   void gview_plot_color_surfaces(
                         }
                         verts[4*ntri[is]+3] = num_surfs;
                         ++ntri[is];
-                    }   
+                    }
                 }
                 if (plot_surf == YES)
                 ++num_surfs;
@@ -3029,7 +3029,7 @@ LOCAL	void   vtk_print_box(
 
 	(void) sprintf(vfmt,"%s\n","%-9g %-9g %-9g");
 	fname = get_vtk_file_name(fname,dname,"box",&fname_len);
-        
+
 	if(print_in_binary)
 	{
 	    if ((file = fopen(fname,"wb")) == NULL)
@@ -3048,8 +3048,8 @@ LOCAL	void   vtk_print_box(
 	    sprintf(str, "DATASET POLYDATA\n");
 	    fwrite(str, sizeof(char), 17, file);
 	    sprintf(str, "POINTS 8 float\n");
-	    fwrite(str, sizeof(char), 15, file);  
-	    
+	    fwrite(str, sizeof(char), 15, file);
+
 	    if(hardware_is_little_endian())
 	    {
 	        val[0] = endian_float_swap(BBL[0]);
@@ -3058,14 +3058,14 @@ LOCAL	void   vtk_print_box(
 	    	fwrite(val, sizeof(float), 1 , file);
 	 	val[0] = endian_float_swap(BBL[2]);
 		fwrite(val, sizeof(float), 1 , file);
-		
+
 		val[0] = endian_float_swap(BBU[0]);
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBL[1]);
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBL[2]);
                 fwrite(val, sizeof(float), 1 , file);
-	
+
 		val[0] = endian_float_swap(BBU[0]);
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBU[1]);
@@ -3079,14 +3079,14 @@ LOCAL	void   vtk_print_box(
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBL[2]);
                 fwrite(val, sizeof(float), 1 , file);
-		
+
 		val[0] = endian_float_swap(BBL[0]);
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBL[1]);
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBU[2]);
                 fwrite(val, sizeof(float), 1 , file);
-	
+
 		val[0] = endian_float_swap(BBU[0]);
                 fwrite(val, sizeof(float), 1 , file);
                 val[0] = endian_float_swap(BBL[1]);
@@ -3183,7 +3183,7 @@ LOCAL	void   vtk_print_box(
             else
                 ival[0] = 1;
             fwrite(ival, sizeof(int), 1, file);
-	    
+
 	    if(hardware_is_little_endian())
                 ival[0] = endian_int_swap(2);
             else
@@ -3231,7 +3231,7 @@ LOCAL	void   vtk_print_box(
             else
                 ival[0] = 0;
             fwrite(ival, sizeof(int), 1, file);
-	 
+
 	    if(hardware_is_little_endian())
                 ival[0] = endian_int_swap(2);
             else
@@ -3361,15 +3361,15 @@ LOCAL	void   vtk_print_box(
             fwrite(ival, sizeof(int), 1, file);
 	}
 	else
-	{	
+	{
    	    if ((file = fopen(fname,"w")) == NULL)
             {
                 (void) printf("WARNING in vtk_print_box(), "
                                "can't open %s\n",fname);
                 return;
             }
-	
-	    fprintf(file,"# vtk DataFile Version 3.0\n" 
+
+	    fprintf(file,"# vtk DataFile Version 3.0\n"
 	    "FronTier Interface\n"
 	    "ASCII\n"
 	    "DATASET POLYDATA\n"
@@ -3395,7 +3395,7 @@ LOCAL	void   vtk_print_box(
 	    		  "2 1 5\n"
 	    		  "2 2 6\n"
 	    		  "2 3 7\n");
-	}			  
+	}
 	fclose(file);
 }
 
@@ -3489,8 +3489,14 @@ EXPORT void vtk_interface_plot(
 	double *BBU = topological_grid(intfc).GU;
 
 	if (intfc->dim == 2)
-	    vtk_plot_curves(intfc,BBL,BBU,dname,"2d-intfc",pRED,10,
+    {
+        char name[200];
+        sprintf(name,"intfc.t%s",right_flush(step,7));
+        if (pp_numnodes() > 1)
+            sprintf(name,"%s-p%s",name,right_flush(pp_mynode(),4));
+	    vtk_plot_curves(intfc,BBL,BBU,dname,name,pRED,pRED,
 				print_in_binary,time,step);
+    }
 
 	if (intfc->dim == 3)
 	{
@@ -3558,7 +3564,7 @@ LOCAL	void	vtp_plot_surfaces(
 		    Index_of_point(Point_of_tri(tri)[k]) = -1;
 	    }
 	}
-	
+
 	if (alloc_len_pts < 3*intfc->num_points)
 	{
 	    if (pts != NULL)
@@ -3589,7 +3595,7 @@ LOCAL	void	vtp_plot_surfaces(
 	}
 	for (i = 0; i < 3; i++)
 	{
-	    L[i] = gr->L[i] - 0.5*gr->h[i]; 
+	    L[i] = gr->L[i] - 0.5*gr->h[i];
 	    U[i] = gr->U[i] + 0.5*gr->h[i];
 	    tol[i] = 0.00001*gr->h[i];
 	}
@@ -3597,13 +3603,13 @@ LOCAL	void	vtp_plot_surfaces(
         for (npts=0, ntris=0, num_surfs=0, s = intfc->surfaces; s && *s; ++s)
 	{
 	    if (bdry == YES  &&  !Boundary(*s))
-		continue; 
+		continue;
 	    if (bdry == NO  &&  Boundary(*s))
 		continue;
 	    if (clip == YES)
 	    {
 		plot_surf = NO;
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 	            for (k = 0; k < 3; ++k)
@@ -3620,7 +3626,7 @@ LOCAL	void	vtp_plot_surfaces(
 			}
 
 	                for (l = 0; l < 3; ++l)
-			    if ((crds[l] < L[l] - tol[l]) || 
+			    if ((crds[l] < L[l] - tol[l]) ||
 			        (U[l] + tol[l] < crds[l]))
 				break;
 			if (l < 3)
@@ -3671,7 +3677,7 @@ LOCAL	void	vtp_plot_surfaces(
 	    }
 	    else
 	    {
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
                     add_tri = NO;
@@ -3750,7 +3756,7 @@ LOCAL	void	vtp_plot_surfaces(
             }
 
 	}
-	
+
 	fprintf(file, "<\?xml version=\"1.0\"\?>\n");
 	if (hardware_is_little_endian())
 	    fprintf(file, "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
@@ -3771,7 +3777,7 @@ LOCAL	void	vtp_plot_surfaces(
 		{
 		    vals[0] = pts[3*i+j];
                     fwrite(vals, sizeof(double), 1, file);
-		}    
+		}
 	    }
 	    fprintf(file, "\n");
 	}
@@ -3923,7 +3929,7 @@ LOCAL	void	vtp_plot_surfaces(
 	*/
 
 	(void) fclose(file);
-	    
+
 }	/*end vtk_plot_surfaces*/
 
 
@@ -3980,7 +3986,7 @@ LOCAL	void	vtk_plot_surfaces(
 		    Index_of_point(Point_of_tri(tri)[k]) = -1;
 	    }
 	}
-	
+
 	if (alloc_len_pts < 3*intfc->num_points)
 	{
 	    if (pts != NULL)
@@ -4011,7 +4017,7 @@ LOCAL	void	vtk_plot_surfaces(
 	}
 	for (i = 0; i < 3; i++)
 	{
-	    L[i] = gr->L[i] - 0.5*gr->h[i]; 
+	    L[i] = gr->L[i] - 0.5*gr->h[i];
 	    U[i] = gr->U[i] + 0.5*gr->h[i];
 	    tol[i] = 0.00001*gr->h[i];
 	}
@@ -4019,13 +4025,13 @@ LOCAL	void	vtk_plot_surfaces(
         for (npts=0, ntris=0, num_surfs=0, s = intfc->surfaces; s && *s; ++s)
 	{
 	    if (bdry == YES  &&  !Boundary(*s))
-		continue; 
+		continue;
 	    if (bdry == NO  &&  Boundary(*s))
 		continue;
 	    if (clip == YES)
 	    {
 		plot_surf = NO;
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 	            for (k = 0; k < 3; ++k)
@@ -4042,7 +4048,7 @@ LOCAL	void	vtk_plot_surfaces(
 			}
 
 	                for (l = 0; l < 3; ++l)
-			    if ((crds[l] < L[l] - tol[l]) || 
+			    if ((crds[l] < L[l] - tol[l]) ||
 			        (U[l] + tol[l] < crds[l]))
 				break;
 			if (l < 3)
@@ -4093,7 +4099,7 @@ LOCAL	void	vtk_plot_surfaces(
 	    }
 	    else //clip == NO
 	    {
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
                     add_tri = NO;
@@ -4153,7 +4159,7 @@ LOCAL	void	vtk_plot_surfaces(
 	    }
 	}
 
-        /* 
+        /*
 	if ((file = fopen(fname,"w")) == NULL)
 	{
 	    (void) printf("WARNING in vtk_plot_surfaces(), "
@@ -4161,7 +4167,7 @@ LOCAL	void	vtk_plot_surfaces(
 	    return;
 	}
 	*/
-	
+
 	if(print_in_binary)
 	{
 	    if((file = fopen(fname, "wb")) == NULL)
@@ -4170,14 +4176,14 @@ LOCAL	void	vtk_plot_surfaces(
 	  	     	      "cant' open %s\n",fname);
 	 	return;
 	    }
-	
+
 	    sprintf(str,"# vtk DataFile Version 3.0\n");
 	    fwrite(str, sizeof(char), 27, file);
 	    sprintf(str,"FronTier Interface\n");
 	    fwrite(str, sizeof(char), 19, file);
 	    sprintf(str,"BINARY\n");
 	    fwrite(str, sizeof(char), 7, file);
-	    sprintf(str,"DATASET POLYDATA\n"); 
+	    sprintf(str,"DATASET POLYDATA\n");
 	    fwrite(str, sizeof(char), 17, file);
             sprintf(str,"POINTS %d float\n", npts);
 	    length = count_digits(npts);
@@ -4191,13 +4197,13 @@ LOCAL	void	vtk_plot_surfaces(
                               "can't open %s\n",fname);
                  return;
             }
- 
+
 	    (void) fprintf(file,"# vtk DataFile Version 3.0 \n"
 		                "FronTier Interface \n"
 		       	        "ASCII \n"
 			        "DATASET POLYDATA \n");
 	    (void) fprintf(file, "POINTS %d double\n",npts);
-	}	     
+	}
 	for (i = 0; i < npts; ++i)
 	{
 	    if(print_in_binary)
@@ -4210,7 +4216,7 @@ LOCAL	void	vtk_plot_surfaces(
 		    else
 			vals[0] = pts[3*i+j];
                     fwrite(vals, sizeof(float), 1, file);
-		}    
+		}
 	     }
 	     else
              {
@@ -4250,7 +4256,7 @@ LOCAL	void	vtk_plot_surfaces(
 	}
 	else
 	{
-	    fprintf(file,"POLYGONS %d %d \n",ntris,ntris*4); 
+	    fprintf(file,"POLYGONS %d %d \n",ntris,ntris*4);
 	    for (j = 0; j < ntris; ++j)
 	    {
 	        (void) fprintf(file,"%d %d %d %d \n",
@@ -4258,7 +4264,7 @@ LOCAL	void	vtk_plot_surfaces(
 	    }
 
 
-	}	
+	}
 
 	if(print_in_binary)
 	{
@@ -4270,7 +4276,7 @@ LOCAL	void	vtk_plot_surfaces(
 	    float nor_vals[1];
 	    for(i = 0; i < npts; ++i)
 	    {
-	    
+
 		for(j = 0; j < 3; ++j)
 		{
 		    if(hardware_is_little_endian())
@@ -4279,7 +4285,7 @@ LOCAL	void	vtk_plot_surfaces(
 			nor_vals[0] = pts_normal[3*i+j];
 		    fwrite(nor_vals, sizeof(float), 1, file);
 		}
-	    }    
+	    }
 	}
 	else
 	{
@@ -4360,7 +4366,7 @@ LOCAL	void	vtk_plot_surfaces(
 	}
 
 	(void) fclose(file);
-	    
+
 }	/*end vtk_plot_surfaces*/
 
 
@@ -4385,7 +4391,7 @@ LOCAL   void    vtk_plot_curves(
         int               num_bonds,i,first,second;
 	static char       *fname = NULL;
 	static size_t     fname_len = 0;
-	int		  tot_num_pnts,tot_num_bonds; 
+	int		  tot_num_pnts,tot_num_bonds;
 	char str[100];
 	int ivals[1];
 	int length, length2;
@@ -4461,13 +4467,13 @@ LOCAL   void    vtk_plot_curves(
 		float vals[1];
                 if (is_subdomain_boundary(Hyper_surf(*c)))continue;
                 tot_num_bonds = tot_num_bonds+(*c)->num_points - 1;
-		
+
 		for (b = (*c)->first; b; b = b->next)
                 {
 		    float vals[1];
                     ps = b->start;
                     pe = b->end;
-                    
+
 		    if(hardware_is_little_endian())
 		    	vals[0] = endian_float_swap(Coords(ps)[0]);
 		    else
@@ -4484,7 +4490,7 @@ LOCAL   void    vtk_plot_curves(
 			vals[0] = 0.0;
                     fwrite(vals, sizeof(float), 1, file);
                 }
-		
+
 
                 if(hardware_is_little_endian())
  		    vals[0] = endian_float_swap(Coords(pe)[0]);
@@ -4500,13 +4506,13 @@ LOCAL   void    vtk_plot_curves(
                     vals[0] = endian_float_swap(0.0);
                 else
                     vals[0] = 0.0;
-                fwrite(vals, sizeof(float), 1, file);	
+                fwrite(vals, sizeof(float), 1, file);
 	    }
 	    sprintf(str, "\nLINES %i %i\n", tot_num_bonds,tot_num_bonds*3);
 	    length = count_digits(tot_num_bonds);
 	    length2 = count_digits(tot_num_bonds*3);
 	    fwrite(str, sizeof(char), 9 + length + length2, file);
-	 
+
 	    first = 0;
             second = 1;
             for (c = intfc->curves; c && *c; ++c)
@@ -4529,16 +4535,16 @@ LOCAL   void    vtk_plot_curves(
                     else
                         ivals[0] = second;
                     fwrite(ivals, sizeof(int), 1, file);
-			
+
                     first++;
                     second++;
                 }
                 first++;
                 second++;
-	    }	
+	    }
         }
 	else
-	{	
+	{
 	    if ((file = fopen(fname,"w")) == NULL)
             {
              	screen("WARNING in vtk_plot_curves(), "
@@ -4556,7 +4562,7 @@ LOCAL   void    vtk_plot_curves(
 	    (void) fprintf(file, "CYCLE 1 1 int\n");
 	    (void) fprintf(file, "%d\n", step);
 	    (void) fprintf(file, "POINTS %d double\n",tot_num_pnts);
-	
+
 	    tot_num_bonds = 0;
             for (c = intfc->curves; c && *c; ++c)
             {
@@ -4614,20 +4620,20 @@ LOCAL	void   cgns_print_box(
 	int ielem[12][2];
    	int isize[3];
    	int index_file,icelldim,iphysdim,index_base;
-   	int index_zone,index_coord,index_section;  
+   	int index_zone,index_coord,index_section;
    	int nelem_start,nelem_end,nbdyelem;
    	char basename[33],zonename[33];
 	/**********************************************************/
 
 	fname = get_cgns_file_name(fname,dname,"box",&fname_len);
-        
+
 	/* WRITE X, Y, Z GRID POINTS TO CGNS FILE */
 
 	/* create gridpoints for simple example: */
 	x[0]=BBL[0]; x[1]=BBU[0]; x[2]=BBU[0]; x[3]=BBL[0]; x[4]=BBL[0]; x[5]=BBU[0]; x[6]=BBU[0]; x[7]=BBL[0];
 	y[0]=BBL[1]; y[1]=BBL[1]; y[2]=BBU[1]; y[3]=BBU[1]; y[4]=BBL[1]; y[5]=BBL[1]; y[6]=BBU[1]; y[7]=BBU[1];
 	z[0]=BBL[2]; z[1]=BBL[2]; z[2]=BBL[2]; z[3]=BBL[2]; z[4]=BBU[2]; z[5]=BBU[2]; z[6]=BBU[2]; z[7]=BBU[2];
-	
+
 	/* open CGNS file for write */
    	cg_open(fname,CG_MODE_WRITE,&index_file);
 	/* create base (user can give any name)*/
@@ -4728,7 +4734,7 @@ EXPORT void cgns_interface_plot(
 	cgns_plot_curves(intfc,BBL, BBU,dname,"2d-intfc", pRED, 10, print_in_binary,time,step);
 	if (intfc->dim == 3)
 	{
-	cgns_plot_surfaces(intfc,BBL,BBU,NO,dname,"3d-intfc",NO,pRED,pRED,print_in_binary,time,step); 
+	cgns_plot_surfaces(intfc,BBL,BBU,NO,dname,"3d-intfc",NO,pRED,pRED,print_in_binary,time,step);
 	cgns_print_box(dname,BBL,BBU,print_in_binary);
 	}
 
@@ -4773,13 +4779,13 @@ LOCAL	void	cgns_plot_surfaces(
 	int 		  num_pts;
    	int isize[3];
    	int index_file,icelldim,iphysdim,index_base;
-   	int index_zone,index_coord,index_section;  
+   	int index_zone,index_coord,index_section;
    	int nelem_start, nelem_end, nbdyelem;
    	char basename[33],zonename[33];
 	/**********************************************************/
-	
+
 	fname = get_cgns_file_name(fname,dname,name,&fname_len);
-	
+
 	num_pts = intfc->num_points;
 	for (num_tris = 0, s = intfc->surfaces; s && *s; ++s)
 	{
@@ -4790,14 +4796,14 @@ LOCAL	void	cgns_plot_surfaces(
 		    Index_of_point(Point_of_tri(tri)[k]) = -1;
 	    }
 	}
-	
+
 	if (alloc_len_pts < 3*intfc->num_points)
 	{
 	    uni_array(&xs,num_pts,FLOAT);
 	    uni_array(&ys,num_pts,FLOAT);
 	    uni_array(&zs,num_pts,FLOAT);
 	}
-	
+
 	if (alloc_len_verts < 3*num_tris)
 	{
 	    if (verts != NULL)
@@ -4808,7 +4814,7 @@ LOCAL	void	cgns_plot_surfaces(
 	}
 	for (i = 0; i < 3; i++)
 	{
-	    L[i] = gr->L[i] - 0.5*gr->h[i]; 
+	    L[i] = gr->L[i] - 0.5*gr->h[i];
 	    U[i] = gr->U[i] + 0.5*gr->h[i];
 	    tol[i] = 0.00001*gr->h[i];
 	}
@@ -4816,20 +4822,20 @@ LOCAL	void	cgns_plot_surfaces(
         for (npts=0, ntris=0, num_surfs=0, s = intfc->surfaces; s && *s; ++s)
 	{
 	    if (bdry == YES  &&  !Boundary(*s))
-		continue; 
+		continue;
 	    if (bdry == NO  &&  Boundary(*s))
 		continue;
 	    if (clip == YES)
 	    {
 		plot_surf = NO;
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 	            for (k = 0; k < 3; ++k)
 		    {
 			crds = Coords(Point_of_tri(tri)[k]);
 	                for (l = 0; l < 3; ++l)
-			    if ((crds[l] < L[l] - tol[l]) || 
+			    if ((crds[l] < L[l] - tol[l]) ||
 			        (U[l] + tol[l] < crds[l]))
 				break;
 			if (l < 3)
@@ -4859,7 +4865,7 @@ LOCAL	void	cgns_plot_surfaces(
 	    }
 	    else
 	    {
-	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); 
+	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
 	            for (k = 0; k < 3; ++k)
@@ -4882,7 +4888,7 @@ LOCAL	void	cgns_plot_surfaces(
 	}
 	if (num_surfs == 0)
 	    return;
-        
+
 	/* WRITE X, Y, Z GRID POINTS TO CGNS FILE */
 	/* open CGNS file for write */
    	cg_open(fname,CG_MODE_WRITE,&index_file);
@@ -4894,7 +4900,7 @@ LOCAL	void	cgns_plot_surfaces(
 
 	/* define zone name (user can give any name)*/
    	strcpy(zonename,"Zone 1");
-   
+
 	/* Number of vertices*/
    	isize[0]=npts;
 	/* Number of elements*/
@@ -4947,7 +4953,7 @@ LOCAL   void    cgns_plot_curves(
         int               num_bonds,i,j,first,second;
 	static char       *fname = NULL;
 	static size_t     fname_len = 0;
-	int		  tot_num_pnts,tot_num_bonds; 
+	int		  tot_num_pnts,tot_num_bonds;
 	char str[100];
 	int ivals[1];
 	int length, length2;
@@ -4957,11 +4963,11 @@ LOCAL   void    cgns_plot_curves(
 	int 		  num_pts;
    	int isize[3];
    	int index_file,icelldim,iphysdim,index_base;
-   	int index_zone,index_coord,index_section;  
+   	int index_zone,index_coord,index_section;
    	int nelem_start, nelem_end, nbdyelem;
    	char basename[33],zonename[33];
 	/**********************************************************/
-	
+
 	fname = get_cgns_file_name(fname,dname,name,&fname_len);
 
 	tot_num_pnts = 0;
@@ -4973,7 +4979,7 @@ LOCAL   void    cgns_plot_curves(
 
 	uni_array(&xs,tot_num_pnts,FLOAT);
 	uni_array(&ys,tot_num_pnts,FLOAT);
-	
+
 	i=0;
 	tot_num_bonds = 0;
         for (c = intfc->curves; c && *c; ++c)
@@ -4984,11 +4990,11 @@ LOCAL   void    cgns_plot_curves(
             {
                 ps = b->start;
                 pe = b->end;
-                xs[i] = Coords(ps)[0]; 
+                xs[i] = Coords(ps)[0];
 		ys[i] = Coords(ps)[1];
 		i++;
             }
-            xs[i] = Coords(pe)[0]; 
+            xs[i] = Coords(pe)[0];
 	    ys[i] = Coords(pe)[1];
 	    i++;
 	    bi_array(&ielem,tot_num_bonds,2,INT);
@@ -5022,7 +5028,7 @@ LOCAL   void    cgns_plot_curves(
 
 	/* define zone name (user can give any name)*/
    	strcpy(zonename,"Zone 1");
-   
+
 	/* Number of vertices*/
    	isize[0]=tot_num_pnts;
 	/* Number of elements*/
@@ -5050,7 +5056,7 @@ LOCAL   void    cgns_plot_curves(
 		nelem_start,nelem_end,nbdyelem,*ielem,&index_section);
 	/* close CGNS file*/
    	cg_close(index_file);
-}    
+}
 /* END CGNS FUNCS */
 #endif /*end USE_CGNS */
 
@@ -5105,8 +5111,8 @@ struct DATA PLOT_DATA;
 /***********************************************************************/
 
 LOCAL void mkImg(
-	int N, 
-	int *x, 
+	int N,
+	int *x,
 	int *y)
 {
 	static const int r=5;
@@ -5117,9 +5123,9 @@ LOCAL void mkImg(
 	if(PLOT_DATA.section == 0)
         {
 	    locim = gdImageCreate(PLOT_DATA.xmax, PLOT_DATA.ymax);
-	    bg = gdImageColorAllocate(locim, 
+	    bg = gdImageColorAllocate(locim,
 		PLOT_DATA.bg[0], PLOT_DATA.bg[1], PLOT_DATA.bg[2]);
-	    fg = gdImageColorAllocate(locim, 
+	    fg = gdImageColorAllocate(locim,
 		PLOT_DATA.fg[0], PLOT_DATA.fg[1], PLOT_DATA.fg[2]);
 	    PLOT_DATA.fg_col = fg;
 	    PLOT_DATA.bg_col = fg;
@@ -5130,14 +5136,14 @@ LOCAL void mkImg(
 	    fg = PLOT_DATA.fg_col;
 	    bg = PLOT_DATA.bg_col;
 	    /*
-            gdImageLine(locim, x[0], y[0], 
+            gdImageLine(locim, x[0], y[0],
 	                PLOT_DATA.lastx, PLOT_DATA.lasty, fg);
 	    */
 	}
 
 	Numi = PLOT_DATA.Numi;
 
-	if(Numi != 0) 
+	if(Numi != 0)
 	{
 	    if(PLOT_DATA.section == 0)
 	        setcolors(locim, Numi);
@@ -5190,9 +5196,9 @@ LOCAL double ytransform(double y)
 
 /*Sets up the template image... prints title, axes, etc. */
 LOCAL void initialize_image(
-	gdImagePtr im, 
-	const char *title, 
-	int fg, 
+	gdImagePtr im,
+	const char *title,
+	int fg,
 	int bg)
 {
         int i,N;       /* 10 xtics */
@@ -5217,19 +5223,19 @@ LOCAL void initialize_image(
 	right = PLOT_DATA.xmax - (int) (0.1*(double)PLOT_DATA.xheight);
 
 	/*left */
-	gdImageLine(im, left,top, 
+	gdImageLine(im, left,top,
 		left, bot, fg);
 
 	/*top */
-	gdImageLine(im, left,top, 
+	gdImageLine(im, left,top,
 		right,top, fg);
 
 	/*right */
-	gdImageLine(im, right,top, 
+	gdImageLine(im, right,top,
 		right,bot, fg);
 
 	/*bottom */
-	gdImageLine(im, right,bot, 
+	gdImageLine(im, right,bot,
 		left,bot, fg);
 
 	/*Make Graph Tics */
@@ -5241,7 +5247,7 @@ LOCAL void initialize_image(
 	{
 	    x = left + i*(right-left)/(N-1);
 	    gdImageLine(im,x,bot,x,bot+(int)(0.01*(double)PLOT_DATA.yheight),fg);
-   	    sprintf(s,"%.2f", 
+   	    sprintf(s,"%.2f",
 	    	PLOT_DATA.minx + i*(PLOT_DATA.maxx - PLOT_DATA.minx)/(N-1));
 	    dist = 5*strlen(s) + 5;
 	    gdImageStringUp(im,Font,x-4,bot+dist,(unsigned char*)s,fg);
@@ -5254,7 +5260,7 @@ LOCAL void initialize_image(
 	    x = bot - i*(bot - top)/(N-1);
 	    gdImageLine(im,left,x,
 	    	left-(int)(0.01*(double)PLOT_DATA.xheight),x,fg);
-   	    sprintf(s,"%.2f", 
+   	    sprintf(s,"%.2f",
 	    	PLOT_DATA.miny + i*(PLOT_DATA.maxy - PLOT_DATA.miny)/(N-1));
 	    dist = 5*strlen(s) + 5;
 	    gdImageString(im,Font,left-dist,x-4,(unsigned char*)s,fg);
@@ -5276,24 +5282,24 @@ EXPORT void gd_closeplot()
 /* Called to plot the stored frame (all sections) */
 EXPORT void gd_plotframe(char *subtitle)
 {
-	
+
     	gdImagePtr locim = PLOT_DATA.locim;
     	gdImagePtr im = PLOT_DATA.im;
 
-	gdImageCopy(locim, im, PLOT_DATA.xmin, PLOT_DATA.ymin, 
-		PLOT_DATA.xmin, PLOT_DATA.ymin, 
+	gdImageCopy(locim, im, PLOT_DATA.xmin, PLOT_DATA.ymin,
+		PLOT_DATA.xmin, PLOT_DATA.ymin,
 		PLOT_DATA.xmax, PLOT_DATA.yheight*0.1+1);
 
-	gdImageCopy(locim, im, PLOT_DATA.xmin, PLOT_DATA.ymin, 
-		PLOT_DATA.xmin, PLOT_DATA.ymin, 
+	gdImageCopy(locim, im, PLOT_DATA.xmin, PLOT_DATA.ymin,
+		PLOT_DATA.xmin, PLOT_DATA.ymin,
 		PLOT_DATA.xheight*0.1+1, PLOT_DATA.ymax);
-  
-	gdImageCopy(locim, im, 
+
+	gdImageCopy(locim, im,
 		PLOT_DATA.xmin, PLOT_DATA.ymax - PLOT_DATA.yheight*0.1-1,
 		PLOT_DATA.xmin, PLOT_DATA.ymax - PLOT_DATA.yheight*0.1-1,
 		PLOT_DATA.xmax, PLOT_DATA.yheight*0.1+1);
 
-	gdImageCopy(locim, im, 
+	gdImageCopy(locim, im,
 		PLOT_DATA.xmax - PLOT_DATA.xheight*0.1, PLOT_DATA.ymin,
 		PLOT_DATA.xmax - PLOT_DATA.xheight*0.1, PLOT_DATA.ymin,
 		PLOT_DATA.xheight*0.1+1, PLOT_DATA.ymax);
@@ -5303,12 +5309,12 @@ EXPORT void gd_plotframe(char *subtitle)
 	{
             gdFontPtr Font;
             Font = gdFontGetSmall();
-            gdImageString(locim,Font,15,15,(unsigned char*)subtitle, 
+            gdImageString(locim,Font,15,15,(unsigned char*)subtitle,
 	    			PLOT_DATA.fg_col);
 	}
 
 	/*write to gif file */
-        gdImageGifAnimAdd(locim, PLOT_DATA.gifout, 0, 
+        gdImageGifAnimAdd(locim, PLOT_DATA.gifout, 0,
 			0, 0, 10, gdDisposalNone,0 );
 
 	/*Clean up temp image */
@@ -5324,8 +5330,8 @@ EXPORT void gd_plotframe(char *subtitle)
  * frame of the plot animation. It will write the frame to the outfile.
  */
 EXPORT void gd_plotdata(
-	int N, 
-	double *x, 
+	int N,
+	double *x,
 	double *y)
 {
 		/*printf("enter plotdata\n"); */
@@ -5342,7 +5348,7 @@ EXPORT void gd_plotdata(
 	    xl[i] = xtransform(x[i]);
 	    yl[i] = ytransform(y[i]);
     	}
-	
+
 	/* update the stored image by plotting these segments */
     	mkImg(N,xl,yl);
 
@@ -5357,7 +5363,7 @@ EXPORT void gd_plotdata(
 /** Initialize a plot
  * set out file name and data range
  */
-EXPORT void gd_initplot(char *file, char *title, 
+EXPORT void gd_initplot(char *file, char *title,
 	      double minx, double maxx, double miny, double maxy, int Numi)
 {
         int bg,fg;
@@ -5390,9 +5396,9 @@ EXPORT void gd_initplot(char *file, char *title,
 	PLOT_DATA.im = gdImageCreate(PLOT_DATA.xmax, PLOT_DATA.ymax);
 	PLOT_DATA.locim = NULL;
 
-	bg = gdImageColorAllocate(PLOT_DATA.im, 
+	bg = gdImageColorAllocate(PLOT_DATA.im,
 		PLOT_DATA.bg[0], PLOT_DATA.bg[1], PLOT_DATA.bg[2]);
-	fg = gdImageColorAllocate(PLOT_DATA.im, 
+	fg = gdImageColorAllocate(PLOT_DATA.im,
 		PLOT_DATA.fg[0], PLOT_DATA.fg[1], PLOT_DATA.fg[2]);
 	PLOT_DATA.fg_col = fg;
 	PLOT_DATA.bg_col = bg;
@@ -5402,7 +5408,7 @@ EXPORT void gd_initplot(char *file, char *title,
 
 	/* initialize the image, lay axes, etc. */
 	initialize_image(PLOT_DATA.im, title, fg, bg);
-	
+
 	/* open output file */
 	PLOT_DATA.gifout = fopen(file,"wb");
 
@@ -5471,7 +5477,7 @@ LOCAL void setcolors(gdImagePtr im, int N)
         int i;
 	N++;
 
-	if (N > 255) 
+	if (N > 255)
 	{
 	    printf("Error, too many components\n");
             return;
@@ -5480,7 +5486,7 @@ LOCAL void setcolors(gdImagePtr im, int N)
 	uni_array(&color_list,N,INT);
 	for (i = 0; i < N; i++)
 	{
-            color_list[i] = gdImageColorAllocate(im, 
+            color_list[i] = gdImageColorAllocate(im,
 		    colorval(i,N,0), colorval(i,N,1),colorval(i,N,2));
         }
 }
@@ -5518,12 +5524,12 @@ EXPORT void gd_2d_intfc(
 	static double *x,*y;
 
 #if defined __MPI__
-	if (pp_mynode() != 0) 
+	if (pp_mynode() != 0)
 	    goto make_frame;
 #endif /* defined __MPI__ */
-	if (first) 
+	if (first)
 	    first = NO;
-	else 
+	else
 	    goto make_frame;
 	no_bullet = YES;
 	if (resolution_level <= 0) resolution_level = 1;
@@ -5564,9 +5570,9 @@ EXPORT void gd_2d_intfc(
 	PLOT_DATA.im = gdImageCreate(PLOT_DATA.xmax, PLOT_DATA.ymax);
 	PLOT_DATA.locim = NULL;
 
-	bg = gdImageColorAllocate(PLOT_DATA.im, 
+	bg = gdImageColorAllocate(PLOT_DATA.im,
 		PLOT_DATA.bg[0], PLOT_DATA.bg[1], PLOT_DATA.bg[2]);
-	fg = gdImageColorAllocate(PLOT_DATA.im, 
+	fg = gdImageColorAllocate(PLOT_DATA.im,
 		PLOT_DATA.fg[0], PLOT_DATA.fg[1], PLOT_DATA.fg[2]);
 	PLOT_DATA.fg_col = fg;
 	PLOT_DATA.bg_col = bg;
@@ -5576,7 +5582,7 @@ EXPORT void gd_2d_intfc(
 
 	/* initialize the image, lay axes, etc. */
 	initialize_image(PLOT_DATA.im,"INTERFACE",fg,bg);
-	
+
 	/* open output file */
 	sprintf(gname,"%s/intfc-gd.gif",dirname);
 	PLOT_DATA.gifout = fopen(gname,"wb");

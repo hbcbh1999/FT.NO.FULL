@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -113,7 +113,7 @@ EXPORT boolean f_intfc_communication3d2(
 	}
 
 		/* Extend interface in three directions */
-	
+
 	clip_intfc_at_grid_bdry2(intfc);
 
 	for (i = 0; i < dim; ++i)
@@ -142,7 +142,7 @@ EXPORT boolean f_intfc_communication3d2(
 		    if (!Is_outside(him,G,i))
 		    {
 			buf_intfc = cut_buf_interface2(intfc,i,j,me,him);
-		
+
 			if (me[i] == him[i])
 			    adj_intfc[(j+1)%2] = buf_intfc;
 		    	else
@@ -180,7 +180,7 @@ EXPORT boolean f_intfc_communication3d2(
 		    }
 	        }
 	    }
-	  
+
 	    for (j = 0; j < 2; ++j)
 	    {
 		if (rect_boundary_type(intfc,i,j) == SUBDOMAIN_BOUNDARY)
@@ -191,7 +191,7 @@ EXPORT boolean f_intfc_communication3d2(
 		    {
 		        status = buffer_extension3d2(intfc,adj_intfc[j],
 						     i,j,status);
-			
+
 			(void) delete_interface(adj_intfc[j]);
 		        set_current_interface(intfc);
 
@@ -201,7 +201,7 @@ EXPORT boolean f_intfc_communication3d2(
 					"f_intfc_communication3d2 "
 					"buffer_extension3d2 failed for "
 					"i = %d, j = %d\n",i,j);
-			    
+
 			    clean_up(ERROR);
 			    goto stat_comm;
 			}
@@ -211,12 +211,12 @@ EXPORT boolean f_intfc_communication3d2(
 stat_comm:
 	    if (pp_min_status(status) == NO)
 	        goto  exit_comm;
-	    
+
 	    reset_intfc_num_points(intfc);
 	}
 
 
-exit_comm: 
+exit_comm:
 	if (status == FUNCTION_SUCCEEDED)
 	{
 	    install_subdomain_bdry_curves(intfc);
@@ -378,7 +378,7 @@ LOCAL   boolean  seal_closed_curve(CURVE *c, int n)
 	    printf("WARNING in seal_closed_curve: curve is not closed.\n");
 	    return NO;
 	}
-   
+
 	/*delete end node */
 	if(n == 0)
 	{
@@ -419,7 +419,7 @@ LOCAL   boolean  seal_closed_curve(CURVE *c, int n)
 }
 
 LOCAL   BOND * find_match_bond(
-	BOND *b, 
+	BOND *b,
 	CURVE *c)
 {
 BOND    *b1;
@@ -436,11 +436,11 @@ BOND    *b1;
 }
 
 LOCAL   void  set_btri_on_bond(
-	BOND *b, 
+	BOND *b,
 	CURVE *c)
 {
 	BOND_TRI  **bt;
-	
+
 	for(bt = Btris(b); bt && *bt; bt++)
 	{
 	    (*bt)->curve = c;
@@ -483,7 +483,7 @@ int       found;
 	        print_bond(b1);
 	        for(btris = Btris(b1); btris && *btris; btris++)
 	            print_tri((*btris)->tri, intfc);
-	    
+
 	        printf("#bond b2\n");
 	        print_bond(b2);
 	        for(btris = Btris(b2); btris && *btris; btris++)
@@ -505,7 +505,7 @@ int       found;
 		    assign_btri_states(bt, *btris);
 		}
 	    }
-	    
+
 	    if(debugging("merge_btris"))
 	    {
 	        printf("\n#bond af\n");
@@ -525,13 +525,13 @@ int       found;
 	    }
 
 	}
-	
+
 	if(b1 != NULL)
 	{
 	    printf("ERROR merge_btris, merged curve is longer, need to be preprocessed.\n");
 	    clean_up(ERROR);
 	}
-	
+
 	return;
 }
 
@@ -550,22 +550,22 @@ merge_over_curve:
     {
         if(is_closed_curve(*c))
 	    continue;
-        for(curve = intfc->curves; curve && *curve; curve++) 	
+        for(curve = intfc->curves; curve && *curve; curve++)
         {
 	    if(*curve == *c)
 	        continue;
-	    
+
 	    b1 = (*c)->first;
 	    b2 = find_match_bond(b1, *curve);
 	    if(b2 == NULL)
 	        continue;
- 	    
+
 	    if(is_closed_curve(*c) && is_closed_curve(*curve))
 	    {
 	        printf("ERROR: merge two closed curve, need to update the code.\n");
 		clean_up(ERROR);
 	    }
-	   
+
 	    /**c is not closed and is included in *curve */
 	    while(b1 != NULL)
 	    {
@@ -621,22 +621,22 @@ BOND      *b, *b1, *b2, *bc, *bo;
 BOND_TRI  **bt;
 NODE      **n;
 int       found_node;
- 
+
 merge_curve:
 	for (c = intfc->curves; c && *c; c++)
 	{
 	    if(is_closed_curve(*c))
 		continue;
 
-	    for(curve=intfc->curves; curve && *curve; curve++) 	
+	    for(curve=intfc->curves; curve && *curve; curve++)
 	    {
 		if(is_closed_curve(*curve) || *curve == *c)
 		    continue;
-       
+
 		/* find merged curve in the head of the curve */
 		bo = (*c)->first;
 		bc = find_match_bond(bo, *curve);
-            
+
 		if(bc != NULL)
 		{
 		    /*check if c is included in curve, b1 \in c, b2 \in curve */
@@ -663,7 +663,7 @@ merge_curve:
 
 			/*change the bond tri */
 			set_btri_on_bond(b2, *c);
-                          
+
 			/*change the starting node */
 			(*c)->start->posn = (*c)->first->start;
 			if((*c)->first->start == (*c)->last->end)
@@ -680,14 +680,14 @@ merge_curve:
 		}  /*if(bc != NULL) */
 	    }   /*for  curve */
 	}   /*for c */
-    
+
 	for (c = intfc->curves; c && *c; c++)
 	    (*c)->num_points = num_points_on_curve(*c);
 
 	/*printf("#merge_curve after\n"); */
 	merge_overlap_curves(intfc);
 	/*printf("#merge_overlap_curves after\n"); */
-	
+
 	/* delete the nodes which have no curve related */
 	for (n = intfc->nodes; n && *n; ++n)
 	{
@@ -705,7 +705,7 @@ merge_curve:
 	}
 
 	/* BTRIs which are not in the buffer zone are not set */
-        
+
 	/*in append_buffer_surface2 (copy_buffer_surface  i_copy_surface),  */
 	/*bt->surface = adj_surf */
 	/*see function    */
@@ -724,7 +724,7 @@ merge_curve:
 	/* case 2. the buffer curve is not connected with one curve. */
 	/* btri->curve is correct and do not need to be reset. */
 	/* btri->surface will be reset in the following step.  */
-	
+
 	for(c = intfc->curves; c && *c; c++)
 	{
 	    for (b = (*c)->first; b; b = b->next)
@@ -738,7 +738,7 @@ merge_curve:
 		}
 	    }
 	}
-	
+
 	/*printf("#btri set after\n"); */
 
 	/*#bjet2 fix the order of btri so it can pass f_consistent_interface */
@@ -770,14 +770,14 @@ EXPORT  void average_btris(
 
 	tris[0] = ts;
 	tris[1] = ta;
-	
+
 	/*printf("#average_btris\n"); */
 	/*print_tri(ts, ss->interface); */
 	/*print_tri(ta, sa->interface); */
 
 	for(i=0; i<3; i++)
 	{
-	    if(Boundary_point(Point_of_tri(ts)[i]) != 
+	    if(Boundary_point(Point_of_tri(ts)[i]) !=
 	       Boundary_point(Point_of_tri(ta)[i]))
 	    {
 	        printf("ERROR Boundary_point inconsistent, impossible for grid based.\n");
@@ -794,7 +794,7 @@ EXPORT  void average_btris(
 	        for(j=0; j<2; j++)
 		{
 		    btris[j] = Bond_tri_on_side(tris[j],i);
-		
+
 		    /*two points corresponding to start and end states */
 		    if(btris[j]->orient == POSITIVE_ORIENTATION)
 		    {
@@ -813,19 +813,19 @@ EXPORT  void average_btris(
 		bi_interpolate_intfc_states(intfc,0.5,0.5,crdss[0],s1,crdss[1],s2,stmp);
 	        ft_assign(s1,stmp,sizest);
 	        ft_assign(s2,stmp,sizest);
-		
+
 		s1 = left_end_btri_state(btris[0]);
 		s2 = left_end_btri_state(btris[1]);
 		bi_interpolate_intfc_states(intfc,0.5,0.5,crdse[0],s1,crdse[1],s2,stmp);
 	        ft_assign(s1,stmp,sizest);
 	        ft_assign(s2,stmp,sizest);
-		
+
 		s1 = right_start_btri_state(btris[0]);
 		s2 = right_start_btri_state(btris[1]);
 		bi_interpolate_intfc_states(intfc,0.5,0.5,crdss[0],s1,crdss[1],s2,stmp);
 	        ft_assign(s1,stmp,sizest);
 	        ft_assign(s2,stmp,sizest);
-		
+
 		s1 = right_end_btri_state(btris[0]);
 		s2 = right_end_btri_state(btris[1]);
 		bi_interpolate_intfc_states(intfc,0.5,0.5,crdse[0],s1,crdse[1],s2,stmp);
@@ -847,7 +847,7 @@ LOCAL 	boolean append_adj_intfc_to_buffer2(
 	P_LINK	  *p_table;	/* Table of matching points on intfc
 					 * and adj_intfc*/
 	SURFACE	  **s, **as, *surf;
-        CURVE     **c, **ac; 
+        CURVE     **c, **ac;
 	int	  p_size;		/*Size of space allocated for p_table*/
 	boolean      status;
 	boolean	  corr_surf_found;
@@ -862,10 +862,10 @@ LOCAL 	boolean append_adj_intfc_to_buffer2(
 	p_size = 4*(adj_intfc->num_points) + 1;
 	uni_array(&p_table,p_size,sizeof(P_LINK));
 	reset_hash_table(p_table,p_size);
-	
+
 	/* Begin patching adj_intfc to  current interface */
 	status = YES;
-        	
+
 	for (as = adj_intfc->surfaces; as && *as; ++as)
 	{
 	    corr_surf_found = NO;
@@ -890,7 +890,7 @@ LOCAL 	boolean append_adj_intfc_to_buffer2(
 		              "append surface failed\n");
 			free(p_table);
 			set_current_interface(cur_intfc);
-			
+
 			DEBUG_LEAVE(append_adj_intfc_to_buffer2)
 			return NO;
 
@@ -907,18 +907,18 @@ LOCAL 	boolean append_adj_intfc_to_buffer2(
 	    if (!corr_surf_found)
 	    {
 		SURFACE *surf;
-		
+
 		surf = copy_buffer_surface(*as,p_table,p_size);
 		Hyper_surf_index(surf) = Hyper_surf_index((*as));
 	    }
 	}
-	
+
 	free(p_table);
-	
+
 	merge_curves(intfc);
-	
+
 	set_current_interface(cur_intfc);
-	
+
 	if (debugging("consistency"))
 	{
 	    null_sides_are_consistent();
@@ -931,7 +931,7 @@ LOCAL 	boolean append_adj_intfc_to_buffer2(
 	    else
 	        printf("#check after append_adj_intfc_to_buffer2, intfc con.\n");
 	}
-	
+
 	DEBUG_LEAVE(append_adj_intfc_to_buffer2)
 	return status;
 }		/*end append_adj_intfc_to_buffer2*/
@@ -1084,9 +1084,9 @@ LOCAL boolean append_buffer_surface2(
         bi_array(&blk_tri_s,gmax[idir1],gmax[idir2],sizeof(TRI**));
         bi_array(&blk_tri_a,gmax[idir1],gmax[idir2],sizeof(TRI**));
 
-	crx_l = (nb == 0) ? grid->L[dir] - 0.5*grid->h[dir] : 
+	crx_l = (nb == 0) ? grid->L[dir] - 0.5*grid->h[dir] :
 			    grid->U[dir] - 0.5*grid->h[dir];
-	crx_u = (nb == 0) ? grid->L[dir] + 0.5*grid->h[dir] : 
+	crx_u = (nb == 0) ? grid->L[dir] + 0.5*grid->h[dir] :
 			    grid->U[dir] + 0.5*grid->h[dir];
 
 	ns = 0;
@@ -1203,7 +1203,7 @@ LOCAL boolean append_buffer_surface2(
                 }
                 if (nbt_s[i1][i2] == 0)
 		    continue;
-		
+
                 if (!match_tris_in_block(surf,adj_surf,grid,
 					 blk_tri_s[i1][i2],blk_tri_a[i1][i2],
 					 nbt_s[i1][i2],nb,p_table,p_size))
@@ -1221,7 +1221,7 @@ LOCAL boolean append_buffer_surface2(
 
 	/*printf("#append_buffer_surface\n"); */
 	adj_surf = copy_buffer_surface(adj_surf,p_table,p_size);
-        
+
 	for (i1 = 0; i1 < gmax[idir1]; ++i1)
         {
             for (i2 = 0; i2 < gmax[idir2]; ++i2)
@@ -1325,7 +1325,7 @@ LOCAL	boolean tri_in_matching_strip(
 	for (i = 0; i < 3; ++i)
 	    tri_center += Coords(Point_of_tri(tri)[i])[dir];
 	tri_center /= 3.0;
-	if (((crx_l - ltol[dir]) <= tri_center        ) && 
+	if (((crx_l - ltol[dir]) <= tri_center        ) &&
 	    ((        tri_center <= (crx_u + ltol[dir]))))
 	    return YES;
 	else
@@ -1418,13 +1418,13 @@ LOCAL void clip_intfc_at_grid_bdry2(
 	{
 	    L[dir] = gr->L[dir] - 0.5*gr->h[dir];
 	    U[dir] = gr->U[dir] + 0.5*gr->h[dir];
-	    
+
 	    if(rect_boundary_type(intfc,dir,0) == OPEN_BOUNDARY)
 		L[dir] = gr->VL[dir] - 0.5*gr->h[dir];
 	    if(rect_boundary_type(intfc,dir,1) == OPEN_BOUNDARY)
 		U[dir] = gr->VU[dir] + 0.5*gr->h[dir];
 	}
-	
+
 	for (dir = 0; dir < dim; ++dir)
 	{
 	    for (nb = 0; nb < 2; ++nb)
@@ -1435,7 +1435,7 @@ LOCAL void clip_intfc_at_grid_bdry2(
 
 	/*#bjet2  cut the 3 comp curve */
 	cut_out_curves_in_buffer(intfc);
-	
+
 	reset_intfc_num_points(intfc);
 	set_current_interface(cur_intfc);
 	DEBUG_LEAVE(clip_intfc_at_grid_bdry2)
@@ -1560,8 +1560,13 @@ LOCAL	boolean  reflect_buffer_interface(
 
 	nor[dir] = 1.0;
 	posn[dir] = (nb == 0) ? gr->L[dir] : gr->U[dir];
+    rfl_intfc->contactangle = intfc->contactangle;
 	reflect_interface(rfl_intfc,posn,nor);
-
+    // TODO && FIXME:
+    /*
+    char *out_name = "rfl_intfc";
+    vtk_interface_plot(out_name, rfl_intfc, NO, 0, 0, 'R');
+    */
 	if (!append_rfl_intfc_to_buffer(intfc,rfl_intfc,gr,&dual_gr,dir,nb))
 	{
 	    status = FUNCTION_FAILED;
@@ -1849,7 +1854,7 @@ LOCAL	boolean reconstruct_tris_in_rfl_block(
 	int   side, rside;
 	int   i, j, j1, j2;
 
-	bs = (nb == 0) ? gr->L[dir] + 0.5*gr->h[dir] : 
+	bs = (nb == 0) ? gr->L[dir] + 0.5*gr->h[dir] :
 			 gr->U[dir] - 0.5*gr->h[dir];
 
 	for (i = 0; i < *nt; ++i)
@@ -2163,7 +2168,7 @@ LOCAL   boolean match_tris_in_block(
                         hae = Hyper_surf_element(ta);
 			hs = Hyper_surf(ss);
 			ha = Hyper_surf(sa);
-			
+
 			/*#bjet2  used to deactivate the boundary point average. */
 			set_full_average(NO);
 			(void) average_points(NO,ps,hse,hs,pa,hae,ha);
@@ -2178,7 +2183,7 @@ LOCAL   boolean match_tris_in_block(
 		    printf("#match %p %p   %p %p\n", ts, ss, ta, sa);
 		    print_tri(ts,ss->interface);
 		    print_tri(ta,sa->interface);
-		
+
 		    print_tri_states(ts, Hyper_surf(ss));
 		    print_tri_states(ta, Hyper_surf(sa));
 		}
@@ -2213,7 +2218,7 @@ LOCAL   boolean match_tris_in_block(
 	}
 	DEBUG_LEAVE(match_tris_in_block)
 	return YES;
-	
+
 }	/* end match_tris_in_block */
 
 LOCAL	double dist2_between_tris(
@@ -2288,7 +2293,7 @@ LOCAL	boolean matching_tris(
 		*i_rot = i;
 		return YES;
 	    }
-		
+
 	}
 	return NO;
 }	/* end matching_tris */

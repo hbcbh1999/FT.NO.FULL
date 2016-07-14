@@ -45,6 +45,8 @@ extern void setInitialIntfc(
         case TWO_FLUID_RS_SY:
             level_func_pack->is_RS_SY = YES;
             initRSSYIntfc(front,level_func_pack,inname);
+            // TODO && FIXME: computeSourceTerm
+            iFparams->ifluid_type = TWO_FLUID_RS_SY;
             break;
         case CHANNEL_FLOW:
             initChannelFlow(front,level_func_pack,inname);
@@ -185,6 +187,7 @@ static void initRSSYIntfc(
 
         level_func_pack->neg_component = LIQUID_COMP1;
         level_func_pack->pos_component = LIQUID_COMP2;
+        // TODO && FIXME: REFLECTION BOUNDARY CONDITION
         level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
         CursorAfterString(infile,"Enter mean position of fluid interface:");
         fscanf(infile,"%lf",&level_func_params.z0);
@@ -244,6 +247,8 @@ static void initRSSYIntfc(
         //TODO && FIXME: Need to check contact angle and meniscus : if contact angle is 0, then no meniscus.
         if (level_func_params.contact_angle == 0.0)
             level_func_params.Meniscus = 0.0;
+        front->contactangle = level_func_params.contact_angle;
+        printf("in function %s Contact Angle is %24.24f\n", __func__, front->contactangle);
 
         // TODO && FIXME: This was missing.
         iFparams->width_idl = 0;

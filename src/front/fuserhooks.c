@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -199,6 +199,7 @@ EXPORT	boolean	form_subintfc_via_communication(
 {
 	if (fr == NULL || fr->interf == NULL)
 	    return FUNCTION_FAILED;
+    fr->interf->contactangle = fr->contactangle;
 	return (*f_user_interface(fr->interf)._form_subintfc_via_communication)(fr);
 	/* f_intfc_communication3d called */
 }		/*end form_subintfc_via_communication*/
@@ -340,10 +341,10 @@ EXPORT	void	set_phys_ocurves_to_null(
 
 EXPORT	void	GetFrontCurvature(
         POINT                   *p,
-        HYPER_SURF_ELEMENT      *hse,         
+        HYPER_SURF_ELEMENT      *hse,
 	HYPER_SURF              *hs,
 	double			*curvature,
-        Front                   *fr) 
+        Front                   *fr)
 {
 	*curvature = mean_curvature_at_point(p,hse,hs,fr);
 }	/* end GetFrontCurvature */
@@ -398,7 +399,7 @@ EXPORT	void  set_normal_function(
 	INTERFACE       *intfc)
 {
 	if (intfc != NULL)
-	    (*f_user_interface(intfc)._set_normal_function)(s,nf,intfc);   
+	    (*f_user_interface(intfc)._set_normal_function)(s,nf,intfc);
 }		/*end set_tangent_function*/
 
 EXPORT	void  set_tangent_function(
@@ -407,7 +408,7 @@ EXPORT	void  set_tangent_function(
 	INTERFACE        *intfc)
 {
 	if (intfc != NULL)
-	    (*f_user_interface(intfc)._set_tangent_function)(s,tf,intfc);   
+	    (*f_user_interface(intfc)._set_tangent_function)(s,tf,intfc);
 }		/*end set_tangent_function*/
 
 EXPORT	void	normal(

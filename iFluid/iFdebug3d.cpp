@@ -32,6 +32,8 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition(void)
     int i,j,k,l,index;
     COMPONENT comp;
     double coords[MAXD];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     FT_MakeGridIntfc(front);
     setDomain();
@@ -82,7 +84,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition(void)
 	    index = d_index3d(i,j,k,top_gmax);
 	    array[index] = cell_center[index].m_state.m_U[l];
 	}
-	scatMeshArray();
+	scatMeshArray(reflect);
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
@@ -128,7 +130,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition(void)
 	array[index] = cell_center[index].m_state.m_P - averagep;
 	averagep_test += array[index] * cellVolume;
     }
-    scatMeshArray();
+    scatMeshArray(reflect);
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -149,7 +151,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition(void)
 
 /*
 void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
-{   
+{
     printf("\nEnter 3D_Debug::setInitialCondition_vd()\n");
     int i,j,k,l,index;
     COMPONENT comp;
@@ -326,6 +328,8 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
     int i,j,k,l,index;
     COMPONENT comp;
     double coords[MAXD];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     FT_MakeGridIntfc(front);
     setDomain_vd();
@@ -386,7 +390,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
 
         cell_center[index].m_state.m_Dcoef = m_Dcoef[0];
         cell_center[index].m_state.m_mu = m_mu[0];
-    }      
+    }
     front->dt = 0.0;
 
     //scatter states
@@ -399,7 +403,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             array[index] = cell_center[index].m_state.m_U[l];
         }
-        scatMeshArray();
+        scatMeshArray(reflect);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -416,7 +420,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index3d(i,j,k,top_gmax);
         array[index] = cell_center[index].m_state.m_P;
     }
-    scatMeshArray();
+    scatMeshArray(reflect);
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -433,7 +437,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index3d(i,j,k,top_gmax);
         array[index] = cell_center[index].m_state.m_Dcoef;
     }
-    scatMeshArray();
+    scatMeshArray(reflect);
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -449,7 +453,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index3d(i,j,k,top_gmax);
         array[index] = cell_center[index].m_state.m_mu;
     }
-    scatMeshArray();
+    scatMeshArray(reflect);
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -465,7 +469,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index3d(i,j,k,top_gmax);
         array[index] = cell_center[index].m_state.m_rho;
     }
-    scatMeshArray();
+    scatMeshArray(reflect);
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -482,7 +486,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index3d(i,j,k,top_gmax);
         array[index] = cell_center[index].m_state.m_c;
     }
-    scatMeshArray();
+    scatMeshArray(reflect);
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -517,7 +521,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::setInitialCondition_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
-        FT_ParallelExchGridArrayBuffer(source,front);
+        FT_ParallelExchGridArrayBuffer(source,front,reflect);
 
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -683,11 +687,11 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::solve_vd(double dt)
 
         start_clock("setSmoothedPropertiesOnePhase_vd");
         setSmoProOnePhase_vd();
-        stop_clock("setSmoothedPropertiesOnePhase_vd"); 
+        stop_clock("setSmoothedPropertiesOnePhase_vd");
         if (debugging("trace"))
         printf("Passed setSmoothedProperties_vd_OnePhase()\n");
 
-        // 1) solve for intermediate U, density and concentration 
+        // 1) solve for intermediate U, density and concentration
         // solve for estimated adv terms using lagged source term
         start_clock("compAdvectionTerm_coupled_vd(0)");
         compAdvectionTerm_coupled_vd(0);
@@ -802,7 +806,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::solve_vd(double dt)
 /*
         start_clock("setSmoothedPropertiesOnePhase_vd");
         setSmoProOnePhase_vd();
-        stop_clock("setSmoothedPropertiesOnePhase_vd"); 
+        stop_clock("setSmoothedPropertiesOnePhase_vd");
         if (debugging("trace"))
         printf("Passed setSmoothedPropertiesOnePhase_vd()\n");
 */
@@ -820,7 +824,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::solve_vd(double dt)
 
         while (ite_num < tol_num)
         {
-            // 1) solve for intermediate U, density and concentration 
+            // 1) solve for intermediate U, density and concentration
             // solve for approximated adv terms using lagged source term
             start_clock("compAdvectionTerm_MAC_decoupled_vd(0)");
             compAdvectionTerm_MAC_decoupled_vd(0,bGhostCell);
@@ -1577,7 +1581,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::saveStates_Tecplot_vd(
    save states into a file
 format:
 gridsize[0]      gridsize[1]
-U[0]   U[1]   U[2]   rho   c   
+U[0]   U[1]   U[2]   rho   c
 cellArea
 */
 //saveStates_Tecplot_MAC_vd (for variable density, mesh doubling on single proc)
@@ -1623,11 +1627,11 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::saveStates_Tecplot_vd(
     {
         index = d_index3d(i,j,k,top_gmax);
         state = cell_center[index].m_state;
-        fprintf(hfile, "%12.8e  %12.8e  %12.8e  %12.8e  %12.8e \n", 
+        fprintf(hfile, "%12.8e  %12.8e  %12.8e  %12.8e  %12.8e \n",
                 state.m_U[0], state.m_U[1], state.m_U[2], state.m_rho, state.m_c);
     }
 
-    cellArea = dx*dy*dz; 
+    cellArea = dx*dy*dz;
     fprintf(hfile, "%12.8e\n", cellArea);
 
     fclose(hfile);
@@ -1638,7 +1642,7 @@ void Incompress_Solver_Smooth_3D_Cartesian_Debug::saveStates_Tecplot_vd(
    save states into a file
 format:
 gridsize[0]      gridsize[1]
-U[0]   U[1]   U[2]   rho   c   
+U[0]   U[1]   U[2]   rho   c
 cellArea
 */
 //saveStates_Tecplot_MAC_vd (for variable density, mesh doubling on multi proc's)
@@ -1868,6 +1872,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical_Debug::setInitialCondition(void)
     int i,j,k,index,l;
     COMPONENT comp;
     double coords[MAXD];
+        int reflect[MAXD];
+        reflect[0] = reflect[1] = reflect[2] = YES;
 
     FT_MakeGridIntfc(front);
     setDomain();
@@ -1919,7 +1925,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical_Debug::setInitialCondition(void)
 	    index = d_index3d(i,j,k,top_gmax);
 	    array[index] = cell_center[index].m_state.m_U[l];
 	}
-	scatMeshArray();
+	scatMeshArray(reflect);
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
@@ -1946,12 +1952,12 @@ void Incompress_Solver_Smooth_3D_Cylindrical_Debug::setInitialCondition(void)
 	totalVolume += cellVolume;
 	averagep += cell_center[index].m_state.m_P * cellVolume;
     }
-    
+
     pp_global_sum(&totalVolume, 1);
     pp_global_sum(&averagep, 1);
 
     printf("\nThe total volume is : %20.16g\n", totalVolume);
-    
+
     averagep = averagep/totalVolume;
 
     printf("\nThe integral of pressure is : %20.16g\n", averagep);
@@ -1966,8 +1972,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical_Debug::setInitialCondition(void)
 	array[index] = cell_center[index].m_state.m_P - averagep;
 	averagep_test += array[index] * cellVolume;
     }
-    scatMeshArray();
-    
+    scatMeshArray(reflect);
+
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
@@ -2027,7 +2033,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical_Debug::solve(double dt)
     //    // 1) solve for intermediate velocity
         start_clock("computeAdvection");
     //    computeAdvection();
- 
+
 	compAdvectionTerm_decoupled();
         stop_clock("computeAdvection");
     //    if (debugging("trace"))
@@ -2469,7 +2475,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical_Debug::saveStates_Tecplot(
 		coords = cell_center[index].m_coords;
 		r = coords[2];
 		cellVolume = r*top_h[0]*top_h[1]*top_h[2];
-		
+
 		getExactSolution(coords, t, state_exact);
 		average_exactp = average_exactp + state_exact.m_P*cellVolume;
 		totalVolume += cellVolume;

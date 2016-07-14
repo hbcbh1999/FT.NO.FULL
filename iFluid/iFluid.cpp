@@ -221,17 +221,19 @@ int main(int argc, char **argv)
 		char test_name[100];
 
 		printf("Passed FT_InitIntfc()\n");
+        /*
 		switch (f_basic.dim)
 		{
 		case 2:
 		    sprintf(test_name,"init_intfc-%d.xg",pp_mynode());
-		    xgraph_2d_intfc(test_name,front.interf);
+		    //xgraph_2d_intfc(test_name,front.interf);
 		    break;
 		case 3:
 		    sprintf(test_name,"init_intfc-%d.xg",pp_mynode());
 		    //gview_plot_interface("gv-init",front.interf);
 		    break;
 		}
+        */
 	    }
 	    read_iF_dirichlet_bdry_data(in_name,&front,f_basic);
             if (f_basic.dim < 3)
@@ -405,7 +407,9 @@ static  void ifluid_driver(
 	    if (debugging("trace"))
                 printf("Zeroth step: Before FT_Propagate() front->dt = %f,"
                         "l_cartesian->max_dt = %f\n",front->dt, l_cartesian->max_dt);
-            FT_Propagate(front);
+        // TODO && FIXME: Install Reflection Boundary Condition Constraint
+        //((Incompress_Solver_Smooth_3D_Cartesian*)l_cartesian)->enforceReflectionState();
+         FT_Propagate(front);
 
 	    if (debugging("trace"))
                 (void) printf("Zeroth step: Calling ifluid solve()\n");
@@ -503,6 +507,8 @@ static  void ifluid_driver(
             front->num_points = 0;
 
             start_clock("FT_Propagate");
+            // TODO && FIXME: Reflection Boundary Condition
+            //((Incompress_Solver_Smooth_3D_Cartesian*)l_cartesian)->enforceReflectionState();
             FT_Propagate(front);
             stop_clock("FT_Propagate");
 
@@ -646,6 +652,8 @@ static  void ifluid_driver(
 
                 front->restart_small_dt = NO;
                 start_clock("FT_Propagate");
+                // TODO && FIXME: Reflection Boundary Condition
+                //((Incompress_Solver_Smooth_3D_Cartesian*)l_cartesian)->enforceReflectionState();
                 FT_Propagate(front);
                 stop_clock("FT_Propagate");
 

@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -108,17 +108,17 @@ BOND    *b, *bn;
 
 	if(c->first->prev != NULL || c->last->next != NULL)
 	    printf("#test_curve_link, first or last != NULL.\n");
-	
+
 	for(b=c->first; b; b=b->next)
 	{
 	    bn = b->next;
 	    if(bn != NULL)
 	    {
 	        if(bn->start != b->end)
-	    	    printf("#test_curve_link, point error %p %p\n", 
+	    	    printf("#test_curve_link, point error %p %p\n",
 		        bn->start, b->end);
 		if(bn->prev != b)
-	    	    printf("#test_curve_link, link error %p %p %p\n", 
+	    	    printf("#test_curve_link, link error %p %p %p\n",
 		        b, bn, bn->prev);
 	    }
 	}
@@ -207,6 +207,7 @@ boolean  construct_reflect_bdry(
         set_current_interface(intfc);
         strip_subdomain_bdry_curves(intfc);
 
+
         for (i = 0; i < dim; ++i)
         {
             for (j = 0; j < 2; ++j)
@@ -232,6 +233,7 @@ else
 
                 clip_intfc_in_dir(intfc, i, j);
                 buf_intfc = cut_buf_interface1(intfc,i,j,me,him);
+                buf_intfc->contactangle = intfc->contactangle;
 
                     if(NO && i == 0 && j ==0 && pp_mynode() == 44)
                     {
@@ -669,7 +671,7 @@ void	flag_point_pos(
 		p = Point_of_tri(tri);
 		if(Point_order(p[i]) != 1)
 		    continue;
-		
+
 		crds = Coords(p[i])[dir];
 		if(crds > plane + tol)
 		    Point_order(p[i]) = nb == 0 ? -1 : -2;
@@ -693,7 +695,7 @@ void	cut_curve_along_line(
 	double	crds, a, b, tol;
 
 	tol = 0.01*min3(gr->h[0], gr->h[1], gr->h[2]);
-	
+
 	for (c = intfc->curves; c && *c; ++c)
 	{
 	    for (bd = (*c)->first; bd != NULL; bd = bd->next)
@@ -706,7 +708,7 @@ void	cut_curve_along_line(
 		    Point_order(p) = nb == 0 ? -2 : -1 ;
 		else
 		    Point_order(p) = 0;
-	
+
 		p = bd->end;
 		crds = Coords(p)[dir];
 		if(crds > plane + tol)
@@ -725,21 +727,21 @@ cut_curve:
 		    continue;
 		if(Point_order(p1) == 0 || Point_order(p2) == 0)
 		    continue;
-		
+
 		a = fabs(Coords(p1)[dir]-plane);
 		b = fabs(Coords(p2)[dir]-plane);
 		newp = copy_point(p1);
 
 		Coords(newp)[dir] = plane;
-		Coords(newp)[Next_m3(dir)] = 
+		Coords(newp)[Next_m3(dir)] =
 		    b*Coords(p1)[Next_m3(dir)] + a*Coords(p2)[Next_m3(dir)];
 		Coords(newp)[Next_m3(dir)] /= (a+b);
-		    
-		Coords(newp)[Prev_m3(dir)] = 
+
+		Coords(newp)[Prev_m3(dir)] =
 		    b*Coords(p1)[Prev_m3(dir)] + a*Coords(p2)[Prev_m3(dir)];
 		Coords(newp)[Prev_m3(dir)] /= (a+b);
 		Point_order(newp) = 0;
-	
+
 		insert_point_in_bond(newp, bd, *c);
 		goto cut_curve;
 	    }
@@ -758,10 +760,10 @@ void	flag_null_on_line_tris(
 	POINT	**p;
 
 	flag_point_pos(plane, dir, nb, s, intfc);
-	
+
 	for(tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
 	    Tri_order(tri) = 0;
-	
+
 	for(tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
 	    for(i=0; i<3; i++)
 	    {
@@ -814,7 +816,7 @@ void	set_surf_edge_cut(
 		Tri_order(tri) = -2;
 		continue;
 	    }
-	    
+
 	    //no outside point, keep tri
 	    if(pf[0] != -2 && pf[1] != -2 && pf[2] != -2)
 	    {
@@ -836,13 +838,13 @@ void	set_surf_edge_cut(
 		else //1 in and 1 out
 		{
 		    edge_cut[nt][i].fg = 0;
-		   
+
 		    //check if edge crx is calculated by the neighbor tri
 		    nbtri = Tri_on_side(tri, i);
 		    if(nbtri != NULL && Tri_order(nbtri) >= 0)
 		    {
 			k = Tri_order(nbtri);
-			edge_cut[nt][i].pt = 
+			edge_cut[nt][i].pt =
 			    edge_cut[k][neighbor_tri_side(nbtri,tri)].pt;
 		    }
 		    else
@@ -852,17 +854,17 @@ void	set_surf_edge_cut(
 			newp = copy_point(p[i]);
 
 			Coords(newp)[dir] = plane;
-			Coords(newp)[Next_m3(dir)] = 
+			Coords(newp)[Next_m3(dir)] =
 			    b*Coords(p[i])[Next_m3(dir)] + a*Coords(p[j])[Next_m3(dir)];
 			Coords(newp)[Next_m3(dir)] /= (a+b);
-		    
-			Coords(newp)[Prev_m3(dir)] = 
+
+			Coords(newp)[Prev_m3(dir)] =
 			    b*Coords(p[i])[Prev_m3(dir)] + a*Coords(p[j])[Prev_m3(dir)];
 			Coords(newp)[Prev_m3(dir)] /= (a+b);
-		   
+
 			interpolate_crx_pt_states_on_edge(intfc,newp,tri,s,i);
-			
-			edge_cut[nt][i].pt = newp; 
+
+			edge_cut[nt][i].pt = newp;
 		    }
 		}
 	    }
@@ -888,16 +890,16 @@ void	cut_surf_along_line(
 	for(tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
 	    if(Tri_order(tri) >= 0)
 		tris[nt++] = tri;
-	
+
 	for(i=0; i<nt; i++)
 	    cut_split_tris(new_tris, tris[i], s, edge_cut);
-	
+
 	for(tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
 	    if(Tri_order(tri) == -2)
 		remove_tri_from_surface(tri,s,NO);
-	
+
 }
-		
+
 void	cut_intfc_along_bdry(int, int, INTERFACE*);
 
 void	cut_intfc_along_bdry(
@@ -912,7 +914,7 @@ void	cut_intfc_along_bdry(
 	INTERFACE	*sav_intfc = current_interface();
 
 	DEBUG_ENTER(cut_intfc_along_bdry)
-	
+
 	set_current_interface(intfc);
 
 	if(edge_cut == NULL)
@@ -922,15 +924,15 @@ void	cut_intfc_along_bdry(
 	    plane = gr->L[dir] + 0.5*gr->h[dir];
 	else
 	    plane = gr->U[dir] - 0.5*gr->h[dir];
-       
+
 	cut_curve_along_line(dir, nb, plane, intfc);
-	
+
 	for(s = intfc->surfaces; s && *s; ++s)
 	{
 	    set_surf_edge_cut(edge_cut,plane,dir,nb,*s,intfc);
 	    cut_surf_along_line(*s, edge_cut);
 	}
-	
+
 	{
 	CURVE	**c;
 	BOND	*bs;
@@ -956,7 +958,7 @@ void	cut_intfc_along_bdry(
 	}
 
 	cut_out_curves_in_buffer(intfc);
-	
+
 	set_current_interface(sav_intfc);
 
 	DEBUG_LEAVE(cut_intfc_along_bdry)
@@ -976,10 +978,10 @@ void	flag_buffer_tris(
 	    plane = gr->L[dir] + 0.5*gr->h[dir];
 	else
 	    plane = gr->U[dir] - 0.5*gr->h[dir];
-        
+
 	for(s = intfc->surfaces; s && *s; ++s)
 	    flag_null_on_line_tris(plane, dir, nb, *s, intfc);
-	
+
 	DEBUG_LEAVE(cut_intfc_along_bdry)
 }
 
@@ -1004,12 +1006,12 @@ void	make_ref_strip(
 		    p = Point_of_tri(tri)[i];
 		    Cor_point(p) = NULL;
 	        }
-      
+
 	for (s = intfc->surfaces; s && *s; ++s)
 	    make_ref_strip_for_surf(pt, nor, *s, intfc);
 
 	//do not know the order of btris constructed in the above function
-	//is consistent with the previous ones, must order interface. 
+	//is consistent with the previous ones, must order interface.
 	order_interface(intfc);
 	set_current_interface(sav_intfc);
 }
@@ -1027,7 +1029,7 @@ void	reflect_btris_on_curve(
 	BOND		*b;
 	Locstate	st;
 
-	//reflect btri states 
+	//reflect btri states
 	for(b=c->first; b != NULL; b=b->next)
 	{
 	    for(btris=Btris(b); btris && *btris; btris++)
@@ -1048,7 +1050,7 @@ void	reflect_btris_on_curve(
 		    reflect_state(right_start_btri_state(*btris), intfc,
 			    Coords(b->end), p, nor);
 		}
-		
+
 		swap_pointers(left_start_btri_state(*btris), left_end_btri_state(*btris));
 		swap_pointers(right_start_btri_state(*btris), right_end_btri_state(*btris));
 	    }
@@ -1075,7 +1077,7 @@ void	reflect_curves_on_intfc(
 	double		*nor)
 {
 	CURVE		**c;
-	
+
 	for(c=intfc->curves; c && *c; c++)
 	{
 	    reverse_curve(*c);
@@ -1094,7 +1096,7 @@ BOND	*reflect_curve_bond(
 	int		dir;
 
 	b = NULL;
-	for(c=intfc->curves; c && *c; c++)	
+	for(c=intfc->curves; c && *c; c++)
 	{
 	    if((*c)->first->start == p)
 	    {
@@ -1135,7 +1137,7 @@ BOND	*reflect_curve_bond(
 	{
 	    //print_general_vector("p", Coords(p), 3, "\n");
 	    //print_general_vector("pf", Coords(pf), 3, "\n");
- 
+
 	    bnew = Bond(pf, p);
 	    bnew->next = b;
 	    curve->first = bnew;
@@ -1147,7 +1149,7 @@ BOND	*reflect_curve_bond(
 
 	//printf("#after curve\n");
 	//print_curve(curve);
-	
+
 	*ref_cur = curve;
 	return bnew;
 }
@@ -1226,7 +1228,7 @@ void	make_ref_strip_for_surf(
 	for (tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
 	{
 	    for(j=0; j<3; j++)
-		if(!is_side_bdry(tri,j) && 
+		if(!is_side_bdry(tri,j) &&
 		    (Tri_order(tri) & Bin_side(j)) != 0 )
 		    printf("#tria %d  %d  %d\n", Tri_on_side(tri,j), tri, j);
 	}
@@ -1239,8 +1241,8 @@ void	make_ref_strip_for_surf(
 	    {
 		if((Tri_order(tri) & Bin_side(i)) == 0)
 		    continue;
-	
-		//printf("#tri %d %d\n", tri, i);	
+
+		//printf("#tri %d %d\n", tri, i);
 		p1 = Point_of_tri(tri)[i];
 		if(Cor_point(p1) == NULL)
 		{
@@ -1269,7 +1271,7 @@ void	make_ref_strip_for_surf(
 
 		//printf("1  %d\n", Tri_order(tri));
 		//print_tri(tri, intfc);
-		
+
 		new_tri1 = make_tri(p2,p1,p2f,NULL,NULL,NULL,NO);
 		//print_tri(new_tri1, intfc);
 
@@ -1284,20 +1286,20 @@ void	make_ref_strip_for_surf(
 		//printf("3\n");
 		nt = set_tri_list_around_point(p1, tri, &ptris, intfc);
 		link_neighbor_null_side_tris(ptris[nt-1], new_tri2);
-		
+
 		//print_tri(ptris[nt-1], intfc);
 		if(Boundary_point(p2))
 		    contruct_ref_btri(new_tri1, s, p2, p2f, pt, nor, intfc);
-		
+
 		//printf("4 %d %d\n", new_tri1, new_tri2);
 		//print_tri(tri, intfc);
 		nt = set_tri_list_around_point(p2, tri, &ptris, intfc);
 		link_neighbor_null_side_tris(ptris[0], new_tri1);
-		
+
 		//printf("#link1 %d\n", Boundary_point(p1));
 		if(Boundary_point(p1))
 		    contruct_ref_btri(new_tri2, s, p1, p1f, pt, nor, intfc);
-	
+
 		//print_tri(ptris[0], intfc);
 	    }
 
@@ -1316,14 +1318,14 @@ void   clip_intfc_in_dir(
 	double		L[MAXD],U[MAXD];
 
 	DEBUG_ENTER(clip_intfc_in_dir)
-	
+
 	set_current_interface(intfc);
-	
+
 	L[dir] = gr->L[dir];
 	U[dir] = gr->U[dir];
 	if (gr->lbuf[dir] == 0) L[dir] -= 0.5*gr->h[dir];
 	if (gr->ubuf[dir] == 0) U[dir] += 0.5*gr->h[dir];
-	    
+
 	if(rect_boundary_type(intfc,dir,0) == OPEN_BOUNDARY)
 	{
 	    L[dir] = gr->VL[dir];
@@ -1336,12 +1338,12 @@ void   clip_intfc_in_dir(
 	    if(debugging("ref_scat"))
 		U[dir] += 4.0*gr->h[dir];
 	}
-	
+
 	open_null_sides1(intfc,L,U,dir,nb);
-	
+
 	reset_intfc_num_points(intfc);
 	set_current_interface(cur_intfc);
-	
+
 	DEBUG_LEAVE(clip_intfc_in_dir)
 }
 
@@ -1371,11 +1373,11 @@ void	extend_long_ref_side(
 	double		*pt,
 	double		*nor,
 	int		dir,
-	INTERFACE	*intfc, 
+	INTERFACE	*intfc,
 	Front		*fr)
 {
 	SURFACE		**s;
-        
+
 	for (s = intfc->surfaces; s && *s; ++s)
 	    extend_long_ref_side_for_surf(pt, nor, dir, *s, intfc, fr);
 }
@@ -1385,7 +1387,7 @@ void	extend_long_ref_side_for_surf(
 	double		*nor,
 	int		dir,
 	SURFACE		*s,
-	INTERFACE	*intfc, 
+	INTERFACE	*intfc,
 	Front		*fr)
 {
 	TRI		*tri, **ptris, *new_tri1, *new_tri2;
@@ -1398,7 +1400,7 @@ void	extend_long_ref_side_for_surf(
 
 	if(ans == NULL)
 	    scalar(&ans, fr->sizest);
-	
+
 	hmin = min3(gr->h[0], gr->h[1], gr->h[2]);
 	tol = 0.7;
 
@@ -1409,7 +1411,7 @@ void	extend_long_ref_side_for_surf(
 	    {
 		if((Tri_order(tri) & Bin_side(i)) == 0)
 		    continue;
-		
+
 		p1 = Point_of_tri(tri)[i];
 		difference(Coords(p1), pt, v, 3);
 		len = fabs(Dot3d(v, nor));
@@ -1440,18 +1442,18 @@ void	extend_long_ref_side_for_surf(
 
 	    if((Tri_order(tri) & Bin_side(side)) == 0)
 		continue;
-	    
+
 	    p = Point_of_tri(tri)[side];
 	    pf = copy_point(p);
 	    reflect_point(pf, pt, nor, intfc);
-	    
+
 	    Coords(pf)[dir] = Coords(pf)[dir]/3.0 + Coords(p)[dir]*2.0/3.0;
-	    
-	    bi_interpolate_intfc_states(intfc, 1.0/3.0, 2.0/3.0, 
+
+	    bi_interpolate_intfc_states(intfc, 1.0/3.0, 2.0/3.0,
 		Coords(pf), left_state(pf), Coords(p), left_state(p), ans);
 	    ft_assign(left_state(pf), ans, fr->sizest);
-	    
-	    bi_interpolate_intfc_states(intfc, 1.0/3.0, 2.0/3.0, 
+
+	    bi_interpolate_intfc_states(intfc, 1.0/3.0, 2.0/3.0,
 		Coords(pf), right_state(pf), Coords(p), right_state(p), ans);
 	    ft_assign(right_state(pf), ans, fr->sizest);
 
@@ -1464,23 +1466,23 @@ void	extend_long_ref_side_for_surf(
 	    //print_tri(new_tri1, intfc);
 
 	    link_neighbor_null_side_tris(new_tri1,tri);
-            
+
 	    j = Vertex_of_point(new_tri1,pf);
 	    Tri_order(new_tri1) = Bin_side(j);
-	    
+
 	    nt1 = set_tri_list_around_point(p, tri, &ptris, intfc);
 	    j = Vertex_of_point(ptris[nt1-1], p);
-	    
+
 	    p1 = Point_of_tri(ptris[nt1-1])[Prev_m3(j)];
 	    new_tri2 = make_tri(p, p1, pf, NULL,NULL,NULL,NO);
 	    insert_tri_at_tail_of_list(new_tri2,s);
-	    
+
 	    //print_tri(ptris[nt1-1], intfc);
 	    //print_tri(new_tri2, intfc);
 
 	    link_neighbor_null_side_tris(new_tri2,ptris[nt1-1]);
 	    link_neighbor_null_side_tris(new_tri1,new_tri2);
-	    
+
 	    j = Vertex_of_point(new_tri2,p1);
 	    Tri_order(new_tri2) = Bin_side(j);
 
@@ -1500,7 +1502,7 @@ void sep_common_pt_for_ref_bdry(
 	int			i, j, nt, num;
 	double			tmp_fac, cut_plane, crds;
 	double			tol = tol1[dir];
-	
+
 	cut_plane = nb==0 ? -HUGE_VAL : HUGE_VAL;
 
 	nt = 0;
@@ -1559,7 +1561,7 @@ void sep_common_pt_for_ref_bdry(
 			    if(p1[0] == p[i] || p1[1] == p[i] || p1[2] == p[i])
 				break;
 			}
-		
+
 			//p is a point of tri on ref bdry
 			if(j<num)
 			{
@@ -1576,7 +1578,7 @@ void sep_common_pt_for_ref_bdry(
 		}
 	    }
 	}
-	
+
 	tmp_fac = get_comm_pt_fac();
 	set_comm_pt_fac(0.999);
 	if(nt > 0)
@@ -1592,14 +1594,14 @@ void cut_buffer_tris_from_intfc(
 	SURFACE		**s;
 	RECT_GRID	*gr = computational_grid(intfc);
 	INTERFACE	*sav_intfc;
-	
+
 	sav_intfc = current_interface();
 
 	set_current_interface(intfc);
 
 	for (s = intfc->surfaces; s && *s; ++s)
 	    cut_buffer_tris(*s, gr, dir, nb);
-	
+
 	{
 	CURVE	**c;
 	BOND	*bs;
@@ -1644,7 +1646,7 @@ int cut_buffer_tris(
 	POINT	   **p;
 
 	DEBUG_ENTER(cut_bubber_tris)
-	
+
 	if (len_tris_s < surf->num_tri)
 	{
 	    len_tris_s = surf->num_tri;
@@ -1663,11 +1665,11 @@ int cut_buffer_tris(
 	ns = 0;
 	for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf); tri=tri->next)
 	{
-	    //if (tri_cross_line(tri,crx_coord,dir) == YES || 
+	    //if (tri_cross_line(tri,crx_coord,dir) == YES ||
 		//tri_bond_cross_test(tri,crx_coord,dir) == YES)
-	   
+
 	    //on reflect bdry and 3comp curve is perpendicular to the ref plane,
-	    //this condition is enough 
+	    //this condition is enough
 	    if (tri_cross_line(tri,crx_coord,dir) == YES)
 	    {
 		tris_s[ns++] = tri;
@@ -1679,7 +1681,7 @@ int cut_buffer_tris(
 			if(nbtri != NULL)
 			{
 			    for(j=0; j<3; j++)
-				if(!is_side_bdry(nbtri,j) && 
+				if(!is_side_bdry(nbtri,j) &&
 				    Tri_on_side(nbtri,j) == tri)
 				{
 				    Tri_order(nbtri) |= Bin_side(j);
@@ -1698,11 +1700,11 @@ int cut_buffer_tris(
 	    }
 
 	    p = Point_of_tri(tri);
-	    if(Point_order(p[0]) == -2 && 
+	    if(Point_order(p[0]) == -2 &&
 	       Point_order(p[1]) == -2 && Point_order(p[2]) == -2)
 		tris_s[ns++] = tri;
 	}
-	
+
 	for(i=0; i<ns; i++)
 	    //remove_out_domain_tri(tris_s[i], surf);
 	    remove_tri_from_surface(tris_s[i], surf, NO);
@@ -1711,13 +1713,13 @@ int cut_buffer_tris(
 	for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf); tri=tri->next)
 	{
 	    for(j=0; j<3; j++)
-		if(!is_side_bdry(tri,j) && 
+		if(!is_side_bdry(tri,j) &&
 		    (Tri_order(tri) & Bin_side(j)) != 0 )
 		    printf("#tri %d  %d  %d\n", Tri_on_side(tri,j), tri, j);
 	}
 	*/
 	//DEBUG_TMP printf("#nsna  %d  %d\n", ns, na);
-	
+
 	DEBUG_LEAVE(cut_buffer_tris)
 	return YES;
 }		/*end append_buffer_surface1*/
@@ -1725,13 +1727,13 @@ int cut_buffer_tris(
 void tecplot_surface_curve(FILE*, SURFACE*);
 char *  get_directory();
 char *  get_directory()
-{       
+{
 static char def_dir[200];
-        
+
         sprintf(def_dir, "/gpfs/home2/hklim/FronTier_Contactor/iFluid/tecout/")
-;           
+;
         return  def_dir;
-}       
+}
 
 LOCAL	boolean f_intfc_communication3d1(
 	Front		*fr)
@@ -1904,12 +1906,12 @@ LOCAL	boolean f_intfc_communication3d1(
 
 	    for (j = 0; j < 2; ++j)
 	    {
-		
+
 		status = FUNCTION_SUCCEEDED;
 		if (adj_intfc[j] != NULL)
 		{
 		    status = buffer_extension3d1(intfc,adj_intfc[j],i,j,status);
-                
+
 	            if (debugging("storage"))
 	            {
 	                printf("\n\nStorage after buffer_extension3d1() when (i j) %d %d in f_intfc_communication3d1()\n", i, j);
@@ -1922,7 +1924,7 @@ LOCAL	boolean f_intfc_communication3d1(
 	                totalNum = get_number_of_blockName(stdout, blockName);
 	                printf("number_of_%s = %d\n", blockName, totalNum);
 	                long_alloc_view(stdout);
-	            }   
+	            }
 
 		    if (!status)
                     {
@@ -1934,8 +1936,8 @@ LOCAL	boolean f_intfc_communication3d1(
 		    (void) delete_interface(adj_intfc[j]);
 		    set_current_interface(intfc);
 		}    //if (adj_intfc[j] != NULL)
-		
-		//surface in this direction can not mathch, return 
+
+		//surface in this direction can not mathch, return
 		status = pp_min_status(status);
 		if (!status) {
 		    //if !status for j = 0, then we have to delete adj_intfc[1] here.
@@ -1944,7 +1946,7 @@ LOCAL	boolean f_intfc_communication3d1(
 		    goto comm_exit;
 		}
 
-	    }	
+	    }
 	    reset_intfc_num_points(intfc);
 
             if (debugging("storage"))
@@ -2001,17 +2003,17 @@ EXPORT void install_subdomain_bdry_curves(
 	int	 dim = intfc->dim;
 
 	DEBUG_ENTER(install_subdomain_bdry_curves)
-	
+
 	sav_intrp = interpolate_intfc_states(intfc);
 	interpolate_intfc_states(intfc) = NO;
-	
+
 	for (s = intfc->surfaces; s && *s; ++s)
 	{
 	    while (null_side_on_surface(*s,&start_tri,&start_side))
 	    {
 		find_ending_null_side(start_tri,start_side,
 				&tri_start,&side_start);
-		
+
 		ps = Point_of_tri(tri_start)[side_start];
 	    	ns = make_node(ps);
 		pe = Point_of_tri(tri_start)[Next_m3(side_start)];
@@ -2020,10 +2022,10 @@ EXPORT void install_subdomain_bdry_curves(
 
 		hsbdry_type(curve) = SUBDOMAIN_HSBDRY;
 	    	install_curve_in_surface_bdry(*s,curve,POSITIVE_ORIENTATION);
-	    	
-		//printf("#c %d | %d  %d | %d  %d\n", curve_number(curve), 
+
+		//printf("#c %d | %d  %d | %d  %d\n", curve_number(curve),
 		//	ns, ne, ns->posn, ne->posn);
-		
+
 		null_tris[0] = tri_start;
 		ntris = 1;
 
@@ -2038,10 +2040,10 @@ EXPORT void install_subdomain_bdry_curves(
 		               "insert_point_in_bond() failed\n");
 			clean_up(ERROR);
 		    }
-		    
+
 		    ns->posn = b->start = p;
 		    set_bond_length(b,dim);
-	
+
 		    null_tris[ntris] = tri_start;
 		    ntris++;
 		    if(ntris >= MAX_SUBDOMAIN_TRIS)
@@ -2050,7 +2052,7 @@ EXPORT void install_subdomain_bdry_curves(
 			       "too many subdomain tris.\n");
 			clean_up(ERROR);
 		    }
-	    
+
 		    if (ns->posn == ne->posn) //Closed loop formed
 		    {
 			change_node_of_curve(curve,POSITIVE_ORIENTATION,ne);
@@ -2064,7 +2066,7 @@ EXPORT void install_subdomain_bdry_curves(
 			break;
 		    }
 		}
-		
+
 		//for(i=0, b=curve->first; b!=NULL; b=b->next, i++)
 		//{
 		//    printf("%d  %d %d\n", b, b->start, b->end);
@@ -2097,7 +2099,7 @@ EXPORT void install_subdomain_bdry_curves(
 			change_node_of_curve(*c,NEGATIVE_ORIENTATION,*n);
 		    for(c=(*n1)->out_curves; c && *c; c++)
 			change_node_of_curve(*c,POSITIVE_ORIENTATION,*n);
-		    
+
 		    if(!delete_node(*n1))
 		    {
 			printf("ERROR install_subdomain_bdry_curves "
@@ -2161,7 +2163,7 @@ void sep_common_pt_for_open_bdry(
 		}
 	    }
 	}
-	
+
 	tmp_fac = get_comm_pt_fac();
 	set_comm_pt_fac(0.999);
 	if(nt > 0)
@@ -2187,14 +2189,14 @@ EXPORT void install_subdomain_bdry_curves_org(
 	DEBUG_ENTER(install_subdomain_bdry_curves)
 	sav_intrp = interpolate_intfc_states(intfc);
 	interpolate_intfc_states(intfc) = NO;
-	
+
 	for (s = intfc->surfaces; s && *s; ++s)
 	{
 	    while (null_side_on_surface(*s,&start_tri,&start_side))
 	    {
 		find_ending_null_side(start_tri,start_side,
 				&tri_start,&side_start);
-		
+
 		ps = Point_of_tri(tri_start)[side_start];
 	    	ns = make_node(ps);
 		pe = Point_of_tri(tri_start)[Next_m3(side_start)];
@@ -2203,8 +2205,8 @@ EXPORT void install_subdomain_bdry_curves_org(
 
 		hsbdry_type(curve) = SUBDOMAIN_HSBDRY;
 	    	install_curve_in_surface_bdry(*s,curve,POSITIVE_ORIENTATION);
-	    	
-		//printf("#c %d | %d  %d | %d  %d\n", curve_number(curve), 
+
+		//printf("#c %d | %d  %d | %d  %d\n", curve_number(curve),
 		//	ns, ne, ns->posn, ne->posn);
 
 		if(curve_number(curve) == 1)
@@ -2219,13 +2221,13 @@ EXPORT void install_subdomain_bdry_curves_org(
 	    	b = curve->first;
 		tri_end = tri_start;
 		side_end = side_start;
-		
+
 		//following_null_tri uses CLOCKWISE
 		//insert_point_in_bond inserts point in the start of the curve
 		while((tri_start = find_following_null_tri(tri_start,&p,
 					&side_start,CLOCKWISE)) != NULL)
 		{
-		    //new bond is inserted in b->next, the bond_tri 
+		    //new bond is inserted in b->next, the bond_tri
 		    //of current bond is saved in bte.
 		    bte = Bond_tri_on_side(tri_end,side_end);
 		    if (insert_point_in_bond(ns->posn,b,curve) !=
@@ -2235,26 +2237,26 @@ EXPORT void install_subdomain_bdry_curves_org(
 		               "insert_point_in_bond() failed\n");
 			clean_up(ERROR);
 		    }
-		    
+
 		    ns->posn = b->start = p;
 		    set_bond_length(b,dim);
-		    
+
 		    btri = link_tri_to_bond(NULL,tri_end,*s,b->next,curve);
 		    copy_tri_state_to_btri(btri,b->next,
 		    		NEGATIVE_ORIENTATION,intfc);
 		    copy_tri_state_to_btri(btri,b->next,
 		    		POSITIVE_ORIENTATION,intfc);
-		    
+
 		    if(debugging("subdo_cur"))
 		        printf("#sub %p | %p %p   %p %p\n", btri,
 			    left_start_btri_state(btri), right_start_btri_state(btri),
 			    left_end_btri_state(btri), right_end_btri_state(btri));
-		    
+
 		    btri = bte;
 		    (void) link_tri_to_bond(btri,tri_start,*s,b,curve);
 		    copy_tri_state_to_btri(btri,b,NEGATIVE_ORIENTATION,intfc);
 		    copy_tri_state_to_btri(btri,b,POSITIVE_ORIENTATION,intfc);
-	
+
 		    if(debugging("subdo_cur"))
 		        printf("#btr %p | %p %p   %p %p\n",  btri,
 			    left_start_btri_state(btri), right_start_btri_state(btri),
@@ -2272,7 +2274,7 @@ EXPORT void install_subdomain_bdry_curves_org(
 			}
 			break;
 		    }
-	    
+
 		    tri_end = tri_start;
 		    side_end = side_start;
 		}
@@ -2296,7 +2298,7 @@ EXPORT void install_subdomain_bdry_curves_org(
 			change_node_of_curve(*c,NEGATIVE_ORIENTATION,*n);
 		    for(c=(*n1)->out_curves; c && *c; c++)
 			change_node_of_curve(*c,POSITIVE_ORIENTATION,*n);
-		    
+
 		    if(!delete_node(*n1))
 		    {
 			printf("ERROR install_subdomain_bdry_curves "
@@ -2510,7 +2512,7 @@ LOCAL 	int append_adj_intfc_to_buffer1(
 		free(p_table);
 	    uni_array(&p_table,len_p_table,sizeof(P_LINK));
 	}
-	
+
 	reset_hash_table(p_table,p_size);
 
             if (debugging("storage"))
@@ -2526,13 +2528,13 @@ LOCAL 	int append_adj_intfc_to_buffer1(
                 printf("number_of_%s = %d\n", blockName, totalNum);
                 long_alloc_view(stdout);
             }
-	
+
 	/* Begin patching adj_intfc to current interface */
 	for (as = adj_intfc->surfaces; as && *as; ++as)
 	{
 	    corr_surf_found = NO;
 	    if (wave_type(*as) == FIRST_SCALAR_PHYSICS_WAVE_TYPE && debugging("step_out"))
-	    {    
+	    {
 		add_to_debug("out_matching");
 	        printf("#out_mathcing\n");
 	    }
@@ -2545,7 +2547,7 @@ LOCAL 	int append_adj_intfc_to_buffer1(
 		*  presence of interface changes in topology
 		*  TODO: FULLY SUPPORT THIS OBJECT
 		*/
-                
+
 		//  assume one neg and pos comp gives ONLY ONE surf
 		if (surfaces_matched(*as,*s))
 		{
@@ -2554,11 +2556,11 @@ LOCAL 	int append_adj_intfc_to_buffer1(
 						   p_size))
 		    {
 			set_current_interface(cur_intfc);
-			
+
 			(void) printf("WARNING in "
 			              "append_adj_intfc_to_buffer1(), "
 			              "append surface failed\n");
-			
+
 			DEBUG_LEAVE(append_adj_intfc_to_buffer1)
 			return NO;
 		    }
@@ -2587,13 +2589,13 @@ LOCAL 	int append_adj_intfc_to_buffer1(
                 printf("number_of_%s = %d\n", blockName, totalNum);
                 long_alloc_view(stdout);
             }
-	
+
 	//printf("\n#merge_curve\n");
 	merge_curves(intfc);
 	//printf("#merge_curve af\n");
-	
+
 	set_current_interface(cur_intfc);
-	
+
 	DEBUG_LEAVE(append_adj_intfc_to_buffer1)
 	return YES;
 }		/*end append_adj_intfc_to_buffer1*/
@@ -2649,7 +2651,7 @@ LOCAL 	int append_adj_intfc_to_buffer1_old(
 	}
 
 	reset_hash_table(p_table,p_size);
-	
+
 	/* Begin patching adj_intfc to current interface */
 	for (s = intfc->surfaces; s && *s; ++s)
 	{
@@ -2670,7 +2672,7 @@ LOCAL 	int append_adj_intfc_to_buffer1_old(
 						   p_size))
 		    {
 			set_current_interface(cur_intfc);
-			
+
 			(void) printf("WARNING in "
 			              "append_adj_intfc_to_buffer1(), "
 			              "append surface failed\n");
@@ -2685,7 +2687,7 @@ LOCAL 	int append_adj_intfc_to_buffer1_old(
 			    (void) printf("adj_intfc\n");
 			    (void) print_interface(adj_intfc);
 			}
-			
+
 			DEBUG_LEAVE(append_adj_intfc_to_buffer1)
 			return NO;
 		    }
@@ -2742,7 +2744,7 @@ LOCAL int append_buffer_surface1(
 	static int len_tris_s = 0, len_tris_a = 0;
 
 	DEBUG_ENTER(append_buffer_surface1)
-	
+
 	if (DEBUG)
 	{
 	    (void) printf("dir = %d,nb = %d\n",dir,nb);
@@ -2751,11 +2753,11 @@ LOCAL int append_buffer_surface1(
 	    (void) printf("Buffer surface\n");
 	    print_surface(adj_surf);
 	}
-	
+
 	if(debugging("out_surf"))
 	{
 	    char   s[40];
-	    
+
 	    printf("#check curve_surf\n");
 	    check_surface_curve(surf);
 	    printf("#check_curve adj_surf\n");
@@ -2787,7 +2789,7 @@ LOCAL int append_buffer_surface1(
 	ns = na = 0;
 	for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf); tri=tri->next)
 	{
-	    if (tri_cross_line(tri,crx_coord,dir) == YES || 
+	    if (tri_cross_line(tri,crx_coord,dir) == YES ||
 		tri_bond_cross_test(tri,crx_coord,dir) == YES)
 	    {
 		tris_s[ns++] = tri;
@@ -2801,7 +2803,7 @@ LOCAL int append_buffer_surface1(
 	    }
 	}
 
-	for (tri = first_tri(adj_surf); !at_end_of_tri_list(tri,adj_surf); 
+	for (tri = first_tri(adj_surf); !at_end_of_tri_list(tri,adj_surf);
 	     tri = tri->next)
 	{
 	    if (tri_cross_line(tri,crx_coord,dir) == YES ||
@@ -2817,21 +2819,21 @@ LOCAL int append_buffer_surface1(
 	    new_adj_surf = copy_buffer_surface(adj_surf,p_table,p_size);
 	    adj_surf = new_adj_surf;
 	}
-	else 
+	else
 	{
 	    screen("WARNING in append_buffer_surface1(), can't match "
 	           "tris on with buffer surface\n");
 	    /*
 	    FILE  *fp;
 	    char  s[50];
-	
+
             sprintf(s, "%sapp_nsna_%d.plt", get_directory(), pp_mynode());
 	    printf("#error surface file %s\n", s);
 
 	    fp = fopen(s, "w");
 	    tecplot_show_tris("ns", tris_s, ns, fp);
 	    tecplot_show_tris("na", tris_a, na, fp);
-	    
+
 	    tecplot_surface(NULL, fp, surf);
 	    tecplot_surface(NULL, fp, adj_surf);
 	    fclose(fp);
@@ -2840,12 +2842,12 @@ LOCAL int append_buffer_surface1(
 	}
 
 	synchronize_tris_at_subdomain_bdry(tris_a,tris_s,ns,p_table,p_size);
-	
+
 	na = 0;
 	for (tri = first_tri(adj_surf); !at_end_of_tri_list(tri,adj_surf);
 	     tri = tri->next)
 	{
-	    if (tri_cross_line(tri,crx_coord,dir) == YES || 
+	    if (tri_cross_line(tri,crx_coord,dir) == YES ||
 		tri_bond_cross_test(tri,crx_coord,dir) == YES)
 	    {
 	        tris_a[na++] = tri;
@@ -2863,8 +2865,8 @@ LOCAL int append_buffer_surface1(
 	last_tri(surf)->next = first_tri(adj_surf);
 	first_tri(adj_surf)->prev = last_tri(surf);
 	link_tri_list_to_surface(first_tri(surf),last_tri(adj_surf),surf);
-	
-	// BEGIN curves in adj_surf should be added to surf. 
+
+	// BEGIN curves in adj_surf should be added to surf.
 	for(c=adj_surf->pos_curves; c && *c; c++)
 	    if(! delete_from_pointers(adj_surf, &(*c)->pos_surfaces))
 	    {
@@ -2952,7 +2954,7 @@ LOCAL	void	synchronize_tris_at_subdomain_bdry(
 				*/
 
 			        rotate_triangle(ts,(3-id)%3);
-				
+
 				if(debugging("ts_tst"))
 				{
 				    printf("#sync tris af\n");
@@ -2997,8 +2999,8 @@ LOCAL	boolean	tri_cross_line(
 	    max_coord = Coords(Point_of_tri(tri)[1])[dir];
 	if (max_coord < Coords(Point_of_tri(tri)[2])[dir])
 	    max_coord = Coords(Point_of_tri(tri)[2])[dir];
-	
-	return (((min_coord - crx_coord) <= crx_tol) && 
+
+	return (((min_coord - crx_coord) <= crx_tol) &&
 	        ((crx_coord - max_coord) <= crx_tol)) ? YES : NO;
 }		/*end tri_cross_line*/
 
@@ -3049,8 +3051,8 @@ POINT	*p;
 	if(j != 1)
 	    return NO;
 	n = set_tri_list_around_point(p, tri, &tris, tri->surf->interface);
-	
-	if(tri_bond_cross_line(tris[0],crx_coord,dir) && 
+
+	if(tri_bond_cross_line(tris[0],crx_coord,dir) &&
 	   tri_bond_cross_line(tris[n-1],crx_coord,dir) )
 	    return YES;
 	return NO;
@@ -3114,14 +3116,14 @@ LOCAL boolean match_tris_at_subdomain_bdry(
 		add_to_debug("app_tri");
 	    }
 	    */
-	    
+
 	    for (j = 0; j < ns; ++j)
 	    {
 	        ts = tri_s[j];
 	        if (match_two_tris(ts,ta))
 		{
 		    ma[i] = ms[j] = YES;
-		    
+
 		    if(debugging("app_tri"))
 		        printf("ns  %d \n", j);
 
@@ -3154,7 +3156,7 @@ LOCAL boolean match_tris_at_subdomain_bdry(
 	    for (i = 0; i < na; ++i)
 	    	if (ma[i] == NO)
 		    print_tri(tri_a[i],adj_surf->interface);
-	    
+
 	    DEBUG_LEAVE(match_tris_at_subdomain_bdry)
 	    clean_up(ERROR);
 	    return NO;
@@ -3224,7 +3226,7 @@ EXPORT	void merge_two_tris(
                {
                        if(Bond_on_side(ta,i) == NULL)
                            continue;
-		       
+
 	       	       printf("#merge_two_tris: bond on block face.\n");
 		       //set tri_neighbor btri
                        Bond_tri_on_side(ts,i) = btri = Bond_tri_on_side(ta,i);
@@ -3255,7 +3257,7 @@ EXPORT	void merge_two_tris(
 		    printf("#two null\n");
 		    print_tri(ts, s->interface);
 		    print_tri_states(ts, Hyper_surf(s));
-		    
+
 		    printf("#ta tri\n");
 		    print_tri(ta, s->interface);
 		    print_tri_states(ta, Hyper_surf(s));
@@ -3272,7 +3274,7 @@ EXPORT	void merge_two_tris(
 		    print_tri(ts, s->interface);
 		}
 		*/
-		
+
 		for (j = 0; j < 3; ++j)
 	    	{
 	    	    if (Tri_on_side(tri,j) == ta)
@@ -3280,7 +3282,7 @@ EXPORT	void merge_two_tris(
 	    	}
 	    }
 	}
-	
+
 	//remove ta from s tri list
 	remove_tri_from_surface(ta,s,NO);
 	if (DEBUG)
@@ -3341,7 +3343,7 @@ LOCAL boolean add_matching_pt_to_hash_table(
 		    (void) average_points(NO,pla->p,pla->hse,pla->hs,
 				          pls->p,pls->hse,pls->hs);
 		    set_full_average(YES);
-		    
+
 		    if (pla->prev == NULL)
 			plista = pla->next;
 		    else
@@ -3353,7 +3355,7 @@ LOCAL boolean add_matching_pt_to_hash_table(
 	    }
 	    //can not find a corresponding point in plista, in this case, we continue search
 	    //just set status = NO.
-	    if (pla == NULL) 
+	    if (pla == NULL)
 	        status = NO;
 	}
 	if (plista != NULL)
@@ -3379,14 +3381,14 @@ LOCAL boolean add_matching_pt_to_hash_table(
 			ps = Coords(pls->p);
 		    }
 		}
-		
+
 		print_general_vector("pa", pa, 3, "\n");
 		print_general_vector("ps", ps, 3, "\n");
 	    }
 	}
 
 	//printf("#status %d %d\n", status, tstn);
-	
+
 	return (ns == na) ? status : NO;
 }		/*end add_matching_pt_to_hash_table*/
 
@@ -3430,7 +3432,7 @@ LOCAL	POINT_LIST	*set_point_list(
 	for (i = 0; i < nt; ++i)
 	{
 	    tri = tris[i];
-	    
+
 	    p = Point_of_tri(tri);
 	    for (j = 0; j < 3; ++j)
 	    {
@@ -3443,7 +3445,7 @@ LOCAL	POINT_LIST	*set_point_list(
 	            pl->hs = hs;
 	            pl->hse = Hyper_surf_element(tri);
 	            sorted(pl->p) = YES;
-		    tstnum++; 
+		    tstnum++;
 		}
 	    }
 	}
@@ -3553,9 +3555,9 @@ EXPORT	CURVE *matching_curve(
 	for (cc = ns->out_curves; cc && *cc; ++cc)
 	    if (curves_match(*cc,ac,p_table,p_size))
 	        return *cc;
-	
+
 	c = copy_curve(ac,ns,ne);
-	
+
 	/*matching_node already put the starting and ending points in the hash table */
 	/*do not deal the starting and the ending points here. */
 	for (b = c->first, ab = ac->first; b != c->last && ab != ac->last;
@@ -3573,7 +3575,7 @@ EXPORT	CURVE *matching_curve(
 	    	(void) add_to_hash_table((POINTER)ap,(POINTER)b->end,
 					 p_table,p_size);
 	}
-	
+
 	test_curve_link(c);
 
 	return c;
@@ -3599,7 +3601,7 @@ EXPORT	boolean curves_match(
 	    if (p != b->end)
 		return NO;
 	}
-	
+
 	if(ab == NULL)
 	    return YES;	 /*curve in orginal intfc is longer or equal */
 	return NO;
@@ -3670,7 +3672,7 @@ EXPORT void open_null_sides1(
 	    {
 		ntri = tri->next;
 	    	/* bond with inside tri survives. */
-		if (tri_out_domain1(tri,L,U,dir,nb) && 
+		if (tri_out_domain1(tri,L,U,dir,nb) &&
 		    tri_bond_test(tri,L,U,dir,nb))
 	    	    remove_out_domain_tri(tri,*s);
 	    }
@@ -3798,7 +3800,7 @@ POINT	*p;
 	if(j != 1)
 	    return YES;
 	n = set_tri_list_around_point(p, tri, &tris, tri->surf->interface);
-	
+
 	if(!tri_bond_out_domain(tris[0],L,U,dir,nb)  &&
 	   !tri_bond_out_domain(tris[n-1],L,U,dir,nb) )
 	    return NO;
@@ -3824,7 +3826,7 @@ LOCAL void clip_intfc_at_grid_bdry1(
 	    U[dir] = gr->U[dir];
 	    if (gr->lbuf[dir] == 0) L[dir] -= 0.5*gr->h[dir];
 	    if (gr->ubuf[dir] == 0) U[dir] += 0.5*gr->h[dir];
-	    
+
 	    if(rect_boundary_type(intfc,dir,0) == OPEN_BOUNDARY)
 		L[dir] = gr->VL[dir];
 	    if(rect_boundary_type(intfc,dir,1) == OPEN_BOUNDARY)
@@ -3836,7 +3838,7 @@ LOCAL void clip_intfc_at_grid_bdry1(
             if(rect_boundary_type(intfc,dir,1) == REFLECTION_BOUNDARY)
                 U[dir] = gr->VU[dir];
 	}
-	
+
 	for (dir = 0; dir < dim; ++dir)
 	{
 	    for (nb = 0; nb < 2; ++nb)
@@ -3867,7 +3869,7 @@ LOCAL   boolean find_ending_null_side(
 
 	next_tri = start;
 	side = start_side;
-        
+
 	num_recorded_pts = 0;
         recorded_pts[0] = Point_of_tri(start)[side];
 
@@ -3883,7 +3885,7 @@ LOCAL   boolean find_ending_null_side(
 
 	    p = Point_of_tri(next_tri)[Next_m3(side)];
 	    recorded_pts[num_recorded_pts] = p;
-	    
+
 	    /*if a loop is found, return the ending tri and point. */
 	    for(i=0; i<num_recorded_pts; i++)
 	    {
@@ -3897,18 +3899,18 @@ LOCAL   boolean find_ending_null_side(
 	    p1 = p;
 	    next_tri1 = find_following_null_tri(next_tri,&p1,
 	                  &side1,COUNTER_CLOCK);
-	    
+
 	    /*hit another curve. */
 	    if (next_tri1 == NULL)
 	        break;
-	    
+
 	    next_tri = next_tri1;
 	    side = side1;
 	}
 
 	*tri_start = next_tri;
 	*side_start = side;
-	
+
 	free(recorded_pts);
 	return YES;
 }
@@ -3965,7 +3967,7 @@ LOCAL   boolean find_null_side_loop(
 		        return YES;
 		    }
 		}
-	    }		
+	    }
 	    if (p == recorded_pts[0]) break;
 	    next_tri = find_following_null_tri(next_tri,&p,
 	                  &side,COUNTER_CLOCK);
@@ -3992,10 +3994,10 @@ LOCAL void merge_point_pointers_at_subdomain_bdry(
 
         for (i = 0; i < nt; ++i)
 	{
-	    sorted(Point_of_tri(tris_s[i])[0]) = NO; 
+	    sorted(Point_of_tri(tris_s[i])[0]) = NO;
 	    sorted(Point_of_tri(tris_s[i])[1]) = NO;
 	    sorted(Point_of_tri(tris_s[i])[2]) = NO;
-	    sorted(Point_of_tri(tris_a[i])[0]) = NO; 
+	    sorted(Point_of_tri(tris_a[i])[0]) = NO;
 	    sorted(Point_of_tri(tris_a[i])[1]) = NO;
 	    sorted(Point_of_tri(tris_a[i])[2]) = NO;
 	}
@@ -4010,7 +4012,7 @@ LOCAL void merge_point_pointers_at_subdomain_bdry(
 						     p_table,p_size);
 		    if(p != Point_of_tri(tris_a[i])[j])
 		        printf("#merge_point  \n");
-		    
+
 		    Point_of_tri(tris_a[i])[j] = p;
 		    sorted(p) = YES;
 		}
@@ -4080,7 +4082,7 @@ size_t	 	sizest = size_of_state(intfc);
 		    return;
 		}
 	}
-	
+
 	for(c = n->in_curves; c && *c; c++)
 	{
 	    if(*c == btri->curve)
@@ -4162,7 +4164,7 @@ EXPORT void strip_subdomain_bdry_curves(
 	INTERFACE	*intfc)
 {
 	DEBUG_ENTER(strip_subdomain_bdry_curves)
-	
+
 	strip_bdry_curves(intfc, SUBDOMAIN_HSBDRY);
 
 	DEBUG_LEAVE(strip_subdomain_bdry_curves)
@@ -4229,7 +4231,7 @@ LOCAL void strip_curve_from_surf(
 	TRI		*tri;
 	int		i;
 	size_t	 	sizest = size_of_state(surf->interface);
-	
+
 	DEBUG_ENTER(strip_curve_from_surf)
 	for (b = curve->first; b != NULL; b = b->next)
 	{
@@ -4248,7 +4250,7 @@ LOCAL void strip_curve_from_surf(
 				left_start_btri_state(*btris),sizest);
 			    ft_assign(right_state(p),
 				right_start_btri_state(*btris),sizest);
-			    
+
 			    p = (*btris)->bond->end;
 			    ft_assign(left_state(p),
 				left_end_btri_state(*btris),sizest);
@@ -4305,7 +4307,7 @@ LOCAL	INTERFACE  *cut_buf_interface1(
 	RECT_GRID	  dual_gr;
 	double		  L[3], U[3];
 	boolean		  sav_copy = copy_intfc_states();
-	char              dname[1024]; 
+	char              dname[1024];
 	static const char *strdir[3] = { "X", "Y", "Z" };
 	static const char *strnb[2] = { "LOWER", "UPPER" };
 
@@ -4499,7 +4501,7 @@ EXPORT	void communicate_default_comp(
 	{
 	    if (debugging("default_comp"))
 	    	(void) printf("Round %d\n",count);
-	    
+
 	    for (i = 0; i < dim; ++i)
 	    {
 	    	for (j = 0; j < 2; ++j)
@@ -4519,7 +4521,7 @@ EXPORT	void communicate_default_comp(
 			if (comp_buf != NO_COMP)
 	    		    intfc->default_comp = comp_buf;
 			pp_send(0,&comp_buf,INT,dst_id);
-			
+
 			if (debugging("default_comp"))
 			{
 			    (void) printf("comp_buf = %d\n",comp_buf);
@@ -4528,11 +4530,11 @@ EXPORT	void communicate_default_comp(
 			    		him[1],him[2]);
 			}
 		    }
-			
+
 		    /*recv from adj proc */
 		    for (k = 0; k < dim; ++k)
 		    	him[k] = me[k];
-		    if (rect_boundary_type(intfc,i,(j+1)%2) == 
+		    if (rect_boundary_type(intfc,i,(j+1)%2) ==
 		    			SUBDOMAIN_BOUNDARY)
 		    {
 		    	him[i] = (me[i] - 2*j + 1 + G[i])%G[i];
@@ -4573,11 +4575,11 @@ LOCAL COMPONENT buffer_component(
 	double coords[MAXD];
 	int i, comp;
 
-	if (intfc->surfaces == NULL) 
+	if (intfc->surfaces == NULL)
 	    return intfc->default_comp;
 	for (i = 0; i < 3; ++i)
 	    coords[i] = 0.5*(L[i] + U[i]);
-	coords[dir] = (nb == 0) ? (L[dir] - 0.5*h[dir]) : 
+	coords[dir] = (nb == 0) ? (L[dir] - 0.5*h[dir]) :
 			(U[dir] + 0.5*h[dir]);
 
 //        comp = component(coords,intfc); //Bug: suffer from wrong values of some off-FRONT-grid comps
@@ -4621,7 +4623,7 @@ EXPORT void install_subdomain_bdry_curves_prev(
 	    	curve = make_curve(NO_COMP,NO_COMP,ns,ne);
 	    	hsbdry_type(curve) = SUBDOMAIN_HSBDRY;
 	    	install_curve_in_surface_bdry(*s,curve,POSITIVE_ORIENTATION);
-	    	
+
 		printf("#c %llu | %p  %p | %p  %p\n", curve_number(curve), ns, ne, ns->posn, ne->posn);
 
 		btri = link_tri_to_bond(NULL,tri_start,*s,curve->first,curve);
@@ -4631,8 +4633,8 @@ EXPORT void install_subdomain_bdry_curves_prev(
 	    	tri_end = tri_start;
 	    	side_end = side_start;
 	    	b = curve->first;
-		
-		//following_null_tri uses COUNTER_CLOCK 
+
+		//following_null_tri uses COUNTER_CLOCK
 		//insert_point_in_bond inserts point in the end of the curve
 		//the two factors result the POSITIVE orient of bond_tri
 
@@ -4640,17 +4642,17 @@ EXPORT void install_subdomain_bdry_curves_prev(
 							COUNTER_CLOCK)) != NULL)
 	    	{
 		    //insert the point alread in bond, do not generate new bond_tri
-		    //see second return of 
+		    //see second return of
 		    //i_insert_point_in_bond
 		    //    split_tris_at_split_bond.
-		    if (insert_point_in_bond(ne->posn,b,curve) != 
+		    if (insert_point_in_bond(ne->posn,b,curve) !=
 			FUNCTION_SUCCEEDED)
 	            {
 	                screen("ERROR in install_subdomain_bdry_curves(), "
 		               "insert_point_in_bond() failed\n");
 	                clean_up(ERROR);
 	            }
-		   
+
 		    b = b->next;
 	            ne->posn = b->end = p;
 		    set_bond_length(b,dim);
@@ -4665,13 +4667,13 @@ EXPORT void install_subdomain_bdry_curves_prev(
 		    }
 	        }
 
-	    	if (is_closed_curve(curve)) 
+	    	if (is_closed_curve(curve))
 			continue;
-		
+
 	    	b = curve->first;
 		tri_end = tri_start;
 		side_end = side_start;
-		
+
 		//following_null_tri uses CLOCKWISE
 		//insert_point_in_bond inserts point in the start of the curve
 		//the two factors result the POSITIVE orient of bond_tri
@@ -4679,7 +4681,7 @@ EXPORT void install_subdomain_bdry_curves_prev(
 	    	while ((tri_start = find_following_null_tri(tri_start,&p,
 					&side_start,CLOCKWISE)) != NULL)
 	    	{
-		    //new bond is inserted in b->next, the bond_tri of current bond 
+		    //new bond is inserted in b->next, the bond_tri of current bond
 		    //is saved in bte.
 		    bte = Bond_tri_on_side(tri_end,side_end);
 		    if (insert_point_in_bond(ns->posn,b,curve) !=
@@ -4689,14 +4691,14 @@ EXPORT void install_subdomain_bdry_curves_prev(
 		               "insert_point_in_bond() failed\n");
 	                clean_up(ERROR);
 	            }
-		    
+
 	            ns->posn = b->start = p;
 		    set_bond_length(b,dim);
 	            btri = link_tri_to_bond(NULL,tri_end,*s,b->next,curve);
-		
+
 		    copy_tri_state_to_btri(btri,b->next,NEGATIVE_ORIENTATION,intfc);
 	            copy_tri_state_to_btri(btri,b->next,POSITIVE_ORIENTATION,intfc);
-		    
+
 		    btri = bte;
 		    (void) link_tri_to_bond(btri,tri_start,*s,b,curve);
 	            copy_tri_state_to_btri(btri,b,NEGATIVE_ORIENTATION,intfc);
@@ -4716,7 +4718,7 @@ EXPORT void install_subdomain_bdry_curves_prev(
 	    	{
 		    if (*n == ns)
 			continue;
-		    if ((*n)->posn == ns->posn) 
+		    if ((*n)->posn == ns->posn)
 		    {
 			change_node_of_curve(curve,POSITIVE_ORIENTATION,*n);
 			if(!delete_node(ns))
@@ -4734,7 +4736,7 @@ EXPORT void install_subdomain_bdry_curves_prev(
 	        {
 		    if (*n == ne)
 			continue;
-		    if ((*n)->posn == ne->posn) 
+		    if ((*n)->posn == ne->posn)
 		    {
 			change_node_of_curve(curve,NEGATIVE_ORIENTATION,*n);
 			if(!delete_node(ne))
@@ -4810,12 +4812,12 @@ EXPORT	void cut_surface(
 	{
 	    set_current_interface(surf->interface);
 
-	    for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf); 
+	    for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf);
 				tri=tri->next)
 	    	for (i = 0; i < 3; ++i)
 		    sorted(Point_of_tri(tri)[i]) = NO;
 
-	    for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf); 
+	    for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf);
 				tri=tri->next)
 	    {
 	    	for (i = 0; i < 3; ++i)
@@ -4825,9 +4827,9 @@ EXPORT	void cut_surface(
 			continue;
 		    p1 = Coords(Point_of_tri(tri)[i]);
 		    p2 = Coords(Point_of_tri(tri)[(i+1)%3]);
-		    if ((constr_func(func_params,p1) && 
+		    if ((constr_func(func_params,p1) &&
 			!constr_func(func_params,p2)) ||
-		        (constr_func(func_params,p2) && 
+		        (constr_func(func_params,p2) &&
 			!constr_func(func_params,p1)))
 		    {
 			pc = constr_position(p1,p2,constr_func,func_params);
@@ -4862,7 +4864,7 @@ LOCAL 	double *constr_position(
 	static double p_in[MAXD];
 	double p_out[MAXD],pc[MAXD];
 	int i,j,N = 20;		// accurate to 2^-20*(p1-p2)
-	
+
 	if (constr_func(func_params,p1) && !constr_func(func_params,p2))
 	{
 	    for (i = 0; i < MAXD; ++i)
@@ -4897,7 +4899,7 @@ LOCAL 	double *constr_position(
 	}
 	return p_in;
 }	/* end constr_position */
-	
+
 EXPORT void install_hsbdry_on_surface(
 	SURFACE	*surf,
 	int hsbdry_type)
@@ -4915,14 +4917,14 @@ EXPORT void install_hsbdry_on_surface(
 	int	 dim = intfc->dim;
 
 	DEBUG_ENTER(install_hsbdry_on_surface)
-	
+
 	sav_intrp = interpolate_intfc_states(intfc);
 	interpolate_intfc_states(intfc) = NO;
-	
+
 	while (null_side_on_surface(surf,&start_tri,&start_side))
 	{
 	    find_ending_null_side(start_tri,start_side,&tri_start,&side_start);
-		
+
 	    ps = Point_of_tri(tri_start)[side_start];
 	    ns = make_node(ps);
 	    pe = Point_of_tri(tri_start)[Next_m3(side_start)];
@@ -4931,7 +4933,7 @@ EXPORT void install_hsbdry_on_surface(
 
 	    hsbdry_type(curve) = hsbdry_type;
 	    install_curve_in_surface_bdry(surf,curve,POSITIVE_ORIENTATION);
-	    	
+
 	    null_tris[0] = tri_start;
 	    ntris = 1;
 
@@ -4946,10 +4948,10 @@ EXPORT void install_hsbdry_on_surface(
 		               "insert_point_in_bond() failed\n");
 		    clean_up(ERROR);
 		}
-		    
+
 		ns->posn = b->start = p;
 		set_bond_length(b,dim);
-	
+
 		null_tris[ntris] = tri_start;
 		ntris++;
 		if(ntris >= MAX_SUBDOMAIN_TRIS)
@@ -4958,7 +4960,7 @@ EXPORT void install_hsbdry_on_surface(
 			       "too many subdomain tris.\n");
 		    clean_up(ERROR);
 		}
-	    
+
 		if (ns->posn == ne->posn) //Closed loop formed
 		{
 		    change_node_of_curve(curve,POSITIVE_ORIENTATION,ne);
@@ -4972,7 +4974,7 @@ EXPORT void install_hsbdry_on_surface(
 		    break;
 		}
 	    }
-		
+
 	    for(i=0, b=curve->first; b!=NULL; b=b->next, i++)
 	    {
 		btri = link_tri_to_bond(NULL,null_tris[ntris-1-i],surf,b,curve);
@@ -4998,7 +5000,7 @@ EXPORT void install_hsbdry_on_surface(
 			change_node_of_curve(*c,NEGATIVE_ORIENTATION,*n);
 		    for(c=(*n1)->out_curves; c && *c; c++)
 			change_node_of_curve(*c,POSITIVE_ORIENTATION,*n);
-		    
+
 		    if(!delete_node(*n1))
 		    {
 			printf("ERROR install_hsbdry_on_surface "
@@ -5030,7 +5032,7 @@ EXPORT 	boolean surfaces_matched(
 	SURFACE *as,
 	SURFACE *s)
 {
-	if (is_bdry(as) && is_bdry(s)) 
+	if (is_bdry(as) && is_bdry(s))
 	    return (Hyper_surf_index(as) == Hyper_surf_index(s)) ? YES : NO;
 	else if (negative_component(as) == negative_component(s) &&
 	    positive_component(as) == positive_component(s))

@@ -90,6 +90,7 @@ typedef struct {
         double Dcoef2;
         double vol_frac_threshold;
 	double width_idl; //width of initial diffusion layer
+    int ifluid_type;
 } IF_PARAMS;
 
 struct _FLOW_THROUGH_PARAMS {
@@ -373,7 +374,7 @@ protected:
         void setDomain_vd();
 
 	// parallelization related functions
-	void scatMeshArray(void);
+	void scatMeshArray(int *reflect);// REFLECTION BOUNDARY CONDITION FLAG WAS INTRODUCED.
 	void setGlobalIndex(void);
 	void setIndexMap(void);
 
@@ -837,6 +838,11 @@ protected:
 	//void   computeVelDivergence(void);
 	//void getVelocityGradient(double *p,double *gradU,double *gradV);
 
+    //Smeeton Youngs' Experiment 105
+    double computeFieldPointDiv_MAC_vd(int*, double**); // 2D version not implemented yet. TODO && FIXME: In Progress.
+    void   computeFieldPointGrad_MAC_vd(int*, double*, double*) {};
+    void getDivU_MAC_vd(int *icoords, double *diffusion, int flag, boolean) {};
+
 };
 
 class Incompress_Solver_Smooth_3D_Cartesian:
@@ -846,6 +852,8 @@ public:
         Incompress_Solver_Smooth_3D_Cartesian(Front &front):
 	Incompress_Solver_Smooth_3D_Basis(front) {};
 	~Incompress_Solver_Smooth_3D_Cartesian() {};
+    //before FT_Propagate and enforce Reflection Boundary Condition
+    void enforceReflectionState();
 
         void printExpandedMesh(char* outname,bool binary);
         void printExpandedMesh_big_endian(char* outname);
@@ -1069,12 +1077,10 @@ protected:
         void getRiemannSolution_MAC_EdgeVelocity_vd(EBM_COORD xyz1,EBM_COORD xyz2,L_STATE &u_left,L_STATE &u_right,L_STATE &u_LEFT,L_STATE &u_RIGHT,L_STATE &ans);
         void getRiemannSolution_MAC_Scalar_vd(L_STATE &u_left,L_STATE &u_right,L_STATE &ans, int *icoords, GRID_DIRECTION dir);
         //Reflection Boundary Condition
-        void Solute_Reflect(int, double*);
-        void ReflectBC(int, int, int, int*, int*, int*, double*);
-        void ReflectBC_DEBUG(int, int, int, int*, int*, int*, double*);
+        void Solute_Reflect(int, double*, int*);
+        void ReflectBC(int, int, double*, int*);
+        void ReflectBC_DEBUG(int, int, int, double*){};
         void debugPrintStates(int, int, int, int);
-        //Check divergence free
-        void readOutputVelocity(double**);
 };
 
 
@@ -1322,8 +1328,5 @@ extern void fluid_read_front_states_vd(FILE*,Front*,bool);
 extern void read_iF_movie_options(char*,IF_PARAMS*);
 extern void read_iF_dirichlet_bdry_data(char*,Front*,F_BASIC_DATA);
 extern boolean isDirichletPresetBdry(Front*,int*,GRID_DIRECTION,COMPONENT);
-//divergence free check
-extern void saveOutputVelocity(double**, int, int*);
-void readOutputVelocity(double**, int, int*);
 
 #endif

@@ -53,4 +53,5 @@ extern void init_fluid_state_func(Incompress_Solver_Smooth_Basis*,IF_PROB_TYPE);
 extern void read_iFparams(char*,IF_PARAMS*);
 extern void read_iF_prob_type(char*,IF_PROB_TYPE*);
 extern void recordBdryEnergyFlux(Front*,char*);
+extern void convertGridDirectionToDirSide(GRID_DIRECTION direct, int *dir, int *side);
 #endif
