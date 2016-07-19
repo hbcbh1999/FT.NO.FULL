@@ -7283,6 +7283,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalar_MAC_middleStep_bar_decoupl
 
     state_bar.m_rho += state_hat.m_rho + m_dt/2.0*(-transverseD[0]-diff*rho);
     state_bar.m_c += state_hat.m_c + m_dt/2.0*(-transverseD[1]+diffC/rho);
+    //state_bar.m_c += state_hat.m_c + m_dt/2.0*(-transverseD[1]+diffC/rho);//HZ -diffC/rho instead of + sign? FIXME
 } /* end getScalar_MAC_middleStep_bar_decoupled_vd */
 
 
@@ -10379,12 +10380,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         else if (!bNoBoundary[4]) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
-            slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);//Why? TODO NEED FIXME???????? Ask Jeremy or Glimm
+            slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
         }
         else if (!bNoBoundary[5]) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
-            slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);//Why? TODO NEED FIXME?????????? Ask Jeremy or Glimm
+            slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);
+            //slope[2] = EBM_minmod((0.0-U1.m_U[2])/dz, (U1.m_U[2]-U0.m_U[2])/dz);//HZ FIXME
         }
         else assert(false);
     }
