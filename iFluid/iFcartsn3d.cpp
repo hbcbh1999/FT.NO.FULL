@@ -3030,9 +3030,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     U0_nb[nb] = -U0_center;
                     U1_nb[nb] = -U1_center;
                     //w[4] = 0
-                    if (nb==4)		U2_nb[nb] = 0;
+                    if (nb==4)		U2_nb[nb] = 0;//LOWER bdry No-Slip
                     //w[5] = -w[4]
-                    else if (nb==5)	U2_nb[nb] = -cell_center[index_nb[4]].m_state.m_U[2];
+                    else if (nb==5)	U2_nb[nb] = -cell_center[index_nb[4]].m_state.m_U[2];//UPPER bdry Free-Slip
                     else		assert(false);
 
                     mu_nb[nb] = mu_center;
@@ -4939,6 +4939,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             icoords[2] = k;
 
             getCellCenterVelocityBar_MAC_decoupled_vd(icoords,m_t_int);
+            //Extrapolate in only time to obtain cell-face velocities on u-face, v-face and w-face, respectively. Then perform a MAC-type projection to enforce the divergence constraint Eq(2.7) on the face velocities in Wenlin's Thesis
+            // Reference [47]
             getCellFaceVelocityBar_MAC_decoupled_vd(icoords,m_t_int);
         }
         //scatter states
@@ -5493,6 +5495,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             U[2] = cell_center[index_nb[2]].m_state.m_U_face_bar[1];
             U[3] = cell_center[index].m_state.m_U_face_bar[1];
             U[5] = cell_center[index].m_state.m_U_face_bar[2];
+            //TODO && FIXME: EXPANDING THIS BOUNDARY CONDITION.
             if (ijk_to_I[i][j][k-1] < 0) //cells on LOWER bdry
                 U[4] = 0;
             else //other cells
@@ -5610,6 +5613,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     index_nb[17] = d_index3d(i-1,j,k+1,top_gmax);
 
     // 4 directions
+    // TODO && FIXME: MAKE IT FOR REFLECTION BOUNDARY CONDITION.
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
     bNoBoundary[2] = YES;
@@ -5681,7 +5685,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         //w_bar
         //cells on the out side of LOWER bdry (i.e. icoords[2] = -1)
         w_nb = cell_center[index].m_state.m_U[2];
-        sl.m_U[2] = 0.0 + top_h[2]/2.0*(w_nb - 0.0)/top_h[2] + 0.0;
+        sl.m_U[2] = 0.0 + top_h[2]/2.0*(w_nb - 0.0)/top_h[2] + 0.0;// TODO && FIXME: what's the math equation for sl, sr at the boundary for upwinding fashion riemann solver
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,LOWER,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_Z,sl,sr,state_center_bar,icoords);
     }
@@ -5763,7 +5767,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellFaceVelocityBar_MAC_decoupled
 
     //w-faces, get w_hat & w_bar
     if (!bNoBoundary[5]) //cells on UPPER bdry
-        state_face_bar[2].m_U[2] = 0.0;
+        state_face_bar[2].m_U[2] = 0.0;//TODO && FIXME: Check the calculation of this guy with interior cell for consistency test
     else //other cells
     {
         //w_hat
@@ -6565,6 +6569,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeMacPhi_MAC_vd(int flag)
         //get the divergence constraint: S^{n} for flag=0 or S^{n+1/2} for flag=1
         //div_U = div(U_face_bar) for flag=0 or div_U = div(U_face_bar_0) for flag=1
         getDivU_MAC_vd(icoords,&diffusion,flag,bGhostCell);
+        //TODO && FIXME: where does m_dt come from?
         source[index] = (cell_center[index].m_state.div_U - diffusion)/(m_dt/2.0);
 
         if (!flag)
@@ -6683,6 +6688,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
             if (ind[5] == 0) //cells on UPPER bdry
             {
                 //u-faces
+                // TODO && FIXME: where does m_dt come from? Check with Wenlin's thesis (2.14-2.16)
+                // m_dt cancelled out since poisson equation introduced m_dt to the RHS
                 tmp = m_dt/4.0*(1.0/rho_nb[1] + 1.0/rho);
                 cell_center[index].m_state.m_U_face_bar[0] -= (cell_center[index_nb[1]].m_state.m_phi - phi)/top_h[0]*tmp;
 
@@ -6846,13 +6853,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCenterVelocity_MAC_middleStep_hat
     case WEST:
         getLimitedSlope_Velocity_MAC_vd(icoords,COORD_X,slope_limited); //u_x, u_y, and u_z
         // Source: Wenlin Thesis [47]: A Projection Method For Low Mach Number Fast Chemistry Reacting Flow
-        state_orig.m_U[0] = std::min(state_orig.m_U[0], 0.0);
+        state_orig.m_U[0] = std::min(state_orig.m_U[0], 0.0);//TODO && FIXME: not Equation(4.10) in [47] nor Equation(3.2a) in [10]
         state_hat.m_U[0] = state_orig.m_U[0] + sL*(-dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_limited[0];
         break;
 
     case EAST:
         getLimitedSlope_Velocity_MAC_vd(icoords,COORD_X,slope_limited); //u_x, u_y, and u_z
-        state_orig.m_U[0] = std::max(state_orig.m_U[0], 0.0);//TODO: why adjust velocity here?
+        state_orig.m_U[0] = std::max(state_orig.m_U[0], 0.0);//TODO: why adjust velocity here? Which reference is being used here?
         state_hat.m_U[0] = state_orig.m_U[0] + sL*(dx/2.0 - m_dt/2.0 * state_orig.m_U[0])*slope_limited[0];
         break;
 
@@ -6901,7 +6908,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceVelocity_MAC_middleStep_hat_v
     state_hat.m_U[2] = 0.0;
 
     getLimitedSlope_Velocity_MAC_vd(icoords,xyz,slope_limited);
-    //state_orig.m_U[xyz] = std::min(state_orig.m_U[xyz], 0.0);
+    //state_orig.m_U[xyz] = std::min(state_orig.m_U[xyz], 0.0);//TODO: FIXME: Calculate Cell Center Velocities. This condition was in use.
     state_hat.m_U[xyz] = state_orig.m_U[xyz] - m_dt/2.0*state_orig.m_U[xyz]*slope_limited[xyz];
 } /* end getFaceVelocity_MAC_middleStep_hat_vd */
 
@@ -6936,7 +6943,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getEdgeVelocity_MAC_middleStep_hat_v
         l = 2;
 
     getLimitedSlope_Velocity_MAC_vd(icoords,xyz,slope_limited);
-    //state_orig.m_U[xyz] = std::min(state_orig.m_U[xyz], 0.0);
+    //state_orig.m_U[xyz] = std::min(state_orig.m_U[xyz], 0.0);//TODO && FIXME: check the equation.
     state_hat.m_U[xyz] = state_orig.m_U[xyz] + 0.5*(sL*top_h[l]*slope_limited[l] -
                          m_dt*state_orig.m_U[xyz]*slope_limited[xyz]);
 } /* end getEdgeVelocity_MAC_middleStep_hat_vd */
@@ -7223,7 +7230,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getVelocity_MAC_middleStep_bar_decou
         bNoBoundary = YES;
 
     //get transverse derivatives terms of NS eqn's
-    getTransverseDTerm_Velocity_MAC_vd(icoords, transverseD);
+    // TODO && FIXME: Reference
+    getTransverseDTerm_Velocity_MAC_vd(icoords, transverseD);//TODO && FIXME: calculate Transverse term including viscous term as well?
     //get viscous terms of NS eqn's
     getViscousTerm_MAC_decoupled_vd(icoords, xyz, diffusion);
     //add gravity term (constant)
@@ -8196,6 +8204,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
             bNoBoundary[nb] = YES;
 
         if (!bNoBoundary[nb]) { //cells on LOWER/UPPER bdry
+            //TODO && FIXME: velocity setup consist with slope limiter
             U0_nb[nb] = -U0_center;
             U1_nb[nb] = -U1_center;
             //w[4] = 0
@@ -8254,6 +8263,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
         }
         else if (!bNoBoundary[4]) //cells on LOWER bdry
         {
+            //TODO && FIXME: consist w = 0.0 on LOWER BDRY
+            // scalar is a copy of direct neighbor across the BOUNDARY
             U2_nb[15] = 0;
             mu_nb[15] = mu_nb[1];
             mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
@@ -8329,6 +8340,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
         }
         else if (!bNoBoundary[4]) //cells on LOWER bdry
         {
+            //TODO && FIXME: consist w = 0.0 on LOWER BOUNDARY
+            //same, scalar is a copy
             U2_nb[11] = 0;
             mu_nb[11] = mu_nb[3];
             mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
@@ -10314,11 +10327,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         else if (!bNoBoundary[4]) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
+            //TODO && FIXME: U0.u = 0.0 use dz/2 instead of dz.
             slope[2] = EBM_minmod((2.0*U1.m_U[0])/dz, (U2.m_U[0]-U1.m_U[0])/dz);
         }
         else if (!bNoBoundary[5]) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
+            //TODO && FIXME: U2.u = 0.0 and use dz/2
             slope[2] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dz, (-2.0*U1.m_U[0])/dz);
         }
         else assert(false);
@@ -10347,11 +10362,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         else if (!bNoBoundary[4]) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
+            //TODO && FIXME: U0.v = 0.0 and use dz/2
             slope[2] = EBM_minmod((2.0*U1.m_U[1])/dz, (U2.m_U[1]-U1.m_U[1])/dz);
         }
         else if (!bNoBoundary[5]) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
+            //TODO && FIXME: U2.v = 0.0
             slope[2] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dz, (-2.0*U1.m_U[1])/dz);
         }
         else assert(false);
@@ -10380,13 +10397,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         else if (!bNoBoundary[4]) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
+            //TODO && FIXME: U0.w = 0.0 use dz. Since u, v and w are cell face velocities.
             slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
         }
         else if (!bNoBoundary[5]) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
-            slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);
-            //slope[2] = EBM_minmod((0.0-U1.m_U[2])/dz, (U1.m_U[2]-U0.m_U[2])/dz);//HZ FIXME
+            //TODO && FIXME: U1.w = 0.0 and U2.w = -U0.w
+            slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);// This is the right version
         }
         else assert(false);
     }
@@ -10828,7 +10846,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution_Velocity_vd(
         std::swap(ans.m_U[0],ans.m_U[2]);
 } /* end getRiemannSolution_Velocity_vd */
 
-
+//TODO && FIXME: reference
 void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution_MAC_CenterVelocity_vd(
         EBM_COORD xyz,
         L_STATE &state_left,
@@ -10885,14 +10903,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution_MAC_CenterVelocit
     uR = state_right.m_U[xyz];
 
     if (!bNoBoundary[4] && xyz==2) //for w on LOWER boundary cells
-        tmp = 0.5*(cell_center[index].m_state.m_U[xyz] + 0.0);
+        tmp = 0.5*(cell_center[index].m_state.m_U[xyz] + 0.0);// TODO && FIXME: lower boundary w4 = 0.0
     else if (!bNoBoundary[5] && xyz==2) //for w on UPPER boundary cells
-        tmp = 0.5*(0.0 + cell_center[index_nb[2*xyz]].m_state.m_U[xyz]);
+        tmp = 0.5*(0.0 + cell_center[index_nb[2*xyz]].m_state.m_U[xyz]);//TODO && FIXME: instead of using w5 = -w4 which leads to tmp = 0.0, w5 = 0.0. NOT consist!
     else
         tmp = 0.5*(cell_center[index].m_state.m_U[xyz] +
                    cell_center[index_nb[2*xyz]].m_state.m_U[xyz]);
 
     //calculate the Riemann solution
+    // TODO && FIXME: find the reference of upwinding scheme in this fashion
     if (tmp > 0.0)
         ans.m_U[xyz] = uL;
     else
@@ -15583,7 +15602,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
         setComponent();
 
         setGlobalIndex();
+        //TODO && FIXME: Introduce REFLECTION BOUNDARY CONDITION.
         setIndexMap();
+        //TODO && FIXME: surface tension will be inserted here.
+        //setsmoothedproperties_vd();
 
         //iterate for 1st step to get a good approx. for pressure
         int i,j,k,l,index,ite_num,tol_num;
@@ -17656,7 +17678,6 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
             wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
     {
         bNoBoundary[4] = NO;
-        //printf("HZ LOWER SIDE icoords = (%d %d %d) BOUNDARY TYPE is %d\n", i, j, k, wave_type(hs));
     }
     else
         bNoBoundary[4] = YES;
@@ -17666,7 +17687,6 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
             wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
     {
         bNoBoundary[5] = NO;
-        //printf("HZ UPPER SIDE icoords = (%d %d %d) BOUNDARY TYPE is %d\n", i, j, k, wave_type(hs));
     }
     else
         bNoBoundary[5] = YES;
@@ -17676,7 +17696,7 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
     {
         div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
         div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
-        div += (field[2][index] - 0)/top_h[2];
+        div += (field[2][index] - 0)/top_h[2]; //TODO && FIXME: variable field is cell face velocity? So instead of using top_h[2]/2, we use top_h[2].
     }
     else //other cells
     {
@@ -20812,7 +20832,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
                 if (ppz==0 && k==kmin-1)
                 {
                     index_nbb = d_index3d(i,j,kmin,top_gmax);
-                    u[index] = -cell_center[index_nbb].m_state.m_U[0];
+                    u[index] = -cell_center[index_nbb].m_state.m_U[0];//TODO: Lower bdry, No-Slip
                     v[index] = -cell_center[index_nbb].m_state.m_U[1];
                     //w[4] = 0
                     w[index] = 0;
@@ -20831,7 +20851,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
                     c[index] = cell_center[index_nbb].m_state.m_c;
                     //w[5] = -w[4]
                     index_nbb = d_index3d(i,j,kmax-1,top_gmax);
-                    w[index] = -cell_center[index_nbb].m_state.m_U[2];
+                    w[index] = -cell_center[index_nbb].m_state.m_U[2];//TODO: Upper bdry, Free-Slip
                     continue;
                 }
 

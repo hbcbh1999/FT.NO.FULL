@@ -15,3 +15,4 @@ Available test cases are:
 Enter test case: CIRCLE
 Enter center: 0.5 0.5
 Enter radius: 0.3
+Enter yes to test local function: yes

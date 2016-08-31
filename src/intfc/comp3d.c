@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ LOCAL	boolean	old_tri_on_edge(TRI_PROJECTION*,TRI_PROJECTION*);
 LOCAL	boolean	set_tri_and_surface_list_pointers(struct Table*,int,int,int);
 LOCAL	int	**add_to_bls_list(int**,int*,int*,int*);
 LOCAL	int	block_dimension(int*);
-LOCAL	void	blocks_on_grid_based_tri(TRI*,int***,COMPONENT***,RECT_GRID*, 
+LOCAL	void	blocks_on_grid_based_tri(TRI*,int***,COMPONENT***,RECT_GRID*,
 				INTERFACE *);
 LOCAL	void	blocks_on_tri(TRI*,int***,COMPONENT***,RECT_GRID*,INTERFACE*);
 LOCAL	void	fill_tri_and_surface_lists(int***,TRI*****,SURFACE*****,
@@ -177,7 +177,7 @@ LIB_LOCAL COMPONENT component3d(
 	COMPONENT	comp;
 
 	DEBUG_ENTER(component3d)
-	 
+
 	/* Check for no surfaces in the interface (interior only) */
 	if (intfc->surfaces == NULL)
 	{
@@ -240,7 +240,7 @@ LIB_LOCAL COMPONENT component3d(
 
 	if(debugging("fill_comp"))
 	{
-	    tecplot_show_box_tris("crx_input", T->tris[iz][iy][ix], 
+	    tecplot_show_box_tris("crx_input", T->tris[iz][iy][ix],
 		T->num_of_tris[iz][iy][ix], &T->rect_grid, icoords);
 	}
 
@@ -297,7 +297,7 @@ LIB_LOCAL COMPONENT component3d(
 	}
 	else
 	    comp = comp_at_closest(&Closest);
-	
+
 	DEBUG_LEAVE(component3d)
 	return comp;
 }		/*end component3d*/
@@ -330,7 +330,7 @@ LOCAL COMPONENT component_wrt_icoords3d(
 	int             ixmin, ixmax, iymin, iymax, izmin, izmax;
 	int		*gmax = (&topological_grid(intfc))->gmax;
 	struct Table	*T = intfc->table;
-        
+
 
 	ixmin = (ix > 0) ? ix-1 : ix;
 	ixmax = ((ix+1) < gmax[0]) ? ix+1 : ix;
@@ -339,7 +339,7 @@ LOCAL COMPONENT component_wrt_icoords3d(
 	izmin = (iz > 0) ? iz - 1 : iz;
 	izmax = ((iz+1) < gmax[2]) ? iz+1 : iz;
 
-	 
+
 	/* initialization for the shortest_distance3d() */
 
 	Closest.tri = NULL;
@@ -383,7 +383,7 @@ LOCAL COMPONENT component_wrt_icoords3d(
 	            /* loop over the tris in block at icoords to find the min */
 
 	            for (i = 0; i < nt; ++i)
-	            {   
+	            {
 			if (Tri_projection_computed(t[i]) != YES)
 			{
 			    ++num;
@@ -392,7 +392,7 @@ LOCAL COMPONENT component_wrt_icoords3d(
 	                    shortest_distance3d(tri_proj);
 	                    if (new_tri_is_closer(tri_proj,closest) == YES)
 	    	                Closest = Tri_proj;
-			    
+
 			    if(debugging("tst_comp3d"))
 			    {
 			        print_general_vector("pt", Tri_proj.pt, 3, "\n");
@@ -423,7 +423,7 @@ LOCAL COMPONENT component_wrt_icoords3d(
 	comp = comp_at_closest(&Closest);
 	if(debugging("tst_comp3d"))
 	{
-	    printf("#proj_tri=%p  %d  d2=%24.16e comp=%d  comp0=%d\n", 
+	    printf("#proj_tri=%p  %d  d2=%24.16e comp=%d  comp0=%d\n",
 			    Closest.tri, Closest.side, Closest.d2, comp, comp0);
 	}
 
@@ -522,17 +522,17 @@ LIB_LOCAL boolean	nearest_local_on_front_grid_block(
 	struct Table	*T = intfc->table;
 
 	irmin = sqr(xmax) + sqr(ymax) + sqr(zmax);
-	
+
 	ix_closest = -1;
 	iy_closest = -1;
 	iz_closest = -1;
 
 	ixmin = max(icoords[0]-width, 0);
 	ixmax = min(icoords[0]+width+1, xmax);
-	
+
 	iymin = max(icoords[1]-width, 0);
 	iymax = min(icoords[1]+width+1, ymax);
-	
+
 	izmin = max(icoords[2]-width, 0);
 	izmax = min(icoords[2]+width+1, zmax);
 
@@ -564,7 +564,7 @@ LIB_LOCAL boolean	nearest_local_on_front_grid_block(
 	icrds[0] = ix_closest;
 	icrds[1] = iy_closest;
 	icrds[2] = iz_closest;
-	
+
 	return YES;
 
 }		/*end nearest_on_front_grid_block*/
@@ -668,12 +668,12 @@ LIB_LOCAL COMPONENT dir_long_component3d(
 		    {
 		    	Tri_proj.tri = t;
 			Tri_proj.s = *s;
-			Tri_proj.pv = (iv == ERROR) ? NULL : 
+			Tri_proj.pv = (iv == ERROR) ? NULL :
 				Point_of_tri(t)[iv];
 			Tri_proj.vertex_index = iv;
-			Tri_proj.p1 = (ie == ERROR) ? NULL : 
+			Tri_proj.p1 = (ie == ERROR) ? NULL :
 				Point_of_tri(t)[ie];
-			Tri_proj.p2 = (ie == ERROR) ? NULL : 
+			Tri_proj.p2 = (ie == ERROR) ? NULL :
 				Point_of_tri(t)[Next_m3(ie)];
 			Tri_proj.side_index = iv;
 		    	Tri_proj.d = fabs(crds_crx[idir] - coords[idir]);
@@ -835,7 +835,7 @@ LIB_LOCAL boolean nearest_interface_point3d(
 	        	Tri_proj.tri = *t;
 	        	Tri_proj.s = *s;
 	                shortest_distance3d(tri_proj);
-			
+
 			if(debugging("line_tri"))
 			{
 			    printf("#nearest pt  %d   %p  %24.16e\n",
@@ -1126,7 +1126,7 @@ LIB_LOCAL boolean nearest_interface_point_within_range3d(
 	        	Tri_proj.tri = *t;
 	        	Tri_proj.s = *s;
 	                shortest_distance3d(tri_proj);
-			
+
 			if(debugging("line_tri"))
 			{
 			    printf("#nearest pt  %d   %p  %24.16e\n",
@@ -1192,7 +1192,7 @@ LIB_LOCAL boolean long_nearest_interface_point3d(
 	int		dim = intfc->dim;
 
 	printf("#long_nearest_interface_point3d is called\n");
-	
+
 	/* Find Closest Point on Front: */
 	Closest.tri = NULL;
 	Closest.s = NULL;
@@ -1208,7 +1208,7 @@ LIB_LOCAL boolean long_nearest_interface_point3d(
 	    /* new made wall surface has no tris, should be excluded */
 	    if(first_tri(*s) == NULL)
 	        continue;
-	    
+
 	    if (hs)
 	    {
 	    	if (Surface_of_hs(hs) != *s)
@@ -1239,7 +1239,7 @@ LIB_LOCAL boolean long_nearest_interface_point3d(
 	*phse = Hyper_surf_element(Closest.tri);
 	*phs = Hyper_surf(Closest.s);
 	if (Closest.tri == NULL)
-	{ 
+	{
 	    return NO;
 	}
 
@@ -1369,7 +1369,7 @@ LIB_LOCAL boolean long_nearest_similar_interface_point3d(
 *	containing tri and bounded by the plane generated by n and the side of
 *	tri opposite the vertex pi. Then ai > 0 if and only if pt is in H_i.
 *	It is immediately clear that the closest point in tri to pt lies in
-*	the interior of tri if and only if all of the ai are positive.  
+*	the interior of tri if and only if all of the ai are positive.
 *	Otherwise the closest point in tri to pt must lie on the boundary
 *	of tri.  Furthermore,  if ai <= 0,  then the closest point in tri
 *	to pt lies on the side of tri opposite pi.
@@ -1492,7 +1492,7 @@ LOCAL void shortest_distance3d(
 	    /*
 	     * The point is exterior to the triangle or on the triangle
 	     * boundary, compute the nearest projection onto the triangle
-	     */ 
+	     */
 
 	    /* Determine the interior angles of the triangle */
 	    s = side_vector(tri);
@@ -1791,14 +1791,14 @@ LOCAL void shortest_distance3d(
 *                                     /        \
 *                                    /     I    \
 *
-*                 
+*
 * 		3.1 For the ONEDGE case with the closest points being
-*		    on the common edge for tp and ntp, if the other 
+*		    on the common edge for tp and ntp, if the other
 *                   point of tp and pt are on the different side of the
-*		    plane of the triangle ntp->tri, while the other point 
-*		    of ntp and pt are on the same side of the plane of 
-*		    the triangle tp->tri, we choose npt. It happens in 
-*                    quadrant II and IV. We can use the dot products of 
+*		    plane of the triangle ntp->tri, while the other point
+*		    of ntp and pt are on the same side of the plane of
+*		    the triangle tp->tri, we choose npt. It happens in
+*                    quadrant II and IV. We can use the dot products of
 *		    sv(see old_tri_on_edge()) and normals to dertermine this.
 *		    In quadrant I and III, we can use normal distance
 *		    tp->nor_d2 and ntp->nor_d2 to decide the correct one
@@ -1806,10 +1806,10 @@ LOCAL void shortest_distance3d(
 *		    distance.
 *
 *		3.2 For the ONVERTEX case with the closest point being
-*                   on the same vertex, we have the same agorithm as 
-*                   ONEDGE case. The only difference is that we need 
-*		    to dertermine if the  other two points of ntp are 
-*		    on the same or different side of the plane of the 
+*                   on the same vertex, we have the same agorithm as
+*                   ONEDGE case. The only difference is that we need
+*		    to dertermine if the  other two points of ntp are
+*		    on the same or different side of the plane of the
 *		    triangle tp with pt.
 */
 
@@ -1848,7 +1848,7 @@ LOCAL	boolean old_tri_on_vertex(
 	int  vi, nvi, si, nsi;
 	POINT *op, *nop;
 	int   opi, nopi;
-        double dtol = 10*MACH_EPS;	
+        double dtol = 10*MACH_EPS;
 
 	switch (ntp->side)
 	{
@@ -1916,7 +1916,7 @@ LOCAL	boolean old_tri_on_vertex(
 			     return (ntp->nor_d2 < tp->nor_d2)? YES: NO;
 	             }
 	         }
-             }		  
+             }
 	     else
 		 return (ntp->d2 < tp->d2) ? YES : NO;
 	case COPLANAR:
@@ -1969,9 +1969,9 @@ LOCAL	boolean old_tri_on_edge(
 		    if(dotns*dot<=0)
 		        return NO;
 		     else
-		        return (ntp->nor_d2 >= tp->nor_d2)? YES: NO; 
+		        return (ntp->nor_d2 >= tp->nor_d2)? YES: NO;
 		}
-	     }	
+	     }
 	    else
 		return (ntp->d2 < tp->d2) ? YES : NO;
 	case ONVERTEX:
@@ -2159,7 +2159,7 @@ static const double SHIFT = 1.0e-6; /* TOLERANCE see rect_in_which */
 		    break;
 	    if(j==3)
 	        return YES;
-	    
+
 	    for(j=0; j<3; j++)
 	        if(Coords(Point_of_tri(t)[j])[i] <= VU[i]+SHIFT*h[i])
 		    break;
@@ -2180,7 +2180,7 @@ EXPORT  boolean is_tri_outside_box(TRI *t, double **fbox)
 		    break;
 	    if(j==3)
 	        return YES;
-	    
+
 	    for(j=0; j<3; j++)
 	        if(Coords(Point_of_tri(t)[j])[i] <= fbox[1][i])
 		    break;
@@ -2191,8 +2191,8 @@ EXPORT  boolean is_tri_outside_box(TRI *t, double **fbox)
 }
 
 EXPORT boolean    is_outside_surface(
-		INTERFACE  *intfc, 
-		SURFACE    *s, 
+		INTERFACE  *intfc,
+		SURFACE    *s,
 		RECT_GRID  *gr)
 {
 TRI        *t;
@@ -2238,9 +2238,9 @@ EXPORT  void    delete_outside_surface(INTERFACE *intfc)
 	    for(btris=Btris((*c)->first); btris && *btris; btris++)
 	    {
 		surf = (*btris)->surface;
-		
+
 		/*is an inside surface or the surface can not be deleted */
-	        if(!is_outside_surface(intfc, surf, top_grid) || 
+	        if(!is_outside_surface(intfc, surf, top_grid) ||
 			surf->number == INSIDE_DOMAIN)
 		    found = YES;
 	    }
@@ -2249,10 +2249,10 @@ EXPORT  void    delete_outside_surface(INTERFACE *intfc)
 	    /*found == NO:   all surfaces can be deleted */
 	    if(!found)
 		printf("#delete_outside_surface, curve surf flag.\n");
-	    
+
 	    for(btris=Btris((*c)->first); btris && *btris; btris++)
 	    {
-		(*btris)->surface->number = found==YES ? INSIDE_DOMAIN : 
+		(*btris)->surface->number = found==YES ? INSIDE_DOMAIN :
 			OUTSIDE_DOMAIN;
 	    }
 	}
@@ -2263,7 +2263,7 @@ EXPORT  void    delete_outside_surface(INTERFACE *intfc)
 	    /*ignore the tested surfaces. */
 	    if((*s)->number == INSIDE_DOMAIN || (*s)->number == OUTSIDE_DOMAIN)
 	        continue;
-		
+
 	    if(is_outside_surface(intfc, *s, top_grid))
 	        (*s)->number = OUTSIDE_DOMAIN;
 	}
@@ -2316,7 +2316,7 @@ LIB_LOCAL boolean make_tri_lists(
 	{
 	    stop_clock("make_tri_lists");
 	    DEBUG_LEAVE(make_tri_lists)
-	    return NO; 
+	    return NO;
 	}
 
 	/* Free old storage */
@@ -2376,7 +2376,7 @@ LIB_LOCAL boolean make_tri_lists(
 	    DEBUG_LEAVE(make_tri_lists)
 	    return NO;
 	}
-	/* NOTE: 
+	/* NOTE:
 	 * tri_array returns data initialized to 0, so
 	 * T->num_of_tris[k][j][i] = 0 for all i, j, k initially
 	 */
@@ -2434,7 +2434,7 @@ LIB_LOCAL boolean make_tri_lists(
 	max_size = 0;
 	out_cnt = 0;
 	hmintol = blk_tol*min3(h[0], h[1], h[2]);
-	
+
 	for (s = intfc->surfaces; s && *s; ++s)
 	{
 	    for (t = first_tri(*s); !at_end_of_tri_list(t,*s); t = t->next)
@@ -2455,7 +2455,7 @@ LIB_LOCAL boolean make_tri_lists(
 	        {
 	    	    double a = crds0[i], b = crds1[i], c = crds2[i];
 
-	    	    size *= 2 + (int)( (max3(a, b, c) - min3(a, b, c) + 
+	    	    size *= 2 + (int)( (max3(a, b, c) - min3(a, b, c) +
 		    		      4.0*hmintol)/h[i]);
 	        }
 	        max_size += 3 * size + 1;
@@ -2481,11 +2481,11 @@ LIB_LOCAL boolean make_tri_lists(
 	    /* Find and record all blocks on each tri: */
 
 	    total_num_of_tri_blocks = 0;
-	    
+
 	    if (interface_reconstructed(intfc) == YES)
             {
                 for (s = intfc->surfaces; s && *s; ++s)
-                    for (t = first_tri(*s); !at_end_of_tri_list(t,*s); 
+                    for (t = first_tri(*s); !at_end_of_tri_list(t,*s);
 				t = t->next)
 		    {
                         blocks_on_grid_based_tri(t,T->num_of_tris,
@@ -2496,7 +2496,7 @@ LIB_LOCAL boolean make_tri_lists(
 	    {
 	        for (s = intfc->surfaces; s && *s; ++s)
 	        {
-	    	    for (t = first_tri(*s); !at_end_of_tri_list(t,*s); 
+	    	    for (t = first_tri(*s); !at_end_of_tri_list(t,*s);
 				t = t->next)
 		    {
 	                blocks_on_tri(t,T->num_of_tris,T->compon3d,
@@ -2504,7 +2504,7 @@ LIB_LOCAL boolean make_tri_lists(
 		    }
 	        }
 	    }
-	
+
 	    /* Assign tris[][][] and surfaces[][][]: */
 	    if ((status = set_tri_and_surface_list_pointers(T,xmax,ymax,zmax)))
 	    {
@@ -2596,14 +2596,14 @@ LOCAL boolean set_tri_and_surface_list_pointers(
 
 	tri_array(&T->tris,zmax,ymax,xmax,sizeof(TRI **));
 	if (T->tris == NULL)
-	{ 
+	{
 	    DEBUG_LEAVE(set_tri_and_surface_list_pointers)
-	    return NO; 
+	    return NO;
 	}
 
 	tri_array(&T->surfaces, zmax, ymax, xmax, sizeof(SURFACE **));
 	if (T->surfaces == NULL)
-	{ 
+	{
 	    DEBUG_LEAVE(set_tri_and_surface_list_pointers)
 	    return NO;
 	}
@@ -2612,14 +2612,14 @@ LOCAL boolean set_tri_and_surface_list_pointers(
 
 	uni_array(&T->tristore, total_num_of_tri_blocks, sizeof(TRI *));
 	if (T->tristore == NULL)
-	{ 
+	{
 	    DEBUG_LEAVE(set_tri_and_surface_list_pointers)
 	    return NO;
 	}
 
 	uni_array(&T->surfacestore, total_num_of_tri_blocks, sizeof(SURFACE *));
 	if (T->surfacestore == NULL)
-	{ 
+	{
 	    DEBUG_LEAVE(set_tri_and_surface_list_pointers)
 	    return NO;
 	}
@@ -2696,7 +2696,7 @@ void	sort_tris_on_blocks(INTERFACE	*intfc)
 	TRI		**tris;
 	SURFACE		**surfs;
 	int		ix, iy, iz, i, nt, xmax, ymax, zmax;
-	
+
 	T = table_of_interface(intfc);
 	xmax = top_grid->gmax[0];
 	ymax = top_grid->gmax[1];
@@ -2757,7 +2757,7 @@ LOCAL void fill_tri_and_surface_lists(
 	    }
 	    ++tri_blocks;	/* Skip END_TRI */
 	}
-	
+
 	DEBUG_LEAVE(fill_tri_and_surface_lists)
 }		/*end fill_tri_and_surface_lists*/
 
@@ -2829,14 +2829,14 @@ LOCAL void blocks_on_tri(
 	hmintol = blk_tol*min3(grid->h[0], grid->h[1], grid->h[2]);
 
 	/* if a point is on a face of a block, make sure it belongs to both blocks. */
-	
+
 	p = Point_of_tri(t);
 	for(i=0; i<3; i++)
 	{
 	    for(j=0; j<3; j++)
 		ptmp[j] = Coords(p[i])[j] + hmintol;
 	    rect_in_which(ptmp, ima[i], grid);
- 
+
 	    for(j=0; j<3; j++)
 		ptmp[j] = Coords(p[i])[j] - hmintol;
 	    rect_in_which(ptmp, imi[i], grid);
@@ -2846,20 +2846,20 @@ LOCAL void blocks_on_tri(
 	for (i = 0; i < 3; ++i)
 	{
 	    imin[i] = min3(imi[0][i],imi[1][i],imi[2][i]);
-	    if (imin[i] < -lbuf[i]) 
+	    if (imin[i] < -lbuf[i])
 	    	imin[i] = -lbuf[i];
-	    else if (imin[i] >= gmax[i] + ubuf[i]) 
+	    else if (imin[i] >= gmax[i] + ubuf[i])
 	    	imin[i] = gmax[i] + ubuf[i] - 1;
-	    
+
 	    imax[i] = max3(ima[0][i],ima[1][i],ima[2][i]);
-	    if (imax[i] < -lbuf[i]) 
+	    if (imax[i] < -lbuf[i])
 	    	imax[i] = -lbuf[i];
-	    else if (imax[i] >= gmax[i] + ubuf[i]) 
+	    else if (imax[i] >= gmax[i] + ubuf[i])
 	    	imax[i] = gmax[i] + ubuf[i] - 1;
-	    
+
 	    i_diff[i] = imax[i] - imin[i] + 1;
 	}
-	
+
 	if(is_tri_outside(intfc, t, grid))
 	    for(i=0; i<3; ++i)
 		i_diff[i] = 0;
@@ -2887,12 +2887,12 @@ LOCAL void blocks_on_tri(
 	    print_int_vector("i_diff", i_diff, 3, "\n");
 	    print_int_vector("imin", imin, 3, "\n");
 	    print_int_vector("imax", imax, 3, "\n");
-	    printf("posn  %24.15e %24.15e  %24.15e\n", 
+	    printf("posn  %24.15e %24.15e  %24.15e\n",
 		grid->L[2] + imin[2]*grid->h[2],
 		grid->L[2] + (imax[2]+1)*grid->h[2], hmintol);
 	    print_rectangular_grid(grid);
 	}
-	
+
 	for (i = 0; i < i_diff[0]; ++i)
 	{
 	    for (j = 0; j < i_diff[1]; ++j)
@@ -3021,7 +3021,7 @@ EXPORT boolean within_tri(
 	D1 = Det3d(v1,v21,N);
 	D2 = Det3d(v2,v32,N);
 	D3 = Det3d(v3,v13,N);
-	
+
 	if(debugging("line_tri"))
 	{
 	    printf("#D %24.16e  %24.16e  %24.16e\n", D1, D2, D3);
@@ -3041,12 +3041,12 @@ EXPORT boolean within_tri(
 *	be 4. In particular we have:
 *
 *	block_dimension (1,1,1) = 0,  triangle lies within a single grid block.
-*	block_dimension (2,1,1), (1,2,1), (1,1,2) = 1, triangle lies within 
+*	block_dimension (2,1,1), (1,2,1), (1,1,2) = 1, triangle lies within
 *		a pair of adjacent grid blocks.
-*	block_dimension (2,2,1), (1,2,2), (2,1,2) = 2, triangle lies within 
+*	block_dimension (2,2,1), (1,2,2), (2,1,2) = 2, triangle lies within
 *		a 2x2 group of coplanar grid blocks.
 *	block_dimension (2,2,2) = 3,  triangle lies within a 2x2x2 group of
-*		adjacent grid blocks,  and does not lie entirely within 
+*		adjacent grid blocks,  and does not lie entirely within
 *		any 2x2 coplanar subset of this group.
 */
 
@@ -3164,7 +3164,7 @@ LOCAL void set_off_front_comp3d(
 	/* deal with bdry types which do not have surfaces. */
 	for(i=0; i<3; i++)
 	    for(j=0; j<2; j++)
-	        bdry_flag[i][j] = buffered_boundary_type(rect_boundary_type(intfc,i,j)) || 
+	        bdry_flag[i][j] = buffered_boundary_type(rect_boundary_type(intfc,i,j)) ||
 		             rect_boundary_type(intfc,i,j) == UNKNOWN_BOUNDARY_TYPE;
 
 	if (bdry_flag[0][0])
@@ -3201,7 +3201,7 @@ LOCAL void set_off_front_comp3d(
 	    	        p[1] = cell_center(iy,1,grid);
 	    	        p[2] = cell_center(iz,2,grid);
 	    		compon_iziy[ix] = component_wrt_icoords3d(p,ip,intfc);
-			
+
 			if(debugging("init_comp"))
 			{
 			    printf("#pt0 %d \n", compon[14][iymax-9][9]);
@@ -3233,7 +3233,7 @@ LOCAL void set_off_front_comp3d(
 		          {
 			    if(debugging("init_comp") && k == 14)
 			    {
-			        printf("#pt %d  %d  %d | %d  %d  %d | %d\n", 
+			        printf("#pt %d  %d  %d | %d  %d  %d | %d\n",
 				    imin, jmin, kmin, i, j, k, c);
 			    }
 			    compj[i] = c;
@@ -3610,7 +3610,7 @@ LIB_LOCAL void show_COMP_3d(
 	    {
 	        for (ix = 0; ix < ixmax; ++ix)
 		{
-		    
+
 		    comp = intfc->table->compon3d[iz][iy][ix];
 		    switch (comp)
 		    {
@@ -3678,7 +3678,7 @@ LOCAL	void set_tri_list_tolerance(RECT_GRID *rgr)
 		hmin = rgr->h[i];
 	}
 
-	/*crx_tol = hmin*1.0e-6;*/ 
+	/*crx_tol = hmin*1.0e-6;*/
 	crx_tol = hmin*1.0e-10;/*TOLERANCE*/
 	crx_tolv = sqr(crx_tol);
         /*crx_toll = 1.0e3*sqr(crx_tol); */
@@ -3733,6 +3733,7 @@ LOCAL	COMPONENT comp_at_closest(
 }		/* end comp_at_closest */
 
 
+//TODO && FIXME: IS THIS FUNCTION IMPORTANT FOR BOUNDARY CONDITION?
 EXPORT boolean tri_edge_crossing(
 	TRI   *tri,
 	double *crds_start,
@@ -3772,9 +3773,9 @@ EXPORT boolean tri_edge_crossing(
 	    (crds_max[(ic+1)%3] < crds_crx[(ic+1)%3] - crx_tol) ||
 	    (crds_max[(ic+2)%3] < crds_crx[(ic+2)%3] - crx_tol))
 	    return NO;
-	
-	n = Tri_normal(tri); 
-	
+
+	n = Tri_normal(tri);
+
 	if(debugging("tst_crx"))
 	    print_general_vector("n", n, 3, "\n");
 
@@ -3796,8 +3797,8 @@ EXPORT boolean tri_edge_crossing(
 	    pt = Coords(p[i]);
 	    d = sqr(pt[(ic+1)%3] - crds_crx[(ic+1)%3])
 	      + sqr(pt[(ic+2)%3] - crds_crx[(ic+2)%3]);
-	
-	    if (d < crx_tolv && crds_start[ic] <= pt[ic] && 
+
+	    if (d < crx_tolv && crds_start[ic] <= pt[ic] &&
 			crds_end[ic] > pt[ic])
 	    {
 	        crds_crx[ic] = Coords(p[i])[ic];
@@ -3825,7 +3826,7 @@ EXPORT boolean tri_edge_crossing(
 	    d = shortest_2line_dist_dir(ic,crds_start,p1,p2,crds_crx,pe_crx);
 	    if (d > crx_toll)
 		continue;
-		
+
 	    if(debugging("tst_crx"))
 	    {
 		print_general_vector("p1", p1, 3, "\n");
@@ -3836,10 +3837,10 @@ EXPORT boolean tri_edge_crossing(
 		printf(" d= %24.16e  crx_toll = %24.16e \n", d, crx_toll);
 	    }
 
-	    if ((crds_start[ic] <= crds_crx[ic] && crds_end[ic] > crds_crx[ic]) 
-		&& within_interval(p1[0],p2[0],pe_crx[0])  
-		&& within_interval(p1[1],p2[1],pe_crx[1])  
-		&& within_interval(p1[2],p2[2],pe_crx[2])) 
+	    if ((crds_start[ic] <= crds_crx[ic] && crds_end[ic] > crds_crx[ic])
+		&& within_interval(p1[0],p2[0],pe_crx[0])
+		&& within_interval(p1[1],p2[1],pe_crx[1])
+		&& within_interval(p1[2],p2[2],pe_crx[2]))
 	    {
 	    	*ie = i;
 	    	return YES;
@@ -3847,12 +3848,12 @@ EXPORT boolean tri_edge_crossing(
 	    else
 		return NO;
 	}
-	
+
 	/* check for tri interior on grid edge */
 	D = 0.0;
 	for (i = 0; i < 3; ++i)
 	    D += norm[i]*Coords(p[0])[i];
-	
+
 	crds_crx[ic] = (D - (norm[(ic+1)%3]*crds_start[(ic+1)%3] +
 			     norm[(ic+2)%3]*crds_start[(ic+2)%3]))/norm[ic];
 
@@ -3939,7 +3940,7 @@ const double *n;
 double    norm[MAXD], v[MAXD], D, t1, t2;
 int	i,iv,ie;
 
-	n = Tri_normal(tri); 
+	n = Tri_normal(tri);
 	D = Mag3d(n);
 	for (i = 0; i < 3; ++i)
 	    norm[i] = n[i]/D;
@@ -3964,17 +3965,17 @@ int	i,iv,ie;
 	    if(point_tri_crossing(crx,&iv,&ie,v,tri,norm,tol))
 		return YES;
 	}
-	
+
 	/*In the same side of the plane */
 	if(t1*t2 > 0.0)
 	    return NO;
-	
+
 	/*In the different side of the plane */
 	t1 = fabs(t1);
 	t2 = fabs(t2);
 	for(i=0; i<3; i++)
 	    v[i] = (crds1[i]*t2 + crds2[i]*t1)/(t1 + t2);
-	
+
 	if(point_tri_crossing(crx,&iv,&ie,v,tri,norm,tol))
 	    return YES;
 
@@ -4000,7 +4001,7 @@ double    n[MAXD],v[MAXD], D, t1, t2;
 int	 i;
 
 	*iv = ERROR;
-	
+
 	difference(crds1,crds2,n,3);
 	D = Mag3d(n);
 	if(D < tol)
@@ -4012,12 +4013,12 @@ int	 i;
 	}
 	for(i=0; i<3; i++)
 	    n[i] /= D;
-	
+
 	difference(crds1, pt, v, 3);
 	t1 = Dot3d(v, n);
 	difference(crds2, pt, v, 3);
 	t2 = Dot3d(v, n);
-	
+
 	/*On the same side of the plane */
 	if(t1*t2 > 0.0)
 	    if(fabs(t1) < fabs(t2))
@@ -4032,7 +4033,7 @@ int	 i;
 		*iv = 1;
 		return YES;
 	    }
-	
+
 	/*In different sides of the plane */
 	t1 = fabs(t1);
 	t2 = fabs(t2);
@@ -4065,7 +4066,7 @@ LOCAL COMPONENT comp_from_line_tri(
 	TRI		*tri,
 	SURFACE		*s,
 	int		*icoords,
-	INTERFACE	*intfc, 
+	INTERFACE	*intfc,
 	double		tol)
 {
 	COMPONENT	comp;
@@ -4077,7 +4078,7 @@ LOCAL COMPONENT comp_from_line_tri(
 	double		dist, dist0, crds2[3], crx[3], crx0[3];
 	const double     *tnor;
 	struct Table	*T = intfc->table;
-        
+
 	ixmin = (ix > 0) ? ix-1 : ix;
 	ixmax = ((ix+1) < gmax[0]) ? ix+1 : ix;
 	iymin = (iy > 0) ? iy-1 : iy;
@@ -4091,7 +4092,7 @@ LOCAL COMPONENT comp_from_line_tri(
 	    crds2[i] /= 3.0;
 
 	ft_assign(crx, crds2, 3*FLOAT);
-        dist = distance_between_positions(crds1, crds2, 3); 
+        dist = distance_between_positions(crds1, crds2, 3);
 
 	for (iz = izmin; iz <= izmax; ++iz)
 	{
@@ -4110,7 +4111,7 @@ LOCAL COMPONENT comp_from_line_tri(
 			    continue;
 			if(line_tri_crossing(crx0,t[i],crds1,crds2,tol))
 			{
-			    dist0 = distance_between_positions(crds1, crx0, 3); 
+			    dist0 = distance_between_positions(crds1, crx0, 3);
 			    if(dist0 < dist)
 			    {
 			        dist = dist0;
@@ -4124,7 +4125,7 @@ LOCAL COMPONENT comp_from_line_tri(
 	    }
 	}
 	difference(crds1, crds2, crx0, 3);
-	
+
 	tnor = Tri_normal(tri);
 	*ip = Dot3d(tnor, crx0)/(Mag3d(tnor)*Mag3d(crx0));
 	if (*ip > 0.0)
@@ -4236,7 +4237,7 @@ LOCAL COMPONENT component_wrt_icoords3d_vertex(
 	    printf("ERROR component_wrt_icoords3d_vertex, no crossing tris.\n");
 	    clean_up(ERROR);
 	}
-	
+
 	qsort((POINTER)ang_comp, k, sizeof(ANG_COMP), compare_ang_comp);
 	if(debugging("ang_comp"))
 	{

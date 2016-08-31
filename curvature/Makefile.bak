@@ -1,0 +1,21 @@
+CC=mpicxx -g
+CXX=mpicxx -g
+F77=mpif77 -g
+F77_LIBS=
+
+libext = 
+incs =    -D__MPI__ -I/home/frankenstein/FronTier-mac_RT_sgs_test/hiprop/include
+libincs = 
+libs =  -L/home/frankenstein/FronTier-mac_RT_sgs_test/hiprop -lhiprop
+
+curvature: FT_libs curvature.cpp
+	rm -f curvature
+	$(CXX) -c -I../include $(incs) curvature.cpp
+	$(CXX) curvature.o -I../include -L../lib/x86_64  $(libincs) -lFronTier -lm $(libs) -o curvature
+
+-include ../devel-deps.inc
+
+clean:
+	rm -rf *.o curvature 
+tagsfile:
+	ctags *.cpp ../src/*/*.[chf] ../src/*/*/*.[chf]

@@ -1163,7 +1163,7 @@ void poisson_solver3d_MacPhi_vd(
             index  = d_index3d(i,j,k,top_gmax);
             comp = top_comp[index];
             I = ijk_to_I[i][j][k];
-            if (I == -1) continue;
+            if (I == -1) continue;//TODO && FIXME: Boundary Condition I == -1 NEVER IN USE. FOR SURE
 
             index_nb[0] = d_index3d(i-1,j,k,top_gmax);
             index_nb[1] = d_index3d(i+1,j,k,top_gmax);
@@ -1177,16 +1177,35 @@ void poisson_solver3d_MacPhi_vd(
             I_nb[3] = ijk_to_I[i][j+1][k];
             I_nb[4] = ijk_to_I[i][j][k-1];
             I_nb[5] = ijk_to_I[i][j][k+1];
+            //TODO && FIXME: HARDWIRED. SUITABLE FOR DEBUGGING ONLY. TEST CASE: FULL NEUMANN BOUNDARY CONDITIONS.
+            /*
+            if (i-1 < imin)
+                I_nb[0] = -1;
+            if (i+1 > imax)
+                I_nb[1] = -1;
+            if (j-1 < jmin)
+                I_nb[2] = -1;
+            if (j+1 > jmax)
+                I_nb[3] = -1;
+            if (k-1 < kmin)
+                I_nb[4] = -1;
+            if (k+1 > kmax)
+                I_nb[5] = -1;
+            */
+            //END OF HARDWIRED.
+
+
             icoords[0] = i;
             icoords[1] = j;
             icoords[2] = k;
 
             k0 = kk[index];
             num_nb = 0;
+            // TODO && FIXME: -1 is SOLID_COMP. That is Boundary or Wall
             for (l = 0; l < 6; ++l)
             {
-                if (I_nb[l] == -1)
-                    index_nb[l] = index;
+                if (I_nb[l] == -1)// TODO && FIXME: Boundary State
+                    index_nb[l] = index;//TODO && FIXME: Homogeneous Neumann Boundary Condition
                 else num_nb++;
                 if (k0==0 || kk[ index_nb[l] ]==0)	clean_up(ERROR);
                 k_nb[l] = 2.0/(1.0/k0 + 1.0/kk[ index_nb[l] ]);
@@ -1200,10 +1219,10 @@ void poisson_solver3d_MacPhi_vd(
                 if (num_nb < 2) break;
                 if (I_nb[l] != -1)
                 {
-                    solver.Set_A(I,I_nb[l],coeff[l]);
+                    solver.Set_A(I,I_nb[l],coeff[l]);//TODO && FIXME: A[I][I_nb[l]] = coeff[l]
                     aII += -coeff[l];
                 }
-                else
+                else // TODO && FIXME: IF neighbor cell is on Wall B.C., do not include it in the matrix
                 {
                     hs = FT_HyperSurfAtGridCrossing(front,icoords,dir[l]);
                     if (hs != NULL && wave_type(hs) == DIRICHLET_BOUNDARY)
@@ -1221,16 +1240,20 @@ void poisson_solver3d_MacPhi_vd(
                     }
                     else // homogeneous Neumann B.C. for phi_mac, do nothing!
                     {
+                        //TODO && FIXME: This is my comment section. Should go away.
+                        /*
                         if (wave_type(hs) == NEUMANN_BOUNDARY)
                         {
                             printf("BOUNDARY CONDITION is %d\n", wave_type(hs));
                             printf("NEUMANN_BOUNDARY in %s.\n", __func__);
                         }
+                        //printf("icoords = %d %d %d\n", i,j,k);
                         if (wave_type(hs) == REFLECTION_BOUNDARY)
                         {
                             printf("BOUNDARY CONDITION is %d\n", wave_type(hs));
                             printf("REFLECTION_BOUNDARY in %s.\n", __func__);
                         }
+                        */
                     }
                 }
             }
@@ -1241,16 +1264,17 @@ void poisson_solver3d_MacPhi_vd(
              * handle such case. If we have better understanding, this should
              * be changed back.
              */
+            // TODO && FIXME: num_nb > 0 will just work.
             if(num_nb >= 2)
             {
-                solver.Set_A(I,I,aII);
+                solver.Set_A(I,I,aII);// TODO && FIXME: A[I][I] = aII;
             }
-            else
+            else //TODO && FIXME: num_nb = 0 OR num_nb = 1, cell should be outside of computational domain.
             {
-                solver.Set_A(I,I,1.0);
+                solver.Set_A(I,I,1.0);//TODO && FIXME: NEVER IN USE.
             }
             solver.Set_b(I,rhs);
-        }
+        }//end of loop
         use_neumann_solver = pp_min_status(use_neumann_solver);
 
         solver.SetMaxIter(40000);
@@ -1464,7 +1488,7 @@ void poisson_solver3d_Expand_vd(
             }
 
             // LOWER
-            if (I_nb[4] == -1)
+            if (I_nb[4] == -1)//TODO && FIXME: NEUMANN BOUNDARY CONDITION TREATMENT.
             {
                 coeff[10] = (1.0/kk[index] + 1.0/kk_old[index])/2.0/4.0/(top_h[2]*top_h[2]);
                 solver.Set_A(I,I_nb[5],coeff[10]);

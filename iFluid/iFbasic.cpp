@@ -83,6 +83,7 @@ Incompress_Solver_Smooth_Basis::Incompress_Solver_Smooth_Basis(Front &front):fro
 
 boolean Incompress_Solver_Smooth_Basis::FT_StateStructAtGridCrossing_tmp(Front *front, int *icoords, GRID_DIRECTION dir, COMPONENT comp, Locstate *state, HYPER_SURF **hs, double *crx_coords, double t)
 {
+    //TODO && FIXME: Expanding the functionality to include ALL GRID_DIRECTION.
     return FT_StateStructAtGridCrossing(front,icoords,dir,comp,state,hs,crx_coords);
 }
 
@@ -252,7 +253,7 @@ void Incompress_Solver_Smooth_Basis::setComponent(void)
 	}
 }
 
-
+// TODO && FIXME: modify this function to have a shortcut for REFLECTION BOUNDARY/PERIODIC BOUNDARY.
 void Incompress_Solver_Smooth_Basis::setIndexMap(void)
 {
 	static boolean first = YES;
