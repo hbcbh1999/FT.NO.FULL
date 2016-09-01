@@ -12643,6 +12643,17 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                     fprintf(outfile,"%.16g\n",cell_center[index].m_state.m_P);
                 }
             }
+            //PRINT OUT COMPONENT
+            fprintf(outfile, "SCALARS COMP double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                fprintf(outfile,"%d\n",cell_center[index].comp);
+            }
+
             //DEBUG REFLECTION BOUNDARY CONDITION. TODO && FIXME:
             {
                 fprintf(outfile, "SCALARS Dcoef double\n");
@@ -13798,7 +13809,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::
             }
             scatMeshArray(reflect);
             //REFLECTION BOUNDARY CONDITION
-            Solute_Reflect(l,array,reflect);
+            //Solute_Reflect(l,array,reflect);
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
