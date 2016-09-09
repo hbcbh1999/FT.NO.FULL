@@ -1,5 +1,5 @@
 /*! \file fapi.h
-
+    
     \brief The fapi.h contains the functions used to operate the interface.
  */
 
@@ -28,9 +28,9 @@ extern "C" {
 /*! \fn void FT_Init(int argc, char **argv, F_BASIC_DATA *f_basic)
     \ingroup INITIALIZATION
     \brief Process the command line arguments, set IO handles, and store
-     initialization parameters in f_basic, Including read the number of
-     processors, the dimesension of the problem, partition of the
-     computational domain, restart message, the input file and the output
+     initialization parameters in f_basic, Including read the number of 
+     processors, the dimesension of the problem, partition of the 
+     computational domain, restart message, the input file and the output 
      directory.
      -d dim
      -p nx [ny] [nz]
@@ -43,25 +43,25 @@ extern "C" {
     \param f_basic @b out	Structure to store options for initializing the program
  */
    IMPORT  void FT_Init(int argc,
-			char **argv,
+			char **argv, 
 			F_BASIC_DATA *f_basic );
 
 /*! \fn void FT_ReadSpaceDomain(char *in_name, F_BASIC_DATA *f_basic)
  *  \ingroup INITIALIZATION
-    \brief Read from input file the computational domain information of the
-     problem, including the domain limits, computational grid, and the types
-     of the rectangular boundaries. The information is stored in the structure
+    \brief Read from input file the computational domain information of the 
+     problem, including the domain limits, computational grid, and the types 
+     of the rectangular boundaries. The information is stored in the structure 
      f_basic.
     \param in_name @b in	The name of input file
     \param f_basic @b out	Structure to store domain information
  */
-   IMPORT  void FT_ReadSpaceDomain(char *in_name,
+   IMPORT  void FT_ReadSpaceDomain(char *in_name, 
 				    F_BASIC_DATA *f_basic);
 
 /*! \fn void FT_StartUp(Front *front, F_BASIC_DATA *ft_basic)
  *  \ingroup INITIALIZATION
-    \brief Initialize front computational grid, interface and function hooks,
-     default function calls, and if restart, read interface from restart
+    \brief Initialize front computational grid, interface and function hooks, 
+     default function calls, and if restart, read interface from restart 
      directory. Constructor for Front object.
     \param front @b inout	Pointer to Front.
     \param f_basic @b in	Structure for initialization information.
@@ -73,11 +73,11 @@ extern "C" {
  *  \ingroup INITIALIZATION
     \brief Initialize strings for debugging option of the problem,
      read the input file.
-    \param inname @b in	The name of the input file
+    \param inname @b in	The name of the input file 
  */
    IMPORT  void FT_InitDebug(char *inname );
 
-/*! \fn void FT_InitIntfc(Front *front,
+/*! \fn void FT_InitIntfc(Front *front, 
      				    LEVEL_FUNC_PACK *level_func_pack)
     \ingroup INITIALIZATION
     \brief Initialize the interface interface curves (2D) and surfaces (3D)
@@ -90,7 +90,7 @@ extern "C" {
    IMPORT  void FT_InitIntfc(Front *front ,
 			       LEVEL_FUNC_PACK *level_func_pack );
 
-/*! \fn void FT_ClipIntfcToSubdomain(Front *front)
+/*! \fn void FT_ClipIntfcToSubdomain(Front *front) 
     \ingroup INITIALIZATION
     \brief Clip the Initial interface of the front to a parallel subdomain.
     \param front @b inout	Pointer to Front.
@@ -117,7 +117,7 @@ extern "C" {
 /*! \fn void FT_ReadTimeControl(char *in_name, Front *front)
  *  \ingroup INITIALIZATION
     \brief Read the time domain and control information from input file,
-     including maximum time, maximum step, restart print interval,
+     including maximum time, maximum step, restart print interval, 
      movie frame output interval, CFL factor, and redistribution step interval.
     \param in_name @b in	The name of input file
     \param front @b inout	Pointer to Front for computation
@@ -135,7 +135,7 @@ extern "C" {
 
 /*! \fn POINTER *FT_CreateLevelHyperSurfs(RECT_GRID *rgr, INTERFACE *intfc, int neg_comp, int pos_comp, double (*func)(POINTER,double*), POINTER   func_params, int w_type, int *num_hs)
  *  \ingroup INITIALIZATION
-    \brief This function creates a set of hypersurfaces (curves in 2D and
+    \brief This function creates a set of hypersurfaces (curves in 2D and 
      surfaces in 3D) using a level function (provided by the caller). The
      function return the handle for the array of hyper surfaces as (POINTER*).
     \param rgr @b in Pointer to the rectangular grid in which the hyper surfaces are constructed.
@@ -159,7 +159,7 @@ extern "C" {
 
 /*! \fn void FT_Propagate(Front *front)
  *  \ingroup PROPAGATION
-    \brief Propagate the Front for one time step. The process includes
+    \brief Propagate the Front for one time step. The process includes  
      advancing the front forward by one step to new positions, redistributing
      new interface mesh and resolving physical and topological bifurcations.
      The interface in the front is replaced by a new and propagated one and
@@ -173,7 +173,7 @@ extern "C" {
     \brief This is an independent call for redistribution and optimization
      of the interface mesh. A parallel communication of front should be called
      following this call to ensure that the redistribution is consistent
-     globally.
+     globally. 
     \param front Pointer to Front to be redistributed
  */
    IMPORT  void FT_RedistMesh(Front *front);
@@ -228,7 +228,7 @@ extern "C" {
 /*! \fn boolean FT_TimeLimitReached(Front *front)
  *  \ingroup TIME
     \brief Signals that time is reached for termination of the run. Return
-     YES either maximum time has been reached or maximum time step has been
+     YES either maximum time has been reached or maximum time step has been 
      reached.
     \param front @b in	Pointer to Front.
  */
@@ -264,7 +264,7 @@ extern "C" {
 /*! \fn void FT_Save(Front *front, char *out_name)
  *  \ingroup OUTPUT
     \brief Output front geometric data to the directory of out_name.
-     The data can be used for restart of the run.
+     The data can be used for restart of the run. 
     \param front @b in	Pointer to Front.
     \param out_name @b in	String for output directory name.
  */
@@ -316,7 +316,7 @@ extern "C" {
      The function returns YES if the crossing exists, in such case, the
      crossing coordinates are copied to crx_coords, the corresponding
      hyper surface (curce in 2D and surface in 3D) is assigned to hs,
-     and the normal vector to the side of comp. If no crossing exists,
+     and the normal vector to the side of comp. If no crossing exists, 
      the function return NO;
     \param front @b in	Pointer to Front.
     \param icoords @b in	Grid point coordinate indices.
@@ -374,7 +374,7 @@ extern "C" {
     \param comp @b in	Component (domain index) of the grid point at icoord.
     \param state_func @b in	State function for the requested state variable.
 
-    \param ans @b
+    \param ans @b 
     \param crx_coords @b out	Crossing coordinates.
  */
 
@@ -388,8 +388,8 @@ extern "C" {
 
 /*! \fn HYPER_SURF *FT_HyperSurfAtGridCrossing(Front *front, int *icoords, GRID_DIRECTION dir)
  *  \ingroup GRIDINTFC
-    \brief Sitting at icoords and look to the direction dir, this function
-     detects the nearest hyper surface (curve in 2D and surface in 3D)
+    \brief Sitting at icoords and look to the direction dir, this function 
+     detects the nearest hyper surface (curve in 2D and surface in 3D) 
      on the grid segment. Return pointer to hyper surface if there is
      one, return NULL if no crossing hyper surface is found.
     \param front @b in	Pointer to Front.
@@ -403,7 +403,7 @@ extern "C" {
 
 /*! \fn boolean FT_IntrpStateVarAtCoords(Front *front, int comp, double *coords, double *var_array, double (*state_func)(POINTER), double *ans)
  *  \ingroup GRIDINTFC
-    \brief Interpolate a state variable at a space point with coords. If
+    \brief Interpolate a state variable at a space point with coords. If 
      comp == NO_COMP, it interpolates with no regard of interface. Otherwise
      it will interpolate in the subdomain of comp. The state_func() is needed
      to tell the function how to retrieve the variable from the interface
@@ -417,10 +417,10 @@ extern "C" {
  */
 
    IMPORT  boolean FT_IntrpStateVarAtCoords(Front *front ,
-   				int comp ,
-				double *coords ,
-				double *var_array ,
-				double (*state_func)(POINTER) ,
+   				int comp , 
+				double *coords , 
+				double *var_array , 
+				double (*state_func)(POINTER) , 
 				double *ans );
    //for MAC grid
    IMPORT  boolean FT_IntrpVelocityVarAtCoords_MAC_vd(Front *front ,
@@ -434,8 +434,8 @@ extern "C" {
 /*! \fn boolean FT_FindNearestIntfcPointInRange(Front *front, int comp, double *coords, double *intfc_point, double *t, HYPER_SURF_ELEMENT **hse, HYPER_SURF **hs, int range)
  *  \ingroup GRIDINTFC
     \brief Given a space coordinate coords, this function tries to find the
-     nearest point on the interface within range, together with its associated
-     hyper surface element (bond in 2D and triangle in 3D) and hyper surface
+     nearest point on the interface within range, together with its associated 
+     hyper surface element (bond in 2D and triangle in 3D) and hyper surface 
      (curve in 2D and surface in 3D). If no hyper surface is within range, the
      function returns NO;
     \param front @b in	Pointer to Front.
@@ -562,8 +562,8 @@ extern "C" {
 
 /*! \fn void FT_MixedBoundaryHypSurfs(INTERFACE *intfc, int idir, int nb, int w_type, int *num_hs)
  *  \ingroup BOUNDARY
-    \brief This function returns a set of hyper surfaces (curves in 2D and
-     surfaces in 3D) whose wave type matches the input w_type. If the
+    \brief This function returns a set of hyper surfaces (curves in 2D and 
+     surfaces in 3D) whose wave type matches the input w_type. If the 
      boundary on idir and side nb is not MIXED_TYPE_BOUNDARY, the function
      returns NULL. Otherwise it will return an array of hyper surfaces.
      The function also assign num_hs, the total number of hyper surfaces
@@ -616,7 +616,7 @@ extern "C" {
 /*! \fn HYPER_SURF **FT_InteriorHypSurfs(INTERFACE *intfc, int wave_type, int *num_hs)
  *  \ingroup QUERY
     \brief This function looks for interior hyper surfaces (curve in 2D and
-     surface in 3D) with the given wave type. Returns NULL if no match is
+     surface in 3D) with the given wave type. Returns NULL if no match is 
      found and return pointer to an array of hyper surfaces if found. This
      function allocates the memory for the array of pointers to hyper surfaces.
     \param intfc @b in	Pointer to an interface of the front.
@@ -642,15 +642,15 @@ extern "C" {
 /*! \fn void FT_ParallelExchGridArrayBuffer(double *grid_array, Front *front)
  *  \ingroup PARALLEL
     \brief This is a parallel communication function for a double array
-     on the expanded dual grid of the grid_intfc in front. It will cut
-     the old buffer parts of the array and patch it with new buffer parts
-     received from other subdomains or periodically shifted sides. This is a
+     on the expanded dual grid of the grid_intfc in front. It will cut 
+     the old buffer parts of the array and patch it with new buffer parts 
+     received from other subdomains or periodically shifted sides. This is a 
      synchronous function and must be called synchronously by every processor.
     \param grid_array @b inout	A double array of field variable on expanded duel grid.
     \param front @b in	Pointer to Front.
  */
    IMPORT  void FT_ParallelExchGridArrayBuffer(double *grid_array ,
-   				Front* front, int* reflect );
+   				Front* front );
 
 /*! \fn void FT_ParallelExchCellIndex(Front *front, int *lbuf, int *ubuf, POINTER ijk_to_I)
  *  \ingroup PARALLEL

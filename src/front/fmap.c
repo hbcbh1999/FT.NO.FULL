@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations
-whose solutions have discontinuities.
+Front Tracking is a numerical method for the solution of partial differential equations 
+whose solutions have discontinuities.  
 
 
-Copyright (C) 1999 by The University at Stony Brook.
-
+Copyright (C) 1999 by The University at Stony Brook. 
+ 
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -55,9 +55,9 @@ EXPORT	void FT_Propagate(
         INTERFACE *tmp_intfc = NULL;
 
         if (front->step > 0 && front->regrid_restart == NO)
-        {
+        {   
             /* The make_grid_intfc is used for the information of the previous interface. */
-            prev_interface(front->interf) = front->grid_intfc;
+            prev_interface(front->interf) = front->grid_intfc; 
 	    //deep copy for tmp_inftc
             tmp_intfc = make_grid_intfc(front->interf,EXPANDED_DUAL_GRID,NULL);
 
@@ -136,7 +136,7 @@ EXPORT	int FrontAdvance(
 	int status,count;
 	double start_dt = dt;
 
-	*dt_frac = 0.5;
+	*dt_frac = 0.5; 
 	front->dt_frac = dt_frac;
         set_cut_ref_fail(NO);
         status = advance_front(front->dt,dt_frac,front,newfront,wave);/* mixed_advance_front3d called */
@@ -192,11 +192,11 @@ EXPORT	int FrontAdvance(
 
             front->bad_step = NO;
             set_redistribution(NO);
-            modi_max_sqr_length(NO);
+            modi_max_sqr_length(NO); 
             set_gb(NO);
             count++;
 //            if (count > 12)
-            if (count > 20)
+            if (count > 20) 
 	    {
 		screen("ERROR: in FrontAdvance() modified step 20 times\n");
 	    	clean_up(ERROR);
@@ -241,7 +241,7 @@ EXPORT	double FrontOutputTimeControl(
 	if (front->step+1 >= front->max_step)
             *time_limit_reached = YES;
 
-	if (new_dt > dt)
+	if (new_dt > dt) 
 	    return dt;
 
 	if (dt1 == new_dt)
@@ -351,7 +351,7 @@ EXPORT 	void FrontResetTriParams(
 {
 	double max_tri_area_fac = 1.8;
 	double min_tri_area_fac = 0.5;
-
+	
 	double min_angle_at_vertex = radians(15.0);
 	double max_scaled_tri_side = 1.0;
         /*
@@ -456,7 +456,7 @@ EXPORT	void	FT_Init(
 		if (pp_min_status(create_directory(dirname,NO)) == NO)
 		{
 		    screen("Cannot create directory %s\n",dirname);
-		    clean_up(ERROR);
+		    clean_up(ERROR);    
 		}
 
                 if (pp_numnodes() > 1)
@@ -541,7 +541,7 @@ EXPORT	void FT_MakeGridIntfc(
 	Front *front)
 {
 	front->grid_intfc = make_grid_intfc(front->interf,
-            EXPANDED_DUAL_GRID,NULL);
+			EXPANDED_DUAL_GRID,NULL);
 }	/* end FT_MakeGridIntfc */
 
 EXPORT	void FT_FreeGridIntfc(
@@ -559,10 +559,9 @@ EXPORT	void FT_ParallelExchIntfcBuffer(
 
 EXPORT	void FT_ParallelExchGridArrayBuffer(
 	double *grid_array,
-	Front *front,
-    int *reflect)
+	Front *front)
 {
-	scatter_top_grid_float_array(grid_array,front,reflect);
+	scatter_top_grid_float_array(grid_array,front);
 }	/* end FT_ParallelExchGridArrayBuffer */
 
 EXPORT	HYPER_SURF *FT_HyperSurfAtGridCrossing(
@@ -575,7 +574,7 @@ EXPORT	HYPER_SURF *FT_HyperSurfAtGridCrossing(
 	int nc,crx_index;
 
 	nc = GridSegCrossing(crxs,icoords,dir,grid_intfc);
-	if (nc == 0)
+	if (nc == 0) 
 	    return NULL;
 	if (dir == EAST || dir == NORTH || dir == UPPER)
 	    crx_index = 0;
@@ -664,7 +663,7 @@ EXPORT	boolean FT_NormalAtGridCrossing(
 			nor[i] *= -1.0;
 		}
 		break;
-	    default:
+	    default: 
 	    	screen("ERROR: In FT_NormalAtGridCrossing(),"
 			"unsupported dimension dim = %d\n",dim);
 		return NO;
@@ -1021,7 +1020,7 @@ LOCAL void collect_cell_ptst(
 	boolean fr_crx_grid_seg;
 	double state_at_crx;
 	double crx_coords[MAXD];
-
+	
 	blk_cell->is_bilinear = YES;
 	blk_cell->dim = dim;
 	nv = 0;
@@ -1090,7 +1089,7 @@ LOCAL void collect_cell_ptst(
 	    }
 	    break;
 	}
-	if (blk_cell->is_bilinear == YES)
+	if (blk_cell->is_bilinear == YES) 
 	{
 	    blk_cell->nv = nv;
 	    return;
@@ -1334,7 +1333,7 @@ LOCAL void collect_cell_ptst_MAC_vd(
                     ic[0] = icoords[0] + i;
                     ic[1] = icoords[1] + j;
                 }
-
+               
                 index = d_index2d(ic[0],ic[1],gmax);
                 cell_comp2d[i][j] = gr_comp[index];
                 if (gr_comp[index] == comp || comp == NO_COMP)
@@ -1520,7 +1519,7 @@ LOCAL void collect_cell_ptst_MAC_vd(
             return;
         }
 
-        //TODO: for the following part, need to be modified for MAC grid
+        //TODO: for the following part, need to be modified for MAC grid 
         switch (dim)
         {
         case 1:
@@ -1706,7 +1705,7 @@ LOCAL	boolean	test_point_in_seg(
 	if ((p[0][0]-lin_cell_tol < coords[0] &&
 	     p[1][0]+lin_cell_tol > coords[0]) ||
 	    (p[1][0]-lin_cell_tol < coords[0] &&
-	     p[0][0]+lin_cell_tol > coords[0]))
+	     p[0][0]+lin_cell_tol > coords[0])) 
 	    return YES;
 	else
 	    return NO;
@@ -1728,7 +1727,7 @@ LOCAL	boolean	test_point_in_tri(
 	v2[0] = x0 - x1;	v2[1] = y0 - y1;
 	Cross2d(v1,v2,cp);
 
-	if (fabs(cp) < lin_cell_tol)
+	if (fabs(cp) < lin_cell_tol) 
 	    return NO;                  /* degenerated triangle */
 	else if (cp > 0.0)		/* counterclockwise triangle */
 	{
@@ -1931,7 +1930,7 @@ EXPORT void FT_ReadSpaceDomain(
         char *in_name,
         F_BASIC_DATA *f_basic)
 {
-
+	
 	FILE *infile;
 	char input_string[200],sbdry[200];
         char msg[100],s[100];
@@ -2124,21 +2123,21 @@ EXPORT void FT_ReadTimeControl(
         fscanf(infile,"%d",&(Frequency_of_redistribution(front,GENERAL_WAVE)));
         (void) printf("%d\n",Frequency_of_redistribution(front,GENERAL_WAVE));
 	sprintf(msg,"Type yes to turn off auto-redistribution:");
-	front->Auto_Redist = YES;
+	front->Auto_Redist = YES;	
         if (CursorAfterStringOpt(infile,msg))
 	{
             fscanf(infile,"%s",s);
 	    if (s[0] == 'y' || s[0] == 'Y')
-		front->Auto_Redist = NO;
+		front->Auto_Redist = NO;	
 	}
 	fclose(infile);
 }	/* end FT_ReadTimeControl */
 
 
 EXPORT	boolean FrontGetRectCellIntrpCoeffs(
-	double *p,
+	double *p, 
 	RECT_GRID *grid,
-	int *index,
+	int *index, 
 	double *coeffs)
 {
 	/* locate the point */
@@ -2321,7 +2320,7 @@ EXPORT HYPER_SURF **FT_InteriorHypSurfs(
 	    for (p = intfc->points; p && *p; ++p)
 	    {
 		if (wave_type(*p) != w_type || is_bdry(*p)) continue;
-		else
+		else 
 		{
 		    hyp_surfs[*num_hs] = Hyper_surf(*p);
 		    (*num_hs)++;
@@ -2339,7 +2338,7 @@ EXPORT HYPER_SURF **FT_InteriorHypSurfs(
 	    for (c = intfc->curves; c && *c; ++c)
 	    {
 		if (wave_type(*c) != w_type || is_bdry(*c)) continue;
-		else
+		else 
 		{
 		    hyp_surfs[*num_hs] = Hyper_surf(*c);
 		    (*num_hs)++;
@@ -2357,7 +2356,7 @@ EXPORT HYPER_SURF **FT_InteriorHypSurfs(
 	    for (s = intfc->surfaces; s && *s; ++s)
 	    {
 		if (wave_type(*s) != w_type || is_bdry(*s)) continue;
-		else
+		else 
 		{
 		    hyp_surfs[*num_hs] = Hyper_surf(*s);
 		    (*num_hs)++;
@@ -2470,7 +2469,7 @@ LOCAL	Tan_stencil **FrontGetTanStencils2d(
 }	/*end FrontGetTanStencils2d */
 
 /*
-	Get the mean curvature at the point p (must be a point on
+	Get the mean curvature at the point p (must be a point on 
 	the interface of the front.
 */
 
@@ -2497,7 +2496,7 @@ EXPORT  void    FT_CurvatureAtPoint(
 	*curvature = mean_curvature_at_point(p,hse,hs,fr);
 }	/* end FT_CurvatureAtPoint */
 
-/*
+/*	
 	Get front normal direction at a point. If comp = NO_COMP (-1)
 	the normal direction will point to the positive side of the
 	hyper surface the point is on. Otherwise it will point to
@@ -2543,7 +2542,7 @@ EXPORT 	double	FT_GridSizeInDir(
 	double *h = front->rect_grid->h;
 
 	return grid_size_in_direction(dir,h,dim);
-}	/* end FT_GridSizeInDir */
+}	/* end FT_GridSizeInDir */	
 
 /*
 	Get coordinates of nrad points in the normal direction of the
@@ -2561,7 +2560,7 @@ EXPORT	Nor_stencil *FT_CreateNormalStencil(
 	int i,j;
 	int dim = fr->rect_grid->dim;
 	double dn;
-
+	
 	if (sten == NULL)
 	{
 	    scalar(&sten,sizeof(Nor_stencil));
@@ -2583,7 +2582,7 @@ EXPORT	Nor_stencil *FT_CreateNormalStencil(
 	{
 	    for (j = 0; j < dim; ++j)
 	    {
-		sten->pts[i][j] = Coords(p)[j] + i*dn*sten->nor[j];
+		sten->pts[i][j] = Coords(p)[j] + i*dn*sten->nor[j];	
 	    }
 	}
 	return sten;
@@ -2611,7 +2610,7 @@ EXPORT	boolean FrontGetPointChain(
 
 	inext = 0;
 	b_current = (pc == b->end) ? Next_bond(b,c) : b;
-	while (b_current)
+	while (b_current) 
 	{
 	    inext++;
 	    if (inext == num_pts/2) break;
@@ -2620,7 +2619,7 @@ EXPORT	boolean FrontGetPointChain(
 
 	b_current = (pc == b->end) ? b : Prev_bond(b,c);
 	iprev = 0;
-	while(b_current)
+	while(b_current)	
 	{
 	    iprev++;
 	    if (iprev == num_pts-inext-1) break;
@@ -2629,7 +2628,7 @@ EXPORT	boolean FrontGetPointChain(
 	    b_current = btmp;
 	}
 	if (iprev == 0) b_current = b;
-	for (i = 0; i < num_pts && b_current != NULL;
+	for (i = 0; i < num_pts && b_current != NULL; 
 		++i, b_current = Next_bond(b_current,c))
 	{
 	    pts[i] = b_current->start;
@@ -2715,7 +2714,7 @@ LOCAL void FrontPreAdvance2d(
 	    if (wave_type(*c) == MOVABLE_BODY_BOUNDARY)
 	    {
 		index = body_index(*c);
-		if (motion_type(*c) == PRESET_MOTION)
+		if (motion_type(*c) == PRESET_MOTION) 
 		{
 		    if (debugging("rigid_body"))
 		    {
@@ -2746,7 +2745,7 @@ LOCAL void FrontPreAdvance2d(
 		    	center_of_mass_velo(*c)[i] = 0.0;
 		    angular_velo(*c) = 0.0;
 		}
-		else if (motion_type(*c) == ROTATION)
+		else if (motion_type(*c) == ROTATION) 
 		{
 		    for (i = 0; i < dim; ++i)
 		    	center_of_mass_velo(*c)[i] = 0.0;
@@ -2841,7 +2840,7 @@ LOCAL void FrontPreAdvance3d(
 	    if (wave_type(*s) == MOVABLE_BODY_BOUNDARY)
 	    {
 		index = body_index(*s);
-		if (motion_type(*s) == PRESET_MOTION)
+		if (motion_type(*s) == PRESET_MOTION) 
 		{
 		    if (debugging("rigid_body"))
 		    {
@@ -2865,7 +2864,7 @@ LOCAL void FrontPreAdvance3d(
                         	dt*force[index][i]/total_mass(*s);
 		    }
 		}
-		else
+		else 
 		{
 		    for (i = 0; i < dim; ++i)
 		    	center_of_mass_velo(*s)[i] = 0.0;
@@ -2999,7 +2998,7 @@ EXPORT void FT_SetOutputCounter(Front *front)
 
 EXPORT boolean FT_IsSaveTime(Front *front)
 {
-	if (front->is_print_time || front->time_limit_reached)
+	if (front->is_print_time || front->time_limit_reached) 
 	    return YES;
 	else
 	    return NO;
@@ -3007,7 +3006,7 @@ EXPORT boolean FT_IsSaveTime(Front *front)
 
 EXPORT boolean FT_IsMovieFrameTime(Front *front)
 {
-	if (front->is_movie_time || front->time_limit_reached)
+	if (front->is_movie_time || front->time_limit_reached) 
 	    return YES;
 	else
 	    return NO;
@@ -3037,7 +3036,7 @@ EXPORT	void FT_TimeControlFilter(Front *front)
 	if (front->step+1 >= front->max_step)
             front->time_limit_reached = YES;
 
-	if (new_dt > dt)
+	if (new_dt > dt) 
 	    return;
 
 	if (fabs(dt1 - new_dt) < 1e-15)
@@ -3100,7 +3099,7 @@ EXPORT	void FT_InitDebug(char *inname)
 	}
 	while (fgetstring(infile,"Enter the debugging string:"))
 	{
-	    zero_scalar(string,100*sizeof(char));
+	    zero_scalar(string,100*sizeof(char));	
 	    fscanf(infile,"%s",string);
 	    add_to_debug(string);
 	    (void) printf("Enter the debugging string: %s\n",string);
@@ -3245,7 +3244,7 @@ EXPORT	POINTER *FT_CreateLevelHyperSurfs(
 				func_params,NO,num_hs);
 	    for (i = 0; i < *num_hs; ++i)
 	    {
-		wave_type(curves[i]) = w_type;
+		wave_type(curves[i]) = w_type;	
 		if (curves[i]->start == curves[i]->end)
                     node_type(curves[i]->start) = CLOSED_NODE;
 	    }
@@ -3295,16 +3294,16 @@ EXPORT void FT_PromptSetMixedTypeBoundary2d(
 	    for (n = intfc->nodes; n && *n; ++n)
 	    {
 	    	if (is_rect_side_node(rgr,*n,idir,nb))
-		   nodes[n_nodes++] = *n;
+		   nodes[n_nodes++] = *n; 
 	    }
 	    for (c = intfc->curves; c && *c; ++c)
 	    {
 	    	if (is_rect_side_curve(rgr,*c,idir,nb))
-		   curves[n_curves++] = *c;
+		   curves[n_curves++] = *c; 
 	    }
 	    for (i = 0; i < n_nodes-1; ++i)
 	    for (j = i+1; j < n_nodes; ++j)
-	    	if (Coords(nodes[i]->posn)[(idir+1)%dim] >
+	    	if (Coords(nodes[i]->posn)[(idir+1)%dim] > 
 		    Coords(nodes[j]->posn)[(idir+1)%dim])
 		{
 		    ntmp = nodes[i];
@@ -3351,10 +3350,10 @@ EXPORT void FT_PromptSetMixedTypeBoundary2d(
 		CURVE *curve = NULL;
 	    	for (j = 0; j < n_curves; ++j)
 		{
-		    if ((curves[j]->start == nodes[i] &&
+		    if ((curves[j]->start == nodes[i] && 
 		         curves[j]->end == nodes[i+1]) ||
-		    	(curves[j]->start == nodes[i+1] &&
-		         curves[j]->end == nodes[i]))
+		    	(curves[j]->start == nodes[i+1] && 
+		         curves[j]->end == nodes[i])) 
 		    {
 			 curve = curves[j];
 			 break;
@@ -3488,7 +3487,7 @@ EXPORT HYPER_SURF **FT_MixedBoundaryHypSurfs(
 	    {
 		if (!is_rect_side_curve(rgr,*c,idir,nb)) continue;
 		else if (wave_type(*c) != w_type) continue;
-		else
+		else 
 		{
 		    hyp_surfs[*num_hs] = Hyper_surf(*c);
 		    (*num_hs)++;
@@ -3508,7 +3507,7 @@ EXPORT HYPER_SURF **FT_MixedBoundaryHypSurfs(
 	    {
 		if (!is_rect_side_surface(rgr,*s,idir,nb)) continue;
 		else if (wave_type(*s) != w_type) continue;
-		else
+		else 
 		{
 		    hyp_surfs[*num_hs] = Hyper_surf(*s);
 		    (*num_hs)++;

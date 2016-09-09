@@ -1,5 +1,5 @@
 /*******************************************************************
- * 			iFcartsn3d.cpp
+ * 			iFcartsn3d.cpp	
  *******************************************************************/
 #include "iFluid.h"
 #include "solver.h"
@@ -29,7 +29,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compAdvectionTerm_decoupled(void)
 	for (i = imin; i <= imax; i++)
 	{
 	     I  = ijk_to_I[i][j][k];
-	     if (I == -1)
+	     if (I == -1) 
 	     {
 		 continue;
 	     }
@@ -63,7 +63,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compAdvectionTerm_coupled(void)
 	for (i = imin; i <= imax; i++)
 	{
 	     I  = ijk_to_I[i][j][k];
-	     if (I == -1)
+	     if (I == -1) 
 	     {
 		 continue;
 	     }
@@ -550,13 +550,13 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     index_nb[3] = d_index3d(i,j+1,k,top_gmax);
     index_nb[4] = d_index3d(i,j,k-1,top_gmax);
     index_nb[5] = d_index3d(i,j,k+1,top_gmax);
-
+    
     //theta-z cut neighbours
     index_nb[6] = d_index3d(i-1,j-1,k,top_gmax);
     index_nb[7] = d_index3d(i+1,j-1,k,top_gmax);
     index_nb[8] = d_index3d(i+1,j+1,k,top_gmax);
     index_nb[9] = d_index3d(i-1,j+1,k,top_gmax);
-
+	
     //z-r cut neighbours
     index_nb[10] = d_index3d(i,j-1,k-1,top_gmax);
     index_nb[11] = d_index3d(i,j+1,k-1,top_gmax);
@@ -952,8 +952,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     ////////////////   Tensor term 1 //////////////
     //first term
 
-    diffusion[0] += (
-	             mu_edge[3]*(U_nb[0][3]-U_center[0])/dh1[1]
+    diffusion[0] += ( 
+	             mu_edge[3]*(U_nb[0][3]-U_center[0])/dh1[1] 
 	            -mu_edge[2]*(U_center[0]-U_nb[0][2])/dh0[1]
 		    ) / dh[1];
     //second term
@@ -964,8 +964,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     //////////// Tensor term 2 /////////////
     //first term
 
-    diffusion[0] += (
-	             mu_edge[5]*(U_nb[0][5]-U_center[0])/dh1[2]
+    diffusion[0] += ( 
+	             mu_edge[5]*(U_nb[0][5]-U_center[0])/dh1[2] 
 	            -mu_edge[4]*(U_center[0]-U_nb[0][4])/dh0[2]
 		    ) / dh[2];
 
@@ -981,20 +981,20 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     ///////////////  Tensor term 3  /////////////////
     //first term
 
-    diffusion[0] += (
-	             2.0/r0*mu_edge[1]/r_edge[1]*(U_nb[0][1]-U_center[0])/dh1[0]
+    diffusion[0] += ( 
+	             2.0/r0*mu_edge[1]/r_edge[1]*(U_nb[0][1]-U_center[0])/dh1[0] 
 	            -2.0/r0*mu_edge[0]/r_edge[0]*(U_center[0]-U_nb[0][0])/dh0[0]
 		    ) / dh[0];
 
     //second term
 
-    diffusion[0] += (-2.0/r0*mu_edge[0]/r_edge[0]*U_face[2][0]
+    diffusion[0] += (-2.0/r0*mu_edge[0]/r_edge[0]*U_face[2][0] 
 	             +2.0/r0*mu_edge[1]/r_edge[1]*U_face[2][1]) / dtheta;
 
     /////////////////  Tensor term 4     //////////////
     //first term
 
-    diffusion[0] += (-2.0*mu0/r0*U_face[0][4]
+    diffusion[0] += (-2.0*mu0/r0*U_face[0][4] 
 	             +2.0*mu0/r0*U_face[0][5]) / dr;
 
     //second term
@@ -1002,8 +1002,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     diffusion[0] += (-2.0*mu0/rr*U_center[0]);
 
     //third term
-
-    diffusion[0] += (-2.0*mu0/rr*U_face[2][0]
+    
+    diffusion[0] += (-2.0*mu0/rr*U_face[2][0] 
 	             +2.0*mu0/rr*U_face[2][1]) / dtheta;
 
     /******************* Diffusion term for Equation 2 ************/
@@ -1011,8 +1011,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     //////////////  Tensor term 1  /////////////
     //first term
 
-    diffusion[1] += (
-	             2.0*mu_edge[3]*(U_nb[1][3]-U_center[1])/dh1[1]
+    diffusion[1] += ( 
+	             2.0*mu_edge[3]*(U_nb[1][3]-U_center[1])/dh1[1] 
 	            -2.0*mu_edge[2]*(U_center[1]-U_nb[1][2])/dh0[1]
 		    ) / dh[1];
 
@@ -1024,8 +1024,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
 
     //second term
 
-    diffusion[1] += (
-	             mu_edge[5]*(U_nb[1][5]-U_center[1])/dh1[2]
+    diffusion[1] += ( 
+	             mu_edge[5]*(U_nb[1][5]-U_center[1])/dh1[2] 
 	            -mu_edge[4]*(U_center[1]-U_nb[1][4])/dh0[2]
 		    ) / dh[2];
 
@@ -1037,20 +1037,20 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
 
     //second term
 
-    diffusion[1] += (
-	             mu_edge[1]/r_edge[1]/r0*(U_nb[1][1]-U_center[1])/dh1[0]
+    diffusion[1] += ( 
+	             mu_edge[1]/r_edge[1]/r0*(U_nb[1][1]-U_center[1])/dh1[0] 
 	            -mu_edge[0]/r_edge[0]/r0*(U_center[1]-U_nb[1][0])/dh0[0]
 		    ) / dh[0];
 
     //////////////// Tensor term 4  ///////////////////////
     //first term
-
-    diffusion[1] += (-mu0/r0*U_face[2][2]
+ 
+    diffusion[1] += (-mu0/r0*U_face[2][2] 
 	             +mu0/r0*U_face[2][3]) / dz;
 
     //second term
-
-    diffusion[1] += (-mu0/r0*U_face[1][4]
+ 
+    diffusion[1] += (-mu0/r0*U_face[1][4] 
 	             +mu0/r0*U_face[1][5]) / dr;
 
 
@@ -1059,8 +1059,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     ///////////// Tensor term 1  ////////////////
     //first term
 
-    diffusion[2] += (
-	             mu_edge[3]*(U_nb[2][3]-U_center[2])/dh1[1]
+    diffusion[2] += ( 
+	             mu_edge[3]*(U_nb[2][3]-U_center[2])/dh1[1] 
 	            -mu_edge[2]*(U_center[2]-U_nb[2][2])/dh0[1]
 		    ) / dh[1];
 
@@ -1072,8 +1072,8 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
     ////////////// Tensor term 2  ////////////////
     //first term
 
-    diffusion[2] += (
-	             2.0*mu_edge[5]*(U_nb[2][5]-U_center[2])/dh1[2]
+    diffusion[2] += ( 
+	             2.0*mu_edge[5]*(U_nb[2][5]-U_center[2])/dh1[2] 
 	            -2.0*mu_edge[4]*(U_center[2]-U_nb[2][4])/dh0[2]
 		    ) / dh[2];
 
@@ -1086,26 +1086,26 @@ void Incompress_Solver_Smooth_3D_Cylindrical::getDiffusion_coupled(
 
     //second term
 
-    diffusion[2] += (mu_edge[0]/r_edge[0]/r0*U_face[0][0]
+    diffusion[2] += (mu_edge[0]/r_edge[0]/r0*U_face[0][0] 
 	            -mu_edge[1]/r_edge[1]/r0*U_face[0][1]) / dtheta;
 
     //third term
 
-    diffusion[2] += (
-	             mu_edge[1]/r_edge[1]/r0*(U_nb[2][1]-U_center[2])/dh1[0]
+    diffusion[2] += ( 
+	             mu_edge[1]/r_edge[1]/r0*(U_nb[2][1]-U_center[2])/dh1[0] 
 	            -mu_edge[0]/r_edge[0]/r0*(U_center[2]-U_nb[2][0])/dh0[0]
 		    ) / dh[0];
 
     ////////// Tensor term 4 ///////////
     //first term
 
-    diffusion[2] += (-2.0*mu0/r0*U_face[2][4]
+    diffusion[2] += (-2.0*mu0/r0*U_face[2][4] 
 	             +2.0*mu0/r0*U_face[2][5]) / dr;
 
     ///////////// Tensor term 5  /////////////////
     //first term
 
-    diffusion[2] += (2.0*mu0/rr*U_face[0][0]
+    diffusion[2] += (2.0*mu0/rr*U_face[0][0] 
 	            -2.0*mu0/rr*U_face[0][1]) / dtheta;
 
     //second term
@@ -1469,8 +1469,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
 	int num_iter;
 	double rel_residual;
 	double r, rr, redge[2];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 	setIndexMap();
@@ -1504,7 +1502,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
             I  = ijk_to_I[i][j][k];
             if (I == -1) continue;
 
-            index  = d_index3d(i,j,k,top_gmax);
+            index  = d_index3d(i,j,k,top_gmax);	
 	//6 neighbours of the center cell
             index_nb[0] = d_index3d(i-1,j,k,top_gmax);
             index_nb[1] = d_index3d(i+1,j,k,top_gmax);
@@ -1513,7 +1511,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
 	    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
 	    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-
+        
 	//6 neighbours of the center cell
             I_nb[0] = ijk_to_I[i-1][j][k];
             I_nb[1] = ijk_to_I[i+1][j][k];
@@ -1521,7 +1519,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
             I_nb[3] = ijk_to_I[i][j+1][k];
             I_nb[4] = ijk_to_I[i][j][k-1];
             I_nb[5] = ijk_to_I[i][j][k+1];
-
+	
 
 	    icoords[0] = i;
 	    icoords[1] = j;
@@ -1534,7 +1532,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
 	    U1_center = cell_center[index].m_state.m_U[1];
 	    U2_center = cell_center[index].m_state.m_U[2];
 
-
+	  
             for (nb = 0; nb < 6; nb++)
             {
                 if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
@@ -1744,7 +1742,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
 		coeff[6] = coeff[6] * 2.0;
 		rhs += 2.0*coeff[6]*U0_nb[0];
 	    }
-
+	    
 	    if (I_nb[1] != -1)
 	    {
 		solver.Set_A(I*3+2, I_nb[1]*3, -coeff[7]);
@@ -1830,7 +1828,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray(reflect);
+            scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -1862,7 +1860,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellFace(
 
     if (flag[face_index] == 1)
 	rhs = coeff*U_nb[vel_comp][face_index];
-    else
+    else 
     {
 	rhs = coeff*(U_nb[vel_comp][face_index]+U_center[vel_comp])/4.0;
 
@@ -1875,14 +1873,14 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellFace(
 
 void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 	PETSc *pSolver,
-	int I,
+	int I, 
 	int I_nb[18],
 	double U_center[3],
-	double U_nb[3][18],
+	double U_nb[3][18], 
 	int flag[6],
 	int equation_index,
-	int vel_comp,
-	int corner_index,
+	int vel_comp, 
+	int corner_index, 
 	double coeff)
 {
     double rhs;
@@ -1900,7 +1898,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][2]
 			+U_nb[vel_comp][6]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[0]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[2]*3+vel_comp, -coeff/8.0);
@@ -1921,7 +1919,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][2]
 			+U_nb[vel_comp][7]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[1]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[2]*3+vel_comp, -coeff/8.0);
@@ -1942,7 +1940,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][3]
 			+U_nb[vel_comp][8]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[1]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[3]*3+vel_comp, -coeff/8.0);
@@ -1963,7 +1961,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][3]
 			+U_nb[vel_comp][9]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[0]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[3]*3+vel_comp, -coeff/8.0);
@@ -1984,7 +1982,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][4]
 			+U_nb[vel_comp][10]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[2]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[4]*3+vel_comp, -coeff/8.0);
@@ -2005,7 +2003,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][4]
 			+U_nb[vel_comp][11]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[3]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[4]*3+vel_comp, -coeff/8.0);
@@ -2026,7 +2024,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][5]
 			+U_nb[vel_comp][12]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[3]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[5]*3+vel_comp, -coeff/8.0);
@@ -2047,7 +2045,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][5]
 			+U_nb[vel_comp][13]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[2]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[5]*3+vel_comp, -coeff/8.0);
@@ -2068,7 +2066,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][4]
 			+U_nb[vel_comp][14]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[0]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[4]*3+vel_comp, -coeff/8.0);
@@ -2089,7 +2087,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][4]
 			+U_nb[vel_comp][15]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[1]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[4]*3+vel_comp, -coeff/8.0);
@@ -2110,7 +2108,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][5]
 			+U_nb[vel_comp][16]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[1]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[5]*3+vel_comp, -coeff/8.0);
@@ -2131,7 +2129,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiff_CellCorner(
 		        +U_nb[vel_comp][5]
 			+U_nb[vel_comp][17]
 			+U_center[vel_comp])/8.0;
-
+		    
 	    pSolver->Add_A(I*3+equation_index,I*3+vel_comp,       -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[0]*3+vel_comp, -coeff/8.0);
 	    pSolver->Add_A(I*3+equation_index,I_nb[5]*3+vel_comp, -coeff/8.0);
@@ -2169,8 +2167,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 
 	double U_center[3];
 	double U_nb[3][18];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 	setIndexMap();
@@ -2204,7 +2200,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
             I  = ijk_to_I[i][j][k];
             if (I == -1) continue;
 
-            index  = d_index3d(i,j,k,top_gmax);
+            index  = d_index3d(i,j,k,top_gmax);	
 	//6 neighbours of the center cell
             index_nb[0] = d_index3d(i-1,j,k,top_gmax);
             index_nb[1] = d_index3d(i+1,j,k,top_gmax);
@@ -2218,7 +2214,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 	    index_nb[7] = d_index3d(i+1,j-1,k,top_gmax);
 	    index_nb[8] = d_index3d(i+1,j+1,k,top_gmax);
 	    index_nb[9] = d_index3d(i-1,j+1,k,top_gmax);
-
+	
 	//z-r cut neighbours
 	    index_nb[10] = d_index3d(i,j-1,k-1,top_gmax);
 	    index_nb[11] = d_index3d(i,j+1,k-1,top_gmax);
@@ -2233,7 +2229,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 
 
 
-
+        
 	//6 neighbours of the center cell
             I_nb[0] = ijk_to_I[i-1][j][k];
             I_nb[1] = ijk_to_I[i+1][j][k];
@@ -2241,7 +2237,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
             I_nb[3] = ijk_to_I[i][j+1][k];
             I_nb[4] = ijk_to_I[i][j][k-1];
             I_nb[5] = ijk_to_I[i][j][k+1];
-
+		
 	//theta-z cut neighbours
             I_nb[6] = ijk_to_I[i-1][j-1][k];
 	    I_nb[7] = ijk_to_I[i+1][j-1][k];
@@ -2275,7 +2271,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 	    r0 = cell_center[index].m_coords[2];
 	    rr = r0*r0;
 
-
+	  
             for (nb = 0; nb < 6; nb++)
             {
                 if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
@@ -2439,7 +2435,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 	    compDiff_CellFace(&solver, I, I_nb, U_center, U_nb, flag,
 		    0,0,5,-coeff1);
 
-	    //third term
+	    //third term 
 	    coeff0 = m_dt/rho * mu_edge[4]/r_edge[4]/(dtheta*dr);
 	    coeff1 = m_dt/rho * mu_edge[5]/r_edge[5]/(dtheta*dr);
 
@@ -2454,7 +2450,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 
 	    /////////////////   term 1/r * dtao_00/d0   //////////////
 	    //first term 2*mu/r*du_0/d0
-
+	    
 	    if (flag[0] == 1)
 	    {
 		coeff_temp = 2.0*m_dt/rho/r0 * mu_edge[0]/r_edge[0] / (dtheta*dtheta);
@@ -2599,7 +2595,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 		rhs += coeff_temp*U_nb[1][4];
 		rhs -= coeff_temp*U_center[1];
 	    }
-
+	    
 	    if (flag[5] == 1)
 	    {
 		coeff_temp = m_dt/rho * mu_edge[5]/(dr*dr);
@@ -2808,7 +2804,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
 		    2,0,1, -coeff1);
 
 	    //third term
-
+	    
 	    if (flag[0] == 1)
 	    {
 		coeff_temp = m_dt/rho/r0 * mu_edge[0]/r_edge[0] / (dtheta*dtheta);
@@ -2941,7 +2937,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_cou
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray(reflect);
+            scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -2978,8 +2974,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection_test(void)
 	HYPER_SURF *hs;
 
 	double rho, mu0;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 
@@ -3001,7 +2995,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection_test(void)
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
-	{
+	{	
 	    icoords[0] = i;
 	    icoords[1] = j;
 	    icoords[2] = k;
@@ -3009,9 +3003,9 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection_test(void)
 	    comp = top_comp[index];
 	    if (comp == SOLID_COMP)
 	    {
-	    	cell_center[index].m_state.m_U[0] = 0.0;
-	    	cell_center[index].m_state.m_U[1] = 0.0;
-	    	cell_center[index].m_state.m_U[2] = 0.0;
+	    	cell_center[index].m_state.m_U[0] = 0.0; 
+	    	cell_center[index].m_state.m_U[1] = 0.0; 
+	    	cell_center[index].m_state.m_U[2] = 0.0; 
 		continue;
 	    }
 	    u0 = u[index];
@@ -3148,11 +3142,11 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection_test(void)
                                 linear_flux(u0,w00,w0,w01)/(r*top_h[0]) +
                                 linear_flux(v0,w10,w0,w11)/top_h[1] +
                                 burger_flux(w20,w0,w21)/top_h[2]);
-
+          
             //SOURCE TERM
 	    //
 	    //How about calculating it in the diffusion solver?
-
+	    
             cell_center[index].m_state.m_U[0] += -(m_dt*u0*w0/r);
 
             cell_center[index].m_state.m_U[2] += (m_dt*u0*u0/r);
@@ -3163,7 +3157,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection_test(void)
 	    cell_center[index].m_state.m_U[2] -= mu0/rho * 2.0/(r*r) * (u01 - u00)/ (2.0*top_h[0]);
 
 
-
+	    
 	    speed = fabs(cell_center[index].m_state.m_U[0]) +
 		    fabs(cell_center[index].m_state.m_U[1]) +
 		    fabs(cell_center[index].m_state.m_U[2]);
@@ -3175,15 +3169,15 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection_test(void)
 	    for (k = kmin; k <= kmax; k++)
 	    for (j = jmin; j <= jmax; j++)
 	    for (i = imin; i <= imax; i++)
-	    {
+	    {	
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	array[index] = cell_center[index].m_state.m_U[l];
 	    }
-	    scatMeshArray(reflect);
+	    scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
-	    {
+	    {	
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	cell_center[index].m_state.m_U[l] = array[index];
 	    }
@@ -3222,8 +3216,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	int num_iter;
 	double rel_residual;
 	double r, rr, redge[2],rnb[2];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 	setIndexMap();
@@ -3250,7 +3242,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
             I  = ijk_to_I[i][j][k];
             if (I == -1) continue;
 
-            index  = d_index3d(i,j,k,top_gmax);
+            index  = d_index3d(i,j,k,top_gmax);	
 	//6 neighbours of the center cell
             index_nb[0] = d_index3d(i-1,j,k,top_gmax);
             index_nb[1] = d_index3d(i+1,j,k,top_gmax);
@@ -3259,7 +3251,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
 	    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-
+        
 	//6 neighbours of the center cell
             I_nb[0] = ijk_to_I[i-1][j][k];
             I_nb[1] = ijk_to_I[i+1][j][k];
@@ -3267,7 +3259,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
             I_nb[3] = ijk_to_I[i][j+1][k];
             I_nb[4] = ijk_to_I[i][j][k-1];
             I_nb[5] = ijk_to_I[i][j][k+1];
-
+	
 
 	    icoords[0] = i;
 	    icoords[1] = j;
@@ -3280,7 +3272,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	    U1_center = cell_center[index].m_state.m_U[1];
 	    U2_center = cell_center[index].m_state.m_U[2];
 
-
+	  
             for (nb = 0; nb < 6; nb++)
             {
                 if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
@@ -3437,7 +3429,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	    else
 		coeff[5] = coeff[5] * rnb[1];
 
-
+	    
 	    for (nb = 0; nb < 6; nb++)
 	    {
 		if (I_nb[nb] != -1)
@@ -3519,7 +3511,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray(reflect);
+            scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -3559,8 +3551,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection(void)
 	int icoords[MAXD];
 	POINTER intfc_state;
 	HYPER_SURF *hs;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 
@@ -3582,7 +3572,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection(void)
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
-	{
+	{	
 	    icoords[0] = i;
 	    icoords[1] = j;
 	    icoords[2] = k;
@@ -3590,9 +3580,9 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection(void)
 	    comp = top_comp[index];
 	    if (comp == SOLID_COMP)
 	    {
-	    	cell_center[index].m_state.m_U[0] = 0.0;
-	    	cell_center[index].m_state.m_U[1] = 0.0;
-	    	cell_center[index].m_state.m_U[2] = 0.0;
+	    	cell_center[index].m_state.m_U[0] = 0.0; 
+	    	cell_center[index].m_state.m_U[1] = 0.0; 
+	    	cell_center[index].m_state.m_U[2] = 0.0; 
 		continue;
 	    }
 	    u0 = u[index];
@@ -3724,16 +3714,16 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection(void)
                                 linear_flux(u0,w00,w0,w01)/(r*top_h[0]) +
                                 linear_flux(v0,w10,w0,w11)/top_h[1] +
                                 burger_flux(w20,w0,w21)/top_h[2]);
-
+          
             //SOURCE TERM
 	    //
 	    //How about calculating it in the diffusion solver?
-	   /*
+	   /* 
             cell_center[index].m_state.m_U[0] += -(m_dt*u0*w0/r);
 
             cell_center[index].m_state.m_U[2] += (m_dt*u0*u0/r);
 */
-
+	    
 	    speed = fabs(cell_center[index].m_state.m_U[0]) +
 		    fabs(cell_center[index].m_state.m_U[1]) +
 		    fabs(cell_center[index].m_state.m_U[2]);
@@ -3745,15 +3735,15 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeAdvection(void)
 	    for (k = kmin; k <= kmax; k++)
 	    for (j = jmin; j <= jmax; j++)
 	    for (i = imin; i <= imax; i++)
-	    {
+	    {	
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	array[index] = cell_center[index].m_state.m_U[l];
 	    }
-	    scatMeshArray(reflect);
+	    scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
-	    {
+	    {	
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	cell_center[index].m_state.m_U[l] = array[index];
 	    }
@@ -3784,8 +3774,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	int num_iter;
 	double rel_residual;
 	double r, rr, redge[2];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 	setIndexMap();
@@ -3812,7 +3800,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
             I  = ijk_to_I[i][j][k];
             if (I == -1) continue;
 
-            index  = d_index3d(i,j,k,top_gmax);
+            index  = d_index3d(i,j,k,top_gmax);	
 	//6 neighbours of the center cell
             index_nb[0] = d_index3d(i-1,j,k,top_gmax);
             index_nb[1] = d_index3d(i+1,j,k,top_gmax);
@@ -3821,7 +3809,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	    index_nb[4] = d_index3d(i,j,k-1,top_gmax);
 	    index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
-
+        
 	//6 neighbours of the center cell
             I_nb[0] = ijk_to_I[i-1][j][k];
             I_nb[1] = ijk_to_I[i+1][j][k];
@@ -3841,7 +3829,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 	    U1_center = cell_center[index].m_state.m_U[1];
 	    U2_center = cell_center[index].m_state.m_U[2];
 
-
+	  
             for (nb = 0; nb < 6; nb++)
             {
                 if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
@@ -4031,7 +4019,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
 		coeff[6] = coeff[6] * 2.0;
 		rhs += 2.0*coeff[6]*U0_nb[0];
 	    }
-
+	    
 	    if (I_nb[1] != -1)
 	    {
 		solver.Set_A(I*3+2, I_nb[1]*3, -coeff[7]);
@@ -4115,7 +4103,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_1st_dec
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray(reflect);
+            scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4145,15 +4133,13 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
 	double coords[MAXD],crx_coords[MAXD];
 	double **vel = iFparams->field->vel;
 	GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-
+	
 	max_value = 0.0;
 	double value;
 	double sum_div;
 	sum_div = 0.0;
 	int num_iter = 0;
 	double rel_residual = 0.0;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	PETSc solver;
 	solver.Create(ilower, iupper-1, 7, 7);
@@ -4184,13 +4170,13 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
 	    index  = d_index3d(i,j,k,top_gmax);
 	    array[index] = computeFieldPointDiv(icoords,vel);
 	}
-	scatMeshArray(reflect);
+	scatMeshArray();
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
 	{
 	    index  = d_index3d(i,j,k,top_gmax);
-	    cell_center[index].m_state.div_U = array[index];
+	    cell_center[index].m_state.div_U = array[index];    
 	}
 
 
@@ -4212,7 +4198,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
 	    printf("\nThe max value of divergence of U is %.16g\n",max_value);
 	    max_value = 0.0;
 	}
-
+	
 
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
@@ -4238,7 +4224,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
 	    icoords[0] = i;
 	    icoords[1] = j;
 	    icoords[2] = k;
-
+	
 	    rho0   = cell_center[index].m_state.m_rho;
 	    for (l = 0; l < 6; ++l)
 	    {
@@ -4288,7 +4274,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
             }
             solver.Set_b(I,rhs);
 	}
-
+	
 	solver.SetMaxIter(40000);
 	solver.SetTol(1e-14);
 
@@ -4313,9 +4299,9 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
 	if (debugging("PETSc"))
 	    (void) printf("Incompress_Solver_Smooth_3D_Cylindrical::"
 			"computeProjection: "
-	       		"num_iter = %d, rel_residual = %le \n",
+	       		"num_iter = %d, rel_residual = %le \n", 
 			num_iter, rel_residual);
-
+	
 	P_max = -HUGE;		P_min = HUGE;
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
@@ -4325,7 +4311,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection(void)
 	    I = ijk_to_I[i][j][k];
 	    array[index] = x[I-ilower];
 	}
-	scatMeshArray(reflect);
+	scatMeshArray();
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
@@ -4360,8 +4346,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeNewVelocity(void)
 	double speed;
 	int icoords[MAXD];
 	double r;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	max_speed = 0.0;
 
@@ -4406,15 +4390,15 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeNewVelocity(void)
 	    for (k = kmin; k <= kmax; k++)
 	    for (j = jmin; j <= jmax; j++)
             for (i = imin; i <= imax; i++)
-	    {
+	    {	
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	array[index] = cell_center[index].m_state.m_U[l];
 	    }
-	    scatMeshArray(reflect);
+	    scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
-	    {
+	    {	
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	cell_center[index].m_state.m_U[l] = array[index];
 	    }
@@ -4423,7 +4407,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeNewVelocity(void)
 }	/* end computeNewVelocity3d */
 
 
-void Incompress_Solver_Smooth_3D_Cylindrical::computeSourceTerm(double *coords, L_STATE &state)
+void Incompress_Solver_Smooth_3D_Cylindrical::computeSourceTerm(double *coords, L_STATE &state) 
 {
 	int i;
 	for (i = 0; i < dim; ++i)
@@ -4431,15 +4415,15 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeSourceTerm(double *coords, 
 
 	state.m_P = HUGE_VAL;
 }
-void Incompress_Solver_Smooth_3D_Cylindrical::computeSourceTerm(double *coords, double t, L_STATE &state)
+void Incompress_Solver_Smooth_3D_Cylindrical::computeSourceTerm(double *coords, double t, L_STATE &state) 
 {
 	computeSourceTerm(coords, state);
 }
 
-// for initial condition:
-// 		setInitialCondition();
+// for initial condition: 
+// 		setInitialCondition();	
 // this function should be called before solve()
-// for the source term of the momentum equation:
+// for the source term of the momentum equation: 	
 // 		computeSourceTerm();
 void Incompress_Solver_Smooth_3D_Cylindrical::solve(double dt)
 {
@@ -4472,7 +4456,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::solve(double dt)
 	stop_clock("setSmoothedProperties");
 	if (debugging("trace"))
 	    printf("Passed setSmoothedProperties()\n");
-
+	
 	// 1) solve for intermediate velocity
 	start_clock("computeAdvection");
 	//computeAdvection_test(); //Discretize the equation using the cylindrical Paper, result seems to be similar (First Order)
@@ -4618,8 +4602,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::copyMeshStates()
 	double *pres = field->pres;
 	double *vort = field->vort;
 	double **vort3d = field->vort3d;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	for (i = imin; i <= imax; ++i)
 	for (j = jmin; j <= jmax; ++j)
@@ -4646,13 +4628,13 @@ void Incompress_Solver_Smooth_3D_Cylindrical::copyMeshStates()
 		}
 	    }
 	}
-	FT_ParallelExchGridArrayBuffer(pres,front,reflect);
-	FT_ParallelExchGridArrayBuffer(vel[0],front,reflect);
-	FT_ParallelExchGridArrayBuffer(vel[1],front,reflect);
-	FT_ParallelExchGridArrayBuffer(vel[2],front,reflect);
-	FT_ParallelExchGridArrayBuffer(vort3d[0],front,reflect);
-	FT_ParallelExchGridArrayBuffer(vort3d[1],front,reflect);
-	FT_ParallelExchGridArrayBuffer(vort3d[2],front,reflect);
+	FT_ParallelExchGridArrayBuffer(pres,front);
+	FT_ParallelExchGridArrayBuffer(vel[0],front);
+	FT_ParallelExchGridArrayBuffer(vel[1],front);
+	FT_ParallelExchGridArrayBuffer(vel[2],front);
+	FT_ParallelExchGridArrayBuffer(vort3d[0],front);
+	FT_ParallelExchGridArrayBuffer(vort3d[1],front);
+	FT_ParallelExchGridArrayBuffer(vort3d[2],front);
 }	/* end copyMeshStates */
 
 
@@ -4670,14 +4652,12 @@ void Incompress_Solver_Smooth_3D_Cylindrical::
         double speed;
         double *x;
 	GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-	double (*getStateVel[3])(POINTER) =
+	double (*getStateVel[3])(POINTER) = 
 			{getStateXvel,getStateYvel,getStateZvel};
 	POINTER intfc_state;
 	HYPER_SURF *hs;
 	int num_iter;
 	double rel_residual;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
         setIndexMap();
 
@@ -4732,17 +4712,17 @@ void Incompress_Solver_Smooth_3D_Cylindrical::
                                 wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
 		    {
 			U_nb[nb] = getStateVel[l](intfc_state);
-			if (wave_type(hs) == DIRICHLET_BOUNDARY ||
+			if (wave_type(hs) == DIRICHLET_BOUNDARY || 
 			    wave_type(hs) == NEUMANN_BOUNDARY)
 			    mu[nb] = mu0;
 			else
-			    mu[nb] = 1.0/2*(mu0 +
+			    mu[nb] = 1.0/2*(mu0 + 
 				cell_center[index_nb[nb]].m_state.m_mu);
 		    }
                     else
 		    {
                     	U_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[l];
-			mu[nb] = 1.0/2*(mu0 +
+			mu[nb] = 1.0/2*(mu0 + 
 				cell_center[index_nb[nb]].m_state.m_mu);
 		    }
             	}
@@ -4838,7 +4818,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::
                 rhs += sour[l];
 		rhs += m_dt*cell_center[index].m_state.f_surf[l];
 		rhs -= m_dt*cell_center[index].m_state.grad_q[l]/rho;
-
+ 
 		solver.Set_b(I, rhs);
 
             }
@@ -4893,7 +4873,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::
                 index  = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray(reflect);
+            scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -4922,8 +4902,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::
 void Incompress_Solver_Smooth_3D_Cylindrical::computePressurePmI(void)
 {
         int i,j,k,index;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
@@ -4933,7 +4911,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computePressurePmI(void)
 	    cell_center[index].m_state.m_P += cell_center[index].m_state.m_phi;
 	    array[index] = cell_center[index].m_state.m_P;
 	}
-	scatMeshArray(reflect);
+	scatMeshArray();
 
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
@@ -4959,7 +4937,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computePressurePmII(void)
 	{
             index = d_index3d(i,j,k,top_gmax);
             mu0 = 0.5*cell_center[index].m_state.m_mu;
-            cell_center[index].m_state.m_P +=
+            cell_center[index].m_state.m_P += 
 				cell_center[index].m_state.m_phi -
                         	accum_dt*mu0*cell_center[index].m_state.div_U;
 	    cell_center[index].m_state.m_q = cell_center[index].m_state.m_P;
@@ -4977,7 +4955,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computePressurePmIII(void)
 	{
             index = d_index3d(i,j,k,top_gmax);
             mu0 = 0.5*cell_center[index].m_state.m_mu;
-            cell_center[index].m_state.m_P =
+            cell_center[index].m_state.m_P = 
 				cell_center[index].m_state.m_phi -
                         	accum_dt*mu0*cell_center[index].m_state.div_U;
 	    cell_center[index].m_state.m_q = 0.0;
@@ -5007,8 +4985,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeGradientQ(void)
 	int i,j,k,l,index;
 	double *grad_q;
 	int icoords[MAXD];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
@@ -5018,7 +4994,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeGradientQ(void)
 	    array[index] = cell_center[index].m_state.m_q;
 
 	}
-	scatMeshArray(reflect);
+	scatMeshArray();
 
 
 	for (k = kmin; k <= kmax; k++)
@@ -5042,7 +5018,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeGradientQ(void)
 	    	index = d_index3d(i,j,k,top_gmax);
 		array[index] = cell_center[index].m_state.grad_q[l];
 	    }
-	    scatMeshArray(reflect);
+	    scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
@@ -5076,7 +5052,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::surfaceTension(
 	    for (j = 0; j < 3; ++j)
 	    {
 		p = Point_of_tri(tri)[j];
-		for (k = 0; k < 3; ++k)
+		for (k = 0; k < 3; ++k) 
 		    median[k] += Coords(p)[k];
 	    	GetFrontCurvature(p,Hyper_surf_element(tri),hs,
 				&kappa_tmp,front);
@@ -5086,14 +5062,14 @@ void Incompress_Solver_Smooth_3D_Cylindrical::surfaceTension(
 	    kappa /= 3.0;
 	    mag_nor = mag_vector(nor,3);
 	    area = 0.5*mag_nor;
-	    for (j = 0; j < 3; ++j)
+	    for (j = 0; j < 3; ++j)  
 	    {
 		nor[j] /= mag_nor;
 		median[j] /= 3.0;
 	    }
 	    delta = smoothedDeltaFunction(coords,median);
 	    if (delta == 0.0) continue;
-	    for (j = 0; j < dim; ++j)
+	    for (j = 0; j < dim; ++j) 
 	    {
 		force[j] += delta*sigma*area*kappa*nor[j];
 	    }
@@ -5105,8 +5081,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::setInitialCondition()
 	int i,j,k,index,l;
 	COMPONENT comp;
 	double coords[MAXD];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
 	FT_MakeGridIntfc(front);
 	setDomain();
@@ -5156,7 +5130,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::setInitialCondition()
 		index = d_index3d(i,j,k,top_gmax);
 		array[index] = cell_center[index].m_state.m_U[l];
 	    }
-	    scatMeshArray(reflect);
+	    scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
@@ -5213,7 +5187,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::setInitialCondition()
 	printf("\nThe average of p after adjusting is %.16g\n", averagep_test);
 	printf("\nTotal volume is %.16g\n", totalVolume);
 
-	scatMeshArray(reflect);
+	scatMeshArray();
 
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
@@ -5262,7 +5236,7 @@ double Incompress_Solver_Smooth_3D_Cylindrical::computeFieldPointDiv(
 	r = cell_center[index].m_coords[2];
 	r_nb[0] = cell_center[index_nb[4]].m_coords[2];
 	r_nb[1] = cell_center[index_nb[5]].m_coords[2];
-
+	
         const int  nn = pp_numnodes();
         int        myid = pp_mynode();
         int   *ppgmax = front->pp_grid->gmax;
@@ -5344,7 +5318,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeFieldPointGrad(
 	i = icoords[0];
 	j = icoords[1];
 	k = icoords[2];
-
+	
 	index = d_index3d(i,j,k,top_gmax);
         comp = top_comp[index];
 	p0 = field[index];
@@ -5512,7 +5486,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::printInteriorVelocity(char *out_na
             fprintf(outfile,"ASCII\n");
             fprintf(outfile,"DATASET STRUCTURED_GRID\n");
             int pointsr, pointsz, pointstheta;
-
+        
 	    pointsr = top_gmax[2] + 1;
             pointsz = top_gmax[1] + 1;
             pointstheta = top_gmax[0] + 1;
@@ -5558,7 +5532,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::printInteriorVelocity(char *out_na
                 {
                     index = d_index3d(i,j,k,top_gmax);
                     fprintf(outfile,"%.16g\n",cell_center[index].m_state.m_P);
-                }
+                } 
             }
             if(iFparams->movie_option->plot_vort)
             {
@@ -5661,8 +5635,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection_Shuqiang(void)
     double coords[MAXD],crx_coords[MAXD];
     double **vel = iFparams->field->vel;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
     max_value = 0.0;
     double value;
@@ -5700,7 +5672,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection_Shuqiang(void)
 		index  = d_index3d(i,j,k,top_gmax);
 		array[index] = computeFieldPointDiv(icoords,vel);
 	    }
-    scatMeshArray(reflect);
+    scatMeshArray();
     for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
@@ -5877,7 +5849,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeProjection_Shuqiang(void)
 		I = ijk_to_I[i][j][k];
 		array[index] = x[I-ilower];
 	    }
-    scatMeshArray(reflect);
+    scatMeshArray();
     for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	    for (i = 0; i <= top_gmax[0]; i++)
@@ -5912,8 +5884,6 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
     double coords[MAXD],crx_coords[MAXD];
     double coeff[18],mu,rho; //,U0_nb[6],U1_nb[6],U2_nb[6],U0_center,U1_center,U2_center;
     L_STATE source_term, U_nb[6], U_nb_new[6], U_center, rhs;
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = reflect[2] = YES;
 
     int i,j,k,l,nb,icoords[MAXD];
     INTERFACE *intfc = front->interf;
@@ -6107,7 +6077,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::compDiffWithSmoothProperty_2nd_dec
 		    index  = d_index3d(i,j,k,top_gmax);
 		    array[index] = cell_center[index].m_state.m_U[l];
 		}
-	scatMeshArray(reflect);
+	scatMeshArray();
 	for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
 		for (i = 0; i <= top_gmax[0]; i++)
@@ -6346,15 +6316,15 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeSubgridModel(void)
         double cs, r;
         int    ii,jj,kk,iii,jjj,kkk,iiii,jjjj,kkkk;
         int    NB = 2, numr = 1;
-        //int    numk = (2.0-1.0)/(2*top_h[2]);  //1.0: GL[2] 2.0: GU[2]
+        //int    numk = (2.0-1.0)/(2*top_h[2]);  //1.0: GL[2] 2.0: GU[2] 
         int    numk = 32/(numr*NB), numkk;   //32: mesh size of r
-        double *deno, *nume;
+        double *deno, *nume; 
         double gdeno, gnume;
         //int indexb[4][4][4];
         double delta2, tdelta2;
         delta2 = sqr(pow((top_h[0]*top_h[1]*top_h[2]),(1.0/3.0)));
         tdelta2 = sqr(pow((NB*top_h[0]*NB*top_h[1]*NB*top_h[2]),(1.0/3.0)));
-
+ 
         size = (top_gmax[0]+1)*(top_gmax[1]+1)*(top_gmax[2]+1);
         FT_VectorMemoryAlloc((POINTER*)&u,size,sizeof(double));
         FT_VectorMemoryAlloc((POINTER*)&v,size,sizeof(double));
@@ -6403,7 +6373,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeSubgridModel(void)
 
             if ( (ppz == 0 && k == kmin-1) )
             {
-                u[index] = iFparams->bvel[0][0];
+                u[index] = iFparams->bvel[0][0];        
                 v[index] = iFparams->bvel[0][1];
                 w[index] = iFparams->bvel[0][2];
             }
@@ -6552,7 +6522,7 @@ void Incompress_Solver_Smooth_3D_Cylindrical::computeSubgridModel(void)
                 la22 = (sum_vel_vv/(NB^3))-((sum_vel_v/(NB^3))*(sum_vel_v/(NB^3)));
                 la23 = (sum_vel_vw/(NB^3))-((sum_vel_v/(NB^3))*(sum_vel_w/(NB^3)));
                 la33 = (sum_vel_ww/(NB^3))-((sum_vel_w/(NB^3))*(sum_vel_w/(NB^3)));
-                numkk = (int)(((cell_center[index000].m_coords[2]-1.0)+(top_h[2]/2.0))/(numr*NB*top_h[2]));
+                numkk = (int)(((cell_center[index000].m_coords[2]-1.0)+(top_h[2]/2.0))/(numr*NB*top_h[2])); 
 
                 deno[numkk] += ((ma11*ma11) + (ma12*ma12)
                        + (ma13*ma13) + (ma22*ma22)

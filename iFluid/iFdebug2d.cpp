@@ -31,8 +31,6 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition(void)
     int index;
     COMPONENT comp;
     double coords[MAXD];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = YES;
 
     FT_MakeGridIntfc(front);
     setDomain();
@@ -88,7 +86,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition(void)
 	    index = d_index2d(i,j,top_gmax);
 	    array[index] = cell_center[index].m_state.m_U[l];
 	}
-	scatMeshArray(reflect);
+	scatMeshArray();
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
 	{
@@ -103,7 +101,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition(void)
 	index = d_index2d(i,j,top_gmax);
 	array[index] = cell_center[index].m_state.m_P;
     }
-    scatMeshArray(reflect);
+    scatMeshArray();
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
     {
@@ -120,20 +118,18 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition(void)
 
 
 void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition_vd(void)
-{
+{           
     // Incompress_Solver_Smooth_2D_Cartesian::setInitialCondition_vd();
     printf("\nEnter 2D_Debug::setInitialCondition_vd()\n");
     int i,j,l;
     int index;
     COMPONENT comp;
     double coords[MAXD];
-        int reflect[MAXD];
-        reflect[0] = reflect[1] = YES;
 
     FT_MakeGridIntfc(front);
     setDomain_vd();
     setComponent();
-
+        
     m_rho[0] = 1;
     m_rho[1] = 1;
     m_mu[0] = 1;
@@ -194,7 +190,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition_vd(void)
             index = d_index2d(i,j,top_gmax);
             array[index] = cell_center[index].m_state.m_U[l];
         }
-        scatMeshArray(reflect);
+        scatMeshArray();
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
         {
@@ -209,7 +205,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index2d(i,j,top_gmax);
         array[index] = cell_center[index].m_state.m_P;
     }
-    scatMeshArray(reflect);
+    scatMeshArray();
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
     {
@@ -224,7 +220,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index2d(i,j,top_gmax);
         array[index] = cell_center[index].m_state.m_rho;
     }
-    scatMeshArray(reflect);
+    scatMeshArray();
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
     {
@@ -239,13 +235,13 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::setInitialCondition_vd(void)
         index = d_index2d(i,j,top_gmax);
         array[index] = cell_center[index].m_state.m_c;
     }
-    scatMeshArray(reflect);
+    scatMeshArray();
     for (j = 0; j <= top_gmax[1]; j++)
     for (i = 0; i <= top_gmax[0]; i++)
     {
         index = d_index2d(i,j,top_gmax);
         cell_center[index].m_state.m_c = array[index];
-    }
+    }  
 
     computeGradientQ();
     copyMeshStates_vd();
@@ -383,11 +379,11 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::solve_vd(double dt)
 
     // start_clock("setSmoothedPropertiesOnePhase_vd");
     setSmoProOnePhase_vd();
-    // stop_clock("setSmoothedPropertiesOnePhase_vd");
+    // stop_clock("setSmoothedPropertiesOnePhase_vd"); 
     if (debugging("trace"))
         printf("Passed setSmoothedProperties_vd_OnePhase()\n");
 
-    // 1) solve for intermediate U, update density and concentration
+    // 1) solve for intermediate U, update density and concentration 
     // solve for estimated adv terms using lagged source term
     start_clock("compAdvectionTerm_coupled_vd(0)");
     compAdvectionTerm_coupled_vd(0);
@@ -642,7 +638,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::getExactSolution(
     state.m_U[1] = 2*pi*sin(2*pi*(x-omega))*y*y*(y-1);
 
     state.m_P = -mu*(cos(2*pi*(-1 + x - sin(2*pi*t_int*t_int)))*
-      (-pi + 2*pi*y - 2*sin(2*pi*y))) -
+      (-pi + 2*pi*y - 2*sin(2*pi*y))) - 
    2*t_int*cos(2*pi*t_int*t_int)*(pi - 2*pi*y + sin(2*pi*y))*
     sin(2*pi*(-1 + x - sin(2*pi*t_int*t_int)));
     // diffusion
@@ -656,23 +652,23 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::getExactSolution_vd(
         double *coords,
         double t,
         L_STATE &state)
-{
+{               
     //printf(" The front->dt is %20.16g\n",front->dt);
     //printf(" The front->time is %20.16g\n",front->time);
     double pi = 3.14159265358979323846264338327950288419716939937510;
     double omega = 1+sin(2*pi*t*t);
     double x = coords[0];
-    double y = coords[1];
-
-    double t_int;
+    double y = coords[1];               
+                
+    double t_int;                       
     //if (t == 0)
-        //t_int = 0.0;
+        //t_int = 0.0;                  
     //else if(t > 0)
         t_int = t - (front->dt)/2.0;
     double mu = m_mu[0];
-
+            
     // BROWN
-    state.m_U[0] = cos(2*pi*(x-omega))*(3*y*y-2*y);
+    state.m_U[0] = cos(2*pi*(x-omega))*(3*y*y-2*y); 
     state.m_U[1] = 2*pi*sin(2*pi*(x-omega))*y*y*(y-1);
 
     state.m_P = -mu*(cos(2*pi*(-1 + x - sin(2*pi*t_int*t_int)))*
@@ -955,7 +951,7 @@ void Incompress_Solver_Smooth_2D_Cartesian_Debug::saveStates_Tecplot_vd(
             //            state_exact.m_U[1] - state.m_U[1],
             //            state_exact.m_P - state.m_P);
            // fprintf(hfile, "\n");
-
+            
         }
             pp_global_sum(&L1.m_U[0],1);
             pp_global_sum(&L1.m_U[1],1);

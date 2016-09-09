@@ -14,8 +14,6 @@
 #include <petscerror.h>
 #include <assert.h>
 
-//More Header File from PETSc
-#include <petscksp.h>
 class SOLVER
 {
 public:
@@ -23,24 +21,24 @@ public:
 	SOLVER(int ilower, int iupper, int d_nz, int o_nz){};
 	virtual ~SOLVER(){};
 	virtual void Create(int ilower, int iupper, int d_nz, int o_nz){};
-
+	
 	virtual void Set_A(PetscInt i, PetscInt j, double val){};	// A[i][j]=val;
 	virtual void Add_A(PetscInt i, PetscInt j, double val){};	// A[i][j]=A[i][j]+val;
 	virtual void Set_x(PetscInt i, double val){};	// x[i]=val;
 	virtual void Set_x(double *p){};		// x[i]=p[i];
 	virtual void Add_x(PetscInt i, double val){};	// x[i]=x[i]+val;
-	virtual void Get_x(double *p){};	// get the x from ij_x to p.
+	virtual void Get_x(double *p){};	// get the x from ij_x to p.		
 	virtual void Get_x(double *p, int n, int *global_index){};
 	virtual void Set_b(PetscInt i, double val){};	// b[i]=val;
-	virtual void Set_b(double *b){};
+	virtual void Set_b(double *b){};	
 	virtual void Add_b(PetscInt i, double val){};	// b[i]=b[i]+val;
 
-	virtual void SetMaxIter(int val){};
+	virtual void SetMaxIter(int val){};	
 	virtual void GetFinalRelativeResidualNorm(double *rel_resid_norm){};
 	virtual void GetNumIterations(int *num_iterations){};
 
-	virtual void Solve(void){};
-	virtual void Solve_withPureNeumann(void){};
+	virtual void Solve(void){};	
+	virtual void Solve_withPureNeumann(void){};	
 	virtual void Read_A(char *filename){};
 	virtual void Print_A(char *filename){};
 	virtual void Read_b(char *filename){};
@@ -52,32 +50,32 @@ public:
 
 class PETSc: public SOLVER
 {
-public:
+public:	
 	MPI_Comm  comm;			// set to be MPI_COMM_WORLD.
 	int iLower;
 	int iUpper;			// global row range
-
+	
 	Vec x;      			/* approx solution, RHS*/
 	Vec b;
   	Mat A;          		/* linear system matrix */
-
+  	
   	KSP   ksp;          		/* Krylov subspace method context */
 	PC    pc;
 	MatNullSpace	nullsp;
-
+		
 	PetscErrorCode ierr;
 	int its;			// numer of iterations;
 
 public:
 	PETSc();
-	PETSc(int ilower, int iupper, int d_nz, int o_nz);
+	PETSc(int ilower, int iupper, int d_nz, int o_nz);		
 		// global row range of A, x, b on this processor
 	~PETSc();
-	void Create(int ilower, int iupper, int d_nz, int o_nz);
+	void Create(int ilower, int iupper, int d_nz, int o_nz);	
 		// same as Hypre(int, int)
 	void Create(MPI_Comm Comm, int ilower, int iupper, int d_nz, int o_nz);
 		// same as Hypre(int, int)
-
+	
 	void Reset_A();				// Set A[i][j]=0.0;
 	void Reset_b();
 	void Reset_x();
@@ -88,16 +86,16 @@ public:
 	void Add_x(PetscInt i, double val);		// x[i]=x[i]+val;
 	void Set_b(PetscInt i, double val);		// b[i]=val;
 	void Add_b(PetscInt i, double val);		// b[i]=b[i]+val;
-	void Get_x(double *p);		// get the x from ij_x to p.
+	void Get_x(double *p);		// get the x from ij_x to p.	
 	void Get_b(double *p);		// get the b from ij_x to p.
 	void Get_x(double *p, int n, int *global_index);
-
-	void SetMaxIter(int val); 	// Set maximum number of iterations
-	void SetTol(double val);	// Set the convergence tolerance
-	void SetKDim(int k_dim);
-			// Set the maximum size of the Krylov space
-	void GetNumIterations(PetscInt *num_iterations);
-			// Return the number of iterations taken
+	
+	void SetMaxIter(int val); 	// Set maximum number of iterations 
+	void SetTol(double val);	// Set the convergence tolerance 
+	void SetKDim(int k_dim);	
+			// Set the maximum size of the Krylov space 
+	void GetNumIterations(PetscInt *num_iterations);	
+			// Return the number of iterations taken 
 	void GetFinalRelativeResidualNorm(double *rel_resid_norm);
         void GetExtremeSingularValues(double *max, double *min);
         void GetNullSpace(int size, int nullity, double *eigenvec);
@@ -107,7 +105,6 @@ public:
 	void Solve_withPureNeumann_GMRES(void);
 	virtual void Print_A(const char *filename);
         virtual void Print_b(const char *filename);
-        virtual void Print_x(const char *filename);
 };
 
 void	poisson_solver2d(Front*,int,int,int**,double*,double*,double*,

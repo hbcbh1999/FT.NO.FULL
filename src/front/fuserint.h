@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations
-whose solutions have discontinuities.
+Front Tracking is a numerical method for the solution of partial differential equations 
+whose solutions have discontinuities.  
 
 
-Copyright (C) 1999 by The University at Stony Brook.
-
+Copyright (C) 1999 by The University at Stony Brook. 
+ 
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -362,7 +362,7 @@ enum _MOTION_TYPE {
 	PRESET_MOTION
 };
 typedef enum _MOTION_TYPE MOTION_TYPE;
-
+	
 
 struct _HS_FLAG {
 	boolean _do_not_redistribute;
@@ -599,7 +599,6 @@ enum {
 	PASSIVE_BOUNDARY	      = FIRST_USER_BOUNDARY_TYPE,
 	DIRICHLET_BOUNDARY,
 	NEUMANN_BOUNDARY,
-    ALTERNATIVE_REFLECTION, // This is REFLECTION_BOUNDARY
 	MOVABLE_BODY_BOUNDARY,
 	GROWING_BODY_BOUNDARY,
 	FIRST_PHYSICS_WAVE_TYPE,

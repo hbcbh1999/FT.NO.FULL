@@ -374,7 +374,7 @@ protected:
         void setDomain_vd();
 
 	// parallelization related functions
-	void scatMeshArray(int *reflect);// REFLECTION BOUNDARY CONDITION FLAG WAS INTRODUCED.
+	void scatMeshArray(void);
 	void setGlobalIndex(void);
 	void setIndexMap(void);
 
