@@ -21358,8 +21358,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::debugPrintStates(
 void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
         int dir,
         int side,
-        double *solute,
-        int *reflect)
+        double *solute)
 {
     if (dim != 3)
     {
@@ -21384,10 +21383,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
                               BIndex = d_index3d(lbuf[0]-1-i+imin,j,k,top_gmax);//This is Boundary State index
-                              if (reflect[dir] == YES)
-                                solute[BIndex] = solute[InIndex];
-                              if (reflect[dir] == NO)
-                                solute[BIndex] = -solute[InIndex];
+                              solute[BIndex] = -solute[InIndex];
                          }
                  break;
             case 1: // Y Lower
@@ -21397,10 +21393,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
                               BIndex = d_index3d(i,lbuf[1]-1-j+jmin,k,top_gmax);//This is Boundary State index
-                              if (reflect[dir] == YES)
-                                solute[BIndex] = solute[InIndex];
-                              if (reflect[dir] == NO)
-                                solute[BIndex] = -solute[InIndex];
+                              solute[BIndex] = -solute[InIndex];
                          }
                  break;
             case 2: // Z Lower
@@ -21410,10 +21403,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
                               BIndex = d_index3d(i,j,lbuf[2]-1-k+kmin,top_gmax);//This is Boundary State index
-                              if (reflect[dir] == YES)
-                                solute[BIndex] = solute[InIndex];
-                              if (reflect[dir] == NO)
-                                solute[BIndex] = -solute[InIndex];
+                              solute[BIndex] = -solute[InIndex];
                          }
                  break;
         }
@@ -21429,10 +21419,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
                              BIndex = d_index3d(imax+ubuf[0]-i,j,k,top_gmax);//This is Boundary State index
-                              if (reflect[dir] == YES)
-                                solute[BIndex] = solute[InIndex];
-                              if (reflect[dir] == NO)
-                                solute[BIndex] = -solute[InIndex];
+                             solute[BIndex] = -solute[InIndex];
 
                          }
                  break;
@@ -21443,10 +21430,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
                              BIndex = d_index3d(i,jmax+ubuf[1]-j,k,top_gmax);//This is Boundary State index
-                              if (reflect[dir] == YES)
-                                solute[BIndex] = solute[InIndex];
-                              if (reflect[dir] == NO)
-                                solute[BIndex] = -solute[InIndex];
+                             solute[BIndex] = -solute[InIndex];
                          }
                  break;
             case 2: // Z Upper
@@ -21456,10 +21440,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
                              BIndex = d_index3d(i,j,kmax+ubuf[2]-k,top_gmax);//This is Boundary State index
-                              if (reflect[dir] == YES)
-                                solute[BIndex] = solute[InIndex];
-                              if (reflect[dir] == NO)
-                                solute[BIndex] = -solute[InIndex];
+                             solute[BIndex] = -solute[InIndex];
                          }
                  break;
         }
@@ -21468,8 +21449,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
 
 void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
         int dir,
-        double *solute,
-        int *reflect)
+        double *solute)
 {
      int side, i;
      INTERFACE *intfc = front->grid_intfc;
@@ -21478,7 +21458,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
      {
          if (rect_boundary_type(intfc,dir,side) == REFLECTION_BOUNDARY)
          {
-              ReflectBC(dir, side, solute, reflect);
+              ReflectBC(dir, side, solute);
          }
      }
 }
@@ -21487,15 +21467,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
 void Incompress_Solver_Smooth_3D_Cartesian::enforceReflectionState(void)
 {
      double **vel = field->vel;
-     int    InIndex, BIndex;
-     int    reflect[MAXD];
-     int    dir, jj;
+     int    dir;
 
      for (dir = 0; dir < dim; dir++)
      {
-         reflect[0] = reflect[1] = reflect[2] = YES;
-         reflect[dir] = NO;
-         Solute_Reflect(dir,vel[dir],reflect);
+         Solute_Reflect(dir,vel[dir]);
     }
 }
 
