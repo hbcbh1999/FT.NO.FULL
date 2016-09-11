@@ -1080,7 +1080,6 @@ protected:
         void Solute_Reflect(int, double*);
         void ReflectBC(int, int, double*);
         void ReflectBC_DEBUG(int, int, int, double*){};
-        void debugPrintStates(int, int, int, int);
 };
 
 

@@ -12166,19 +12166,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 cell_center[index].m_state.m_U[l] = array[index];
             }
         }
-//TODO && FIXME:
-/*
-        for (l = 0; l < dim; ++l)
-        {
-            for (k = 0; k <= top_gmax[2]; k++)
-            for (j = 0; j <= top_gmax[1]; j++)
-            for (i = 0; i <= top_gmax[0]; i++)
-            {
-                index = d_index3d(i,j,k,top_gmax);
-                cell_center[index].m_state.m_U_velo_var[l] = 0;
-            }
-        }
-*/
 
         //calc div_U before adding diffusion velo to U
         for (l = 0; l < dim; ++l)
@@ -21036,48 +21023,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
  * */
 
 
-// print out reflecting Boundary Condition state.
-// input will be direction, side, index
-// output will be cell_center m_state
-void Incompress_Solver_Smooth_3D_Cartesian::debugPrintStates(
-        int dir,
-        int side,
-        int index1,
-        int index2)
-{
-    // print states velocity, pressure, etc.
-    L_STATE st1 = cell_center[index1].m_state;
-    L_STATE st2 = cell_center[index2].m_state;
-    double *crd1, *crd2;
-    crd1 = cell_center[index1].m_coords;
-    crd2 = cell_center[index2].m_coords;
-    if ((st1.m_Dcoef != st2.m_Dcoef || st1.m_P != st2.m_P || st1.m_c != st2.m_c || st1.m_rho != st2.m_rho) && (fabs(crd1[2] - 1.875) < 0.2))
-        {
-            printf("DIRECTION = %d SIDE = %d\n", dir, side);
-            printf("coords1 = (%24.24f %24.24f %24.24f)\t", crd1[0], crd1[1], crd1[2]);
-            printf("coords2 = (%24.24f %24.24f %24.24f)\n", crd2[0], crd2[1], crd2[2]);
-            printf("Velo u:  %24.24f ==  %24.24f\n", st1.m_U[0], st2.m_U[0]);
-            printf("Velo z:  %24.24f ==  %24.24f\n", st1.m_U[2], st2.m_U[2]);
-            printf("Pressure: %24.24f == %24.24f\n", st1.m_P, st2.m_P);
-            printf("Bi Diffu: %24.24f == %24.24f\n", st1.m_Dcoef, st2.m_Dcoef);
-            printf("Concentr: %24.24f == %24.24f\n", st1.m_c, st2.m_c);
-            printf("Dens: %24.24f == %24.24f\n", st1.m_rho, st2.m_rho);
-        }
-}
-
 //FUNC REFLECTION BOUNDARY CONDITION REVISED!
 void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
         int dir,
         int side,
         double *solute)
 {
-    if (dim != 3)
-    {
-        printf("The function %s is for dim = %d ONLY. ERROR!", __func__, dim);
-        exit(1);
-    }
-    printf("WARNING function %s is not in use. Function should be deleted\n", __func__);
-    return;
     int i, j, k;
     int InIndex, BIndex;
     //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
@@ -21088,8 +21039,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
         switch (dir)
         {
             case 0: // X Lower
-                 for (j = jmin; j <= jmax; j++)
-                     for (k = kmin; k <= kmax; k++)
+                 for (j = 0; j <= jmax+ubuf[1]; j++)
+                     for (k = 0; k <= kmax+ubuf[2]; k++)
                          for (i = imin; i < imin+lbuf[0]; i++)
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
@@ -21098,8 +21049,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                  break;
             case 1: // Y Lower
-                 for (i = imin; i <= imax; i++)
-                     for (k = kmin; k <= kmax; k++)
+                 for (i = 0; i <= imax+ubuf[0]; i++)
+                     for (k = 0; k <= kmax+ubuf[2]; k++)
                          for (j = jmin; j < jmin+lbuf[1]; j++)
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
@@ -21108,8 +21059,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                  break;
             case 2: // Z Lower
-                 for (i = imin; i <= imax; i++)
-                     for (j = jmin; j <= jmax; j++)
+                 for (i = 0; i <= imax+ubuf[0]; i++)
+                     for (j = 0; j <= jmax+ubuf[1]; j++)
                          for (k = kmin; k < kmin+lbuf[2]; k++)
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
@@ -21124,8 +21075,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
         switch (dir)
         {
             case 0: // X Upper
-                 for (j = jmin; j <= jmax; j++)
-                     for (k = kmin; k <= kmax; k++)
+                 for (j = 0; j <= jmax+ubuf[1]; j++)
+                     for (k = 0; k <= kmax+ubuf[2]; k++)
                          for (i = imax-ubuf[0]+1; i <= imax; i++)// X Upper
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
@@ -21135,8 +21086,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                  break;
             case 1: // Y Upper
-                 for(i = imin; i <= imax; i++)
-                     for (k = kmin; k <= kmax; k++)
+                 for(i = 0; i <= imax+ubuf[0]; i++)
+                     for (k = 0; k <= kmax+ubuf[2]; k++)
                          for (j = jmax-ubuf[1]+1; j <= jmax; j++)//Y Upper
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
@@ -21145,8 +21096,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                  break;
             case 2: // Z Upper
-                 for (i = imin; i <= imax; i++)
-                     for (j = jmin; j <= jmax; j++)
+                 for (i = 0; i <= imax+ubuf[0]; i++)
+                     for (j = 0; j <= jmax+ubuf[1]; j++)
                          for (k = kmax-ubuf[2]+1; k <= kmax; k++)//Z Upper
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
