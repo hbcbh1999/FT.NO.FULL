@@ -28,7 +28,7 @@ L_STATE::L_STATE(): m_P(0)
 	m_rho = 0;
 	div_U = 0;
 
-        //for vd        
+        //for vd
         m_c = 0;
         m_Dcoef = 0;
         m_rho_old = 0;
@@ -69,7 +69,7 @@ void L_RECTANGLE::setCoords(
 }
 //--------------------------------------------------------------------------
 //               Incompress_Solver_Basis
-//               Pure virtual class	
+//               Pure virtual class
 //--------------------------------------------------------------------------
 
 
@@ -116,7 +116,7 @@ void Incompress_Solver_Smooth_Basis::initMesh(void)
 	    num_cells *= (top_gmax[i] + 1);
 	}
 	cell_center.insert(cell_center.end(),num_cells,rectangle);
-	
+
 	// setup vertices
 	// left to right, down to up
 	switch (dim)
@@ -243,11 +243,11 @@ void Incompress_Solver_Smooth_Basis::setComponent(void)
 {
 	int i;
 	double coords[MAXD];
-	
+
 	//cell center components, set to top_comp[index]
 	for (i = 0; i < cell_center.size(); i++)
 	{
-	    cell_center[i].comp = 
+	    cell_center[i].comp =
 	    		getComponent(cell_center[i].icoords);
 	}
 }
@@ -345,15 +345,15 @@ void Incompress_Solver_Smooth_Basis::setIndexMap(void)
 }	/* end setIndexMap */
 
 
-void Incompress_Solver_Smooth_Basis::computeExactSolution(double *coords, L_STATE &state) 
+void Incompress_Solver_Smooth_Basis::computeExactSolution(double *coords, L_STATE &state)
 {
 	state.setZero();
 }
 
-// for initial condition: 
-// 		setInitialCondition();	
+// for initial condition:
+// 		setInitialCondition();
 // this function should be called before solve()
-// for the source term of the momentum equation: 	
+// for the source term of the momentum equation:
 // 		computeSourceTerm();
 
 void Incompress_Solver_Smooth_Basis::getVelocity(double *p, double *U)
@@ -374,10 +374,10 @@ void Incompress_Solver_Smooth_Basis::getVelocity(double *p, double *U)
 
 //for MAC grid
 void Incompress_Solver_Smooth_Basis::getVelocity_MAC_vd(double *p, double *U)
-{       
+{
         int i;
         double **vel = field->vel;
-        
+
         if (!FT_IntrpVelocityVarAtCoords_MAC_vd(front,NO_COMP,p,vel[0],getStateXvel,0,&U[0]))
         {
             for (i = 0; i < dim; ++i) U[i] = 0;
@@ -404,7 +404,7 @@ void Incompress_Solver_Smooth_Basis::getDensity_vd(double *p, double *rho)
 
 
 void Incompress_Solver_Smooth_Basis::getDensityOld_vd(double *p, double *rho)
-{   
+{
         double *dens = field->dens_old;
 
         if (!FT_IntrpStateVarAtCoords(front,NO_COMP,p,dens,getStateDensOld,rho))
@@ -417,12 +417,12 @@ void Incompress_Solver_Smooth_Basis::getDensityOld_vd(double *p, double *rho)
 }
 
 
-void Incompress_Solver_Smooth_Basis::getConcentration_vd(double *p, double *c)                                        
-{       
+void Incompress_Solver_Smooth_Basis::getConcentration_vd(double *p, double *c)
+{
         int i;
         double *conc = field->conc;
-                   
-        if (!FT_IntrpStateVarAtCoords(front,NO_COMP,p,conc,getStateConc,c)) 
+
+        if (!FT_IntrpStateVarAtCoords(front,NO_COMP,p,conc,getStateConc,c))
         {
             *c = 0.0;
             printf("\nERROR in getConcentration_vd(), "
@@ -448,13 +448,13 @@ void Incompress_Solver_Smooth_Basis::getRectangleIndex(int index, int &i, int &j
 
 
 int Incompress_Solver_Smooth_Basis::getRectangleComponent(int index)
-{	
+{
 	return getComponent(cell_center[index].icoords);
 }
 
 
 void Incompress_Solver_Smooth_Basis::getRectangleCenter(
-	int index, 
+	int index,
 	double *coords)
 {
 	int i;
@@ -480,7 +480,7 @@ double Incompress_Solver_Smooth_Basis::getDistance(double *c0, double *c1)
 
 void Incompress_Solver_Smooth_Basis::getNearestInterfacePoint(
 	COMPONENT comp,
-	double *p, 
+	double *p,
 	double *q,
 	double *nor,		// Normal vector
 	double *kappa)		// curvature
@@ -522,7 +522,7 @@ void Incompress_Solver_Smooth_Basis::getNearestInterfacePoint(
 		    nor[i] /= mag_nor;
 		break;
 	    case 3:
-		tri = Tri_of_hse(hse);	
+		tri = Tri_of_hse(hse);
 		for (i = 0; i < dim; ++i)
 		{
 		    pts[i] = Point_of_tri(tri)[i];
@@ -574,15 +574,15 @@ int Incompress_Solver_Smooth_Basis::getComponent(
 
 void Incompress_Solver_Smooth_Basis::save(char *filename)
 {
-	
+
 	RECT_GRID *rect_grid = front->rect_grid;
 	INTERFACE *intfc    = front->interf;
-		
+
 	int i, j;
 	int xmax = rect_grid->gmax[0];
 	int ymax = rect_grid->gmax[1];
 	double x, y;
-	
+
 	FILE *hfile = fopen(filename, "w");
 	if(hfile==NULL)
 	{
@@ -590,28 +590,28 @@ void Incompress_Solver_Smooth_Basis::save(char *filename)
 		       "SaveAsTecplot_rect_grid_and_interface().", filename);
 		exit(0);
 	}
-	
+
 	// secondly print out the interface
-		
+
 	if(exists_interface(intfc))
 	{
 	    CURVE		**cur;
 	    CURVE		*curve;
 	    BOND		*bond;
-			
+
 	    for(cur=intfc->curves; cur && *cur; cur++)
 	    {
 		curve = *cur;
-		fprintf(hfile, "ZONE I=%d J=%d F=POINT \n", 
+		fprintf(hfile, "ZONE I=%d J=%d F=POINT \n",
 				curve->num_points, 1);
 		bond=curve->first;
-		fprintf(hfile, "%.4f %.4f \n",bond->start->_coords[0], 
+		fprintf(hfile, "%.4f %.4f \n",bond->start->_coords[0],
 				bond->start->_coords[1]);
 		for(bond=curve->first; bond!=NULL; bond=bond->next)
-		    fprintf(hfile, "%.4f %.4f \n",bond->end->_coords[0], 
+		    fprintf(hfile, "%.4f %.4f \n",bond->end->_coords[0],
 		    		bond->end->_coords[1]);
-		}					
-	}		
+		}
+	}
 	fclose(hfile);
 }
 
@@ -639,7 +639,7 @@ void Incompress_Solver_Smooth_Basis::setDomain()
 	T = table_of_interface(grid_intfc);
 	top_comp = T->components;
 	iFparams = (IF_PARAMS*)front->extra1;
-	
+
 	hmin = top_h[0];
 	size = top_gmax[0]+1;
         for (i = 1; i < dim; ++i)
@@ -746,7 +746,7 @@ void Incompress_Solver_Smooth_Basis::setDomain_vd()
                 // for vd
 //                FT_MatrixMemoryAlloc((POINTER*)&field->grad_pres,2,size,sizeof(double));
 //                FT_VectorMemoryAlloc((POINTER*)&source_tmp,size,sizeof(double));
-                FT_VectorMemoryAlloc((POINTER*)&diff_coeff_old,size,sizeof(double));   
+                FT_VectorMemoryAlloc((POINTER*)&diff_coeff_old,size,sizeof(double));
 //                FT_VectorMemoryAlloc((POINTER*)&field->dens,size,sizeof(double));
 //                FT_VectorMemoryAlloc((POINTER*)&field->dens_old,size,sizeof(double));
 //                FT_VectorMemoryAlloc((POINTER*)&field->conc,size,sizeof(double));
@@ -765,6 +765,8 @@ void Incompress_Solver_Smooth_Basis::setDomain_vd()
                 iFparams->field = field;
                 FT_VectorMemoryAlloc((POINTER*)&array,size,sizeof(double));
                 FT_VectorMemoryAlloc((POINTER*)&source,size,sizeof(double));
+                //removal tag: HAOZ REFLECTION BOUNDARY
+                FT_MatrixMemoryAlloc((POINTER*)&vecarray,3,size,sizeof(double));
                 FT_VectorMemoryAlloc((POINTER*)&diff_coeff,size,sizeof(double));
 //                FT_VectorMemoryAlloc((POINTER*)&field->pres,size,sizeof(double));
                 FT_MatrixMemoryAlloc((POINTER*)&field->vel,3,size,sizeof(double));
@@ -865,7 +867,7 @@ void Incompress_Solver_Smooth_Basis::setGlobalIndex()
         {
             ilower += n_dist[i-1];
             iupper += n_dist[i];
-        }	
+        }
 
 /*
         if (debugging("interpolate"))
@@ -1328,7 +1330,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep(char *out
                     U[jj] = new_pp_grid->dom[jj][icrds_new[jj] + 1];
                     gmax[jj] = irint((U[jj] - L[jj])/(front->rect_grid->h[jj]));
 
-                    switch (dim) // TODO Unify 2 and 3 D 
+                    switch (dim) // TODO Unify 2 and 3 D
                     {
                     case 1:
                     case 2:
@@ -1379,7 +1381,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep(char *out
                 //clip the interface to subdomain
                 clip_front_for_output(tempfront,zoom_grid);
 
-                //set relative coordinates of new nodes 
+                //set relative coordinates of new nodes
                 for(jj = 0; jj < dim; ++jj)
                     icrds_new[jj] = icrds_new[jj] - icrds_old[jj]*ratio[jj];
 
@@ -1643,7 +1645,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep(char *out
             } //switch(dim)
             fclose(outfile);
             free_front(tempfront);
-            }  //ASCII output 
+            }  //ASCII output
         }  //kk
         }  //ii
 } /* end printFrontInteriorStatesRegridRep */
@@ -1731,7 +1733,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep_vd(char *
                     U[jj] = new_pp_grid->dom[jj][icrds_new[jj] + 1];
                     gmax[jj] = irint((U[jj] - L[jj])/(front->rect_grid->h[jj]));
 
-                    switch (dim) // TODO Unify 2 and 3 D 
+                    switch (dim) // TODO Unify 2 and 3 D
                     {
                     case 1:
                     case 2:
@@ -1782,7 +1784,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep_vd(char *
                 //clip the interface to subdomain
                 clip_front_for_output(tempfront,zoom_grid);
 
-                //set relative coordinates of new nodes 
+                //set relative coordinates of new nodes
                 for(jj = 0; jj < dim; ++jj)
                     icrds_new[jj] = icrds_new[jj] - icrds_old[jj]*ratio[jj];
 
@@ -1900,7 +1902,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep_vd(char *
                             FT_IntrpStateVarAtCoords(front,NO_COMP,coords,dens_old,getStateDensOld,&rho_old_out);
                             FT_IntrpStateVarAtCoords(front,NO_COMP,coords,conc,getStateConc,&c_out);
 
-                            Dcoef_out = iFparams->Dcoef1; 
+                            Dcoef_out = iFparams->Dcoef1;
                             mu_out = 1.0;
                             temp = 1;
                             val[0] = endian_double_swap(rho_out);
@@ -2013,7 +2015,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep_vd(char *
             } //switch(dim)
             fclose(outfile);
             free_front(tempfront);
-            } //binary output 
+            } //binary output
             else //ASCII output
             {
             outfile = fopen(filename,"w");
@@ -2131,7 +2133,7 @@ void Incompress_Solver_Smooth_Basis::printFrontInteriorStatesRegridRep_vd(char *
             } //switch(dim)
             fclose(outfile);
             free_front(tempfront);
-            } //ASCII output 
+            } //ASCII output
         }  //kk
         }  //ii
 } /* end printFrontInteriorStatesRegridRep_vd */
@@ -2356,10 +2358,10 @@ void Incompress_Solver_Smooth_Basis::readFrontInteriorStates_vd(char *restart_na
         double val[3];
         int ival[3];
 
-	m_rho[0] = iFparams->rho1;		
-	m_rho[1] = iFparams->rho2;		
-	m_mu[0] = iFparams->mu1;		
-	m_mu[1] = iFparams->mu2;		
+	m_rho[0] = iFparams->rho1;
+	m_rho[1] = iFparams->rho2;
+	m_mu[0] = iFparams->mu1;
+	m_mu[1] = iFparams->mu2;
 	m_sigma = iFparams->surf_tension;
 	m_comp[0] = iFparams->m_comp1;
 	m_comp[1] = iFparams->m_comp2;
@@ -2393,7 +2395,7 @@ void Incompress_Solver_Smooth_Basis::readFrontInteriorStates_vd(char *restart_na
             infile = fopen(restart_name,"rb");
         else
             infile = fopen(restart_name,"r");
-	
+
 	/* Initialize states at the interface */
 //        if (RegridRestart != YES)
 //            fluid_read_front_states_vd(infile,front,binary);
@@ -2495,7 +2497,7 @@ void Incompress_Solver_Smooth_Basis::readFrontInteriorStates_vd(char *restart_na
                             cell_center[index].m_state.m_rho_old = endian_double_swap(val[0]);
                             cell_center[index].m_state.m_c = endian_double_swap(val[1]);
                             cell_center[index].m_state.m_Dcoef = endian_double_swap(val[2]);
-                            
+
                             fread(ival, sizeof(int), 1, infile);
                             if (RegridRestart != YES)
                                 top_comp[index] = endian_int_swap(ival[0]);
@@ -2772,7 +2774,7 @@ void Incompress_Solver_Smooth_Basis::setAdvectionDt_vd()
                     value /= rho;
                     if (value > max_value)
                         max_value = value;
-                } 
+                }
                 else //I = -1
                     (void) printf("I[%d][%d][%d] = -1 in setAdvectionDt_vd()!!\n",i,j,k);
             }
@@ -2854,12 +2856,12 @@ void Incompress_Solver_Smooth_Basis::augmentMovieVariables()
 			front->hdf_movie_var->var_name[i]);
 		hdf_movie_var->get_state_var[i] =
 			front->hdf_movie_var->get_state_var[i];
-		hdf_movie_var->top_var[i] = 
+		hdf_movie_var->top_var[i] =
 			front->hdf_movie_var->top_var[i];
-		hdf_movie_var->obstacle_comp[i] = 
+		hdf_movie_var->obstacle_comp[i] =
 			front->hdf_movie_var->obstacle_comp[i];
 	    }
-	    
+
 	    switch (dim)
 	    {
 	    case 2:
@@ -3223,21 +3225,21 @@ void Incompress_Solver_Smooth_Basis::initMovieVariables()
 double Incompress_Solver_Smooth_2D_Basis::getSmoothingFunction(double phi)
 {
 	// Heaviside function [1]
-	if (phi < -m_smoothing_radius)	
+	if (phi < -m_smoothing_radius)
 	    return 0;
 	else if (phi > m_smoothing_radius)
 	    return 1;
 	else
-	    return 1.0/2 + phi/(2*m_smoothing_radius) + 
+	    return 1.0/2 + phi/(2*m_smoothing_radius) +
 		   1/(2*PI)*sin(PI*phi/m_smoothing_radius);
 }
 
 double Incompress_Solver_Smooth_2D_Basis::getSmoothingFunctionD(double *center, double *point)
 {
-        if (fabs(center[0]-point[0]) < 2*top_h[0] && 
+        if (fabs(center[0]-point[0]) < 2*top_h[0] &&
 		fabs(center[1]-point[1]) < 2*top_h[1])
-	    return ((1.0 + cos((PI*(center[0]-point[0]))/(2.0*top_h[0]))) 
-		    *(1.0 + cos((PI*(center[1]-point[1]))/(2.0*top_h[1])))) 
+	    return ((1.0 + cos((PI*(center[0]-point[0]))/(2.0*top_h[0])))
+		    *(1.0 + cos((PI*(center[1]-point[1]))/(2.0*top_h[1]))))
 		    /(16.0*top_h[0]*top_h[1]);
 	else
             return 0.0;
@@ -3250,7 +3252,7 @@ double Incompress_Solver_Smooth_2D_Basis::smoothedDeltaFunction(double *p, doubl
 
 	for (i = 0; i < dim; ++i) d[i] = p[i] - center[i];
 	len = mag_vector(d,dim);
-	r = len/hmin/m_smoothing_radius;	
+	r = len/hmin/m_smoothing_radius;
 	delta = (fabs(r) > 1.0) ? 0.0 : 0.5*(1.0 + cos(PI*r));
 	return delta;
 }	/* end smoothedDeltaFunction */
@@ -3262,7 +3264,7 @@ double Incompress_Solver_Smooth_2D_Basis::smoothedStepFunction(double *p, double
 
 	for (i = 0; i < dim; ++i) dp[i] = p[i] - center[i];
 	dist = mag_vector(dp,dim);
-        x = sign*dist/hmin/m_smoothing_radius;	
+        x = sign*dist/hmin/m_smoothing_radius;
 	if (x < -1.0) H = 0.0;
 	else if (x > 1.0) H = 1.0;
 	else H = 0.5*(1.0 + x) + 0.5/PI*sin(PI*x);
@@ -3544,7 +3546,7 @@ void Incompress_Solver_Smooth_2D_Basis::setSmoothedProperties(void)
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
 	{
-	    index  = d_index2d(i,j,top_gmax);			
+	    index  = d_index2d(i,j,top_gmax);
 	    comp  = cell_center[index].comp;
 	    if (!ifluid_comp(comp)) continue;
 
@@ -3555,18 +3557,18 @@ void Incompress_Solver_Smooth_2D_Basis::setSmoothedProperties(void)
 	    force = cell_center[index].m_state.f_surf;
 	    for (l = 0; l < dim; ++l) force[l] = 0.0;
 
-	    if (status == YES && 
+	    if (status == YES &&
 		ifluid_comp(positive_component(hs)) &&
 		ifluid_comp(negative_component(hs)))
 	    {
 		sign = (comp == m_comp[0]) ? -1 : 1;
 		D = smoothedDeltaFunction(center,point);
 		H = smoothedStepFunction(center,point,sign);
-		cell_center[index].m_state.m_mu = m_mu[0]  + 
+		cell_center[index].m_state.m_mu = m_mu[0]  +
 					(m_mu[1]-m_mu[0])*H;
-		cell_center[index].m_state.m_rho = m_rho[0] + 
-					(m_rho[1]-m_rho[0])*H; 
-		
+		cell_center[index].m_state.m_rho = m_rho[0] +
+					(m_rho[1]-m_rho[0])*H;
+
 		if (m_sigma != 0.0 && D != 0.0)
 		{
 		    surfaceTension(center,hse,hs,force,m_sigma);
@@ -3593,14 +3595,14 @@ void Incompress_Solver_Smooth_2D_Basis::setSmoothedProperties(void)
 	}
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
-	{	
+	{
 	    index  = d_index2d(i,j,top_gmax);
 	    array[index] = cell_center[index].m_state.m_mu;
 	}
 	scatMeshArray();
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
-	{	
+	{
 	    index  = d_index2d(i,j,top_gmax);
 	    cell_center[index].m_state.m_mu = array[index];
 	}
@@ -3727,23 +3729,23 @@ void Incompress_Solver_Smooth_2D_Basis::setSmoothedProperties_vd(void)
 double Incompress_Solver_Smooth_3D_Basis::getSmoothingFunction(double phi)
 {
 	// Heaviside function [1]
-	if (phi < -m_smoothing_radius)	
+	if (phi < -m_smoothing_radius)
 	    return 0;
 	else if (phi > m_smoothing_radius)
 	    return 1;
 	else
-	    return 1.0/2 + phi/(2*m_smoothing_radius) + 
+	    return 1.0/2 + phi/(2*m_smoothing_radius) +
 		   1/(2*PI)*sin(PI*phi/m_smoothing_radius);
 }
 
 double Incompress_Solver_Smooth_3D_Basis::getSmoothingFunctionD(double *center, double *point)
 {
-        if (fabs(center[0]-point[0]) < 2*top_h[0] && 
-		fabs(center[1]-point[1]) < 2*top_h[1] && 
+        if (fabs(center[0]-point[0]) < 2*top_h[0] &&
+		fabs(center[1]-point[1]) < 2*top_h[1] &&
 		fabs(center[2]-point[2]) < 2*top_h[2])
-	    return ((1.0 + cos((PI*(center[0]-point[0]))/(2.0*top_h[0]))) 
-		    *(1.0 + cos((PI*(center[1]-point[1]))/(2.0*top_h[1]))) 
-		    *(1.0 + cos((PI*(center[2]-point[2]))/(2.0*top_h[2])))) 
+	    return ((1.0 + cos((PI*(center[0]-point[0]))/(2.0*top_h[0])))
+		    *(1.0 + cos((PI*(center[1]-point[1]))/(2.0*top_h[1])))
+		    *(1.0 + cos((PI*(center[2]-point[2]))/(2.0*top_h[2]))))
 		/(64.0*top_h[0]*top_h[1]*top_h[2]);
 	else
             return 0.0;
@@ -3756,7 +3758,7 @@ double Incompress_Solver_Smooth_3D_Basis::smoothedDeltaFunction(double *p, doubl
 
 	for (i = 0; i < dim; ++i) d[i] = p[i] - center[i];
 	len = mag_vector(d,dim);
-	r = len/hmin/m_smoothing_radius;	
+	r = len/hmin/m_smoothing_radius;
 	delta = (fabs(r) > 1.0) ? 0.0 : 0.5*(1.0 + cos(PI*r));
 	return delta;
 }	/* end smoothedDeltaFunction */
@@ -3768,7 +3770,7 @@ double Incompress_Solver_Smooth_3D_Basis::smoothedStepFunction(double *p, double
 
 	for (i = 0; i < dim; ++i) dp[i] = p[i] - center[i];
 	dist = mag_vector(dp,dim);
-	x = sign*dist/hmin/m_smoothing_radius;	
+	x = sign*dist/hmin/m_smoothing_radius;
 	if (x < -1.0) H = 0.0;
 	else if (x > 1.0) H = 1.0;
 	else H = 0.5*(1.0 + x) + 0.5/PI*sin(PI*x);
@@ -4185,7 +4187,7 @@ void Incompress_Solver_Smooth_Basis::initSampleVelocity(char *in_name)
 void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 {
 	boolean status;
-	int i,j,k,l,index,sign; 
+	int i,j,k,l,index,sign;
 	COMPONENT comp;
         double t[MAXD],*force;
 	double center[MAXD],point[MAXD],nor[MAXD],phi,H,D;
@@ -4196,7 +4198,7 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
 	{
-	    index  = d_index3d(i,j,k,top_gmax);			
+	    index  = d_index3d(i,j,k,top_gmax);
 	    comp  = cell_center[index].comp;
 	    if (!ifluid_comp(comp)) continue;
 
@@ -4206,7 +4208,7 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 	    force = cell_center[index].m_state.f_surf;
             for (l = 0; l < dim; ++l) force[l] = 0.0;
 
-	    if (status  == YES && 
+	    if (status  == YES &&
 		ifluid_comp(positive_component(hs)) &&
                 ifluid_comp(negative_component(hs)))
 	    {
@@ -4245,7 +4247,7 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
-	{	
+	{
 	    index  = d_index3d(i,j,k,top_gmax);
 	    array[index] = cell_center[index].m_state.m_mu;
 	}
@@ -4253,7 +4255,7 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)
 	for (i = 0; i <= top_gmax[0]; i++)
-	{	
+	{
 	    index  = d_index3d(i,j,k,top_gmax);
 	    cell_center[index].m_state.m_mu = array[index];
 	}
@@ -4377,16 +4379,16 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoProOnePhase_vd(void)
 
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
-        for (i = imin; i <= imax; i++) 
+        for (i = imin; i <= imax; i++)
         {
-            index  = d_index3d(i,j,k,top_gmax); 
+            index  = d_index3d(i,j,k,top_gmax);
             comp  = cell_center[index].comp;
             if (!ifluid_comp(comp)) continue;
 
 //            force = cell_center[index].m_state.f_surf;
 //            for (l = 0; l < dim; ++l)
 //                force[l] = 0.0; //set the surface tension to 0
-    
+
             cell_center[index].m_state.m_mu = m_mu[0]; //set viscosity to any of the two (should be the same in input file)
         }
 
@@ -4508,7 +4510,7 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             mu = cell_center[index].m_state.m_rho;
             mu *= (m_mu[0]+m_mu[1])/(m_rho[0]+m_rho[1]);
-            array[index] = mu; 
+            array[index] = mu;
         }
         scatMeshArray();
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4522,7 +4524,7 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties_vd(void)
 
 
 //Flux of Riemann solution of Burgers equation u_t + uu_x = 0
-double burger_flux(	
+double burger_flux(
 	double ul,
 	double um,
 	double ur)
@@ -4555,14 +4557,14 @@ double burger_flux(
 }	/* end flux */
 
 //Flux of Riemann solution of linear equation u_t + au_x = 0
-double linear_flux(	
+double linear_flux(
 	double a,
 	double ul,
 	double um,
 	double ur)
 {
 	double u;
-	
+
 	if (a > 0.0)
 	    return a*(um - ul);
 	else
@@ -4572,7 +4574,7 @@ double linear_flux(
 /*
 void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 {
-// Finding the distance of a random point from the interface in 3D 
+// Finding the distance of a random point from the interface in 3D
 
 	float dphi,drad,dz,radii,phi,z,start_rad,start_phi,start_z,dr,next_rad,next_z;
 	float alpha;
@@ -4605,33 +4607,33 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 	    sprintf(file_name,"%s_CLS_t%g_r%g_%d",output_filename(grid->init),
 		front->time,radii,myid);
 	    CLS = fopen(file_name,"w");
-		
+
 	    for (j = 0; j < Nphi; j++)
 	    {
 	    	phi = start_phi+j*dphi;
-	    	
+
 	    	for (k = 0; k < Nz; k++)
 	    	{
 	    	   z = start_z+k*dz;
-	    	   
+
 	    	coords[0] = radii*cos(phi);
 	    	coords[1] = radii*sin(phi);
 	    	coords[2] = z;
 	    	comp = component(coords,front->interf);
-	    	
+
 		   if( (coords[0] >= L[0]) && (coords[0] <= U[0])
 		    && (coords[1] >= L[1]) && (coords[1] <= U[1])
 		    && (coords[2] >= L[2]) && (coords[2] <= U[2]))
-		    
+
 		    {
-		        // normal positive side 
+		        // normal positive side
 		          next_rad = radii+dr;
 		          next_coords[0] = next_rad*cos(phi);
 		          next_coords[1] = next_rad*sin(phi);
 		          next_coords[2] = z;
 		          next_comp = component(next_coords,front->interf);
 
-		          while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		          while((next_comp == comp) && (next_coords[0]>=GL[0])
 		          && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		          && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		          && (next_coords[2] <= GU[2]))
@@ -4641,7 +4643,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4655,13 +4657,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4675,7 +4677,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance_norpos_z = min(distance_norpos_z,dist_z);
 		             next_rad = next_rad+dr;
 		             next_coords[0] = next_rad*cos(phi);
@@ -4687,25 +4689,25 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
 
-				// normal negative side 
+				// normal negative side
 				next_rad = radii-dr;
 				next_coords[0] = next_rad*cos(phi);
 				next_coords[1] = next_rad*sin(phi);
 				next_coords[2] = z;
 				next_comp = component(next_coords,front->interf);
 
-				while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+				while((next_comp == comp) && (next_coords[0]>=GL[0])
 				&& (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 				&& (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 				&& (next_coords[2] <= GU[2]))
 				{
-					
+
 		             next_z = z+dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4719,13 +4721,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4739,7 +4741,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance_norneg_z = min(distance_norneg_z,dist_z);
 		             next_rad = next_rad-dr;
 		             next_coords[0] = next_rad*cos(phi);
@@ -4750,10 +4752,10 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		        distance_nor_neg = sqrt(sqr(next_coords[0]-coords[0])+
 		                                sqr(next_coords[1]-coords[1])+
 		                                sqr(next_coords[2]-coords[2]));
-	
+
 		distance_nor = min(min(distance_nor_pos,distance_nor_neg),min(distance_norpos_z,distance_norneg_z));
-	
-		// tangential positive side 
+
+		// tangential positive side
 		next_rad = sqrt(sqr(radii)+sqr(dr));
 		next_coords[0] = next_rad*cos(phi-atan2(dr,radii));
 		next_coords[1] = next_rad*sin(phi-atan2(dr,radii));
@@ -4761,7 +4763,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		next_comp = component(next_coords,front->interf);
 		k = 1;
 
-		while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		while((next_comp == comp) && (next_coords[0]>=GL[0])
 		   && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		   && (next_coords[1] <= GU[1]) && (next_coords[2] >=GL[2])
 		   && (next_coords[2] <= GU[2]))
@@ -4771,7 +4773,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4785,13 +4787,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4805,7 +4807,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance_tanpos_z = min(distance_tanpos_z,dist_z);
 		     k++;
 		    next_rad = sqrt(sqr(radii)+sqr(k*dr));
@@ -4818,7 +4820,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		                        sqr(next_coords[1]-coords[1])+
 		                        sqr(next_coords[2]-coords[2]));
 
-		// tangential negative side 
+		// tangential negative side
 		next_rad = sqrt(sqr(radii)+sqr(dr));
 		next_coords[0] = next_rad*cos(phi+atan2(dr,radii));
 		next_coords[1] = next_rad*sin(phi+atan2(dr,radii));
@@ -4826,18 +4828,18 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		next_comp = component(next_coords,front->interf);
 		k = 1;
 
-		while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		while((next_comp == comp) && (next_coords[0]>=GL[0])
 		   && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		   && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		   && (next_coords[2] <= GU[2]))
 		{
-		    
+
 		             next_z = z+dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4851,13 +4853,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4871,7 +4873,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance_tanneg_z = min(distance_norneg_z,dist_z);
 		    k++;
 		    next_rad = sqrt(sqr(radii)+sqr(k*dr));
@@ -4883,17 +4885,17 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		distance_tan_neg = sqrt(sqr(next_coords[0]-coords[0])+
 		                        sqr(next_coords[1]-coords[1])+
 		                        sqr(next_coords[2]-coords[2]));
-	
+
 		distance_tan = min(min(distance_tan_pos,distance_tan_neg),min(distance_tanpos_z,distance_tanneg_z));
-		
+
 		distance_min = min(distance_tan,distance_nor);
 
-		// random direction 
+		// random direction
 		for (kk = 1; kk < 5; kk++)
 		{
 		    alpha = kk*(PI/10);
-		
-		// side1 
+
+		// side1
 		next_rad = sqrt(sqr(radii+dr*cos(alpha))+sqr(dr*sin(alpha)));
 		next_coords[0] = next_rad*cos(phi+atan2(dr*sin(alpha),radii+dr*cos(alpha)));
 		next_coords[1] = next_rad*sin(phi+atan2(dr*sin(alpha),radii+dr*cos(alpha)));
@@ -4901,7 +4903,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		next_comp = component(next_coords,front->interf);
 		k = 1;
 
-		while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		while((next_comp == comp) && (next_coords[0]>=GL[0])
 		   && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		   && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		   && (next_coords[2]))
@@ -4911,7 +4913,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4925,13 +4927,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4945,7 +4947,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance1_z = min(distance1_z,dist_z);
 		    k++;
 		    next_rad = sqrt(sqr(radii+k*dr*cos(alpha))+sqr(k*dr*sin(alpha)));
@@ -4957,8 +4959,8 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		distance_1 = sqrt(sqr(next_coords[0]-coords[0])+
 		                  sqr(next_coords[1]-coords[1])+
 		                  sqr(next_coords[2]-coords[2]));
-		
-		// side2 
+
+		// side2
 		next_rad = sqrt(sqr(radii+dr*cos(alpha))+sqr(dr*sin(alpha)));
 		next_coords[0] = next_rad*cos(phi-atan2(dr*sin(alpha),radii+dr*cos(alpha)));
 		next_coords[1] = next_rad*sin(phi-atan2(dr*sin(alpha),radii+dr*cos(alpha)));
@@ -4966,7 +4968,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		next_comp = component(next_coords,front->interf);
 		k = 1;
 
-		while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		while((next_comp == comp) && (next_coords[0]>=GL[0])
 		   && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		   && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		   && (next_coords[2] <= GU[2]))
@@ -4976,7 +4978,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -4990,13 +4992,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -5010,7 +5012,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance2_z = min(distance2_z,dist_z);
 		      k++;
 		    next_rad = sqrt(sqr(radii+k*dr*cos(alpha))+sqr(k*dr*sin(alpha)));
@@ -5022,8 +5024,8 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		distance_2 = sqrt(sqr(next_coords[0]-coords[0])+
 		                  sqr(next_coords[1]-coords[1])+
 		                  sqr(next_coords[2]-coords[2]));
-		
-		// side3 
+
+		// side3
 		next_rad = sqrt(sqr(radii-dr*cos(alpha))+sqr(dr*sin(alpha)));
 		next_coords[0] = next_rad*cos(phi+atan2(dr*sin(alpha),radii-dr*cos(alpha)));
 		next_coords[1] = next_rad*sin(phi+atan2(dr*sin(alpha),radii-dr*cos(alpha)));
@@ -5031,7 +5033,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		next_comp = component(next_coords,front->interf);
 		k = 1;
 
-		while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		while((next_comp == comp) && (next_coords[0]>=GL[0])
 		   && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		   && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		   && (next_coords[2] <= GU[2]))
@@ -5041,7 +5043,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -5055,13 +5057,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -5075,7 +5077,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance3_z = min(distance3_z,dist_z);
 		     k++;
 		    next_rad = sqrt(sqr(radii-k*dr*cos(alpha))+sqr(k*dr*sin(alpha)));
@@ -5087,8 +5089,8 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		distance_3 = sqrt(sqr(next_coords[0]-coords[0])+
 		                  sqr(next_coords[1]-coords[1])+
 		                  sqr(next_coords[2]-coords[2]));
-		
-		// side4 
+
+		// side4
 		next_rad = sqrt(sqr(radii-dr*cos(alpha))+sqr(dr*sin(alpha)));
 		next_coords[0] = next_rad*cos(phi-atan2(dr*sin(alpha),radii-dr*cos(alpha)));
 		next_coords[1] = next_rad*sin(phi-atan2(dr*sin(alpha),radii-dr*cos(alpha)));
@@ -5096,7 +5098,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		next_comp = component(next_coords,front->interf);
 		k = 1;
 
-		while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		while((next_comp == comp) && (next_coords[0]>=GL[0])
 		   && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		   && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		   && (next_coords[2] <= GU[2]))
@@ -5106,7 +5108,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -5120,13 +5122,13 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_pos_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		                  
-		             next_z = z-dr;                     
+
+		             next_z = z-dr;
 		             next_coords[0] = next_rad*cos(phi);
 		             next_coords[1] = next_rad*sin(phi);
 		             next_coords[2] = next_z;
 		             next_comp = component(next_coords,front->interf);
-		             while((next_comp == comp) && (next_coords[0]>=GL[0]) 
+		             while((next_comp == comp) && (next_coords[0]>=GL[0])
 		                  && (next_coords[0] <= GU[0]) && (next_coords[1] >= GL[1])
 		                  && (next_coords[1] <= GU[1]) && (next_coords[2] >= GL[2])
 		                  && (next_coords[2] <= GU[2]))
@@ -5140,7 +5142,7 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 		             distance_neg_z = sqrt(sqr(next_coords[0]-coords[0])+
 		                                  sqr(next_coords[1]-coords[1])+
 		                                  sqr(next_coords[2]-coords[2]));
-		             dist_z = min(distance_pos_z,distance_neg_z);   
+		             dist_z = min(distance_pos_z,distance_neg_z);
 		             distance4_z = min(distance4_z,dist_z);
 		    k++;
 		    next_rad = sqrt(sqr(radii-k*dr*cos(alpha))+sqr(k*dr*sin(alpha)));
@@ -5169,5 +5171,5 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 	    }
 	    fclose(CLS);
 	}
-}	
+}
 */

@@ -320,6 +320,8 @@ protected:
         PP_GRID *pp_grid;
 	double *array;
 	double *source;
+    //removal tag: HAOZ this is for REFLECTION BOUNDARY CONDITION
+    double **vecarray;
         double *source_tmp;
 	double *diff_coeff;
         double *diff_coeff_old;
@@ -852,8 +854,8 @@ public:
         Incompress_Solver_Smooth_3D_Cartesian(Front &front):
 	Incompress_Solver_Smooth_3D_Basis(front) {};
 	~Incompress_Solver_Smooth_3D_Cartesian() {};
-    //before FT_Propagate and enforce Reflection Boundary Condition
-    void enforceReflectionState();
+    // enforce Reflection Boundary Condition
+    void enforceReflectionState(double**);
 
         void printExpandedMesh(char* outname,bool binary);
         void printExpandedMesh_big_endian(char* outname);

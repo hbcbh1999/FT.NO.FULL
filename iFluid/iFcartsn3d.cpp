@@ -3948,7 +3948,20 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             {
                 index = d_index3d(i,j,k,top_gmax);
                 cell_center[index].m_state.m_U_tmp[l] = array[index];
+                vecarray[l][index] = array[index];
             }
+        }
+        /*
+         * removal tag: HAOZ
+         * */
+        enforceReflectionState(vecarray); // on m_U_tmp
+        for (l = 0; l < 3; l++)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U_tmp[l] = vecarray[l][index];
         }
         for (l = 0; l < 3; ++l)
         {
@@ -3980,6 +3993,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
+        // removal tag: HAOZ
+        enforceReflectionState(vel);//m_U
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -3990,6 +4013,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        //removal tag: HAOZ. adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         // store the div(U*) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4295,6 +4319,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
+        //removal tag: HAOZ
+        enforceReflectionState(vel);//m_U
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -4305,6 +4339,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        //removal tag: HAOZ. adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         //store the values of div(U^{n+1}) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4878,6 +4913,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
     if (!flag)
     {
         // (1) get U_center_bar on cell centers, and U_face_bar on cell faces
+        // removal tag: HAOZ
+        // REFLECTION B.C.
+        // split the calculation of face vals and center vals from the triple loop.
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -4910,6 +4948,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             {
                 index  = d_index3d(i,j,k,top_gmax);
                 cell_center[index].m_state.m_U_center_bar[l] = array[index];
+                vecarray[l][index] = array[index];
             }
 
             for (k = kmin; k <= kmax; k++)
@@ -4938,6 +4977,26 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U_face_bar[l];
         }
+        // removal tag: HAOZ
+        // REFLECTION B.C.
+        enforceReflectionState(vecarray);//m_U_center_bar
+        for (l = 0; l < 3; l++)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index  = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U_center_bar[l] = vecarray[l][index];
+        }
+        enforceReflectionState(vel);//m_U_face_bar
+        for (l = 0; l < 3; l++)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index  = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U_face_bar[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -4948,6 +5007,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         //store the values of div(U_face_bar) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -4995,6 +5055,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U_face_bar[l];
         }
+        //removal tag: HAOZ
+        enforceReflectionState(vel); // on m_U_face_bar
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U_face_bar[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -5005,6 +5075,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         //store div(U_face_bar_0) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -5086,7 +5157,22 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index = d_index3d(i,j,k,top_gmax);
                 vel[l][index] = cell_center[index].m_state.m_adv[l];
             }
-
+            /*
+             * removal tag: HAOZ
+             *
+             * m_adv was treated as vel fashion.
+             *
+             * So, adv term need REFLECTION TREATMENT.
+             * */
+            enforceReflectionState(vel);// on m_adv terms
+            for (l = 0; l < 3; l++)
+            for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+            for (i = 0; i <= top_gmax[0]; i++)
+            {
+                index  = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_adv[l] = vel[l][index];
+            }
             for (k = kmin; k <= kmax; k++)
             for (j = jmin; j <= jmax; j++)
             for (i = imin; i <= imax; i++)
@@ -5097,6 +5183,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 index = d_index3d(i,j,k,top_gmax);
                 source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
             }
+            // removal tag: HAOZ adjust
             FT_ParallelExchGridArrayBuffer(source,front);
 
             for (k = 0; k <= top_gmax[2]; k++)
@@ -5269,6 +5356,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U_face_bar[l];
         }
+        // removal tag: HAOZ
+        enforceReflectionState(vel); // on m_U_face_bar
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U_face_bar[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -5279,6 +5376,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         //store div(U_face_bar_1) in div_U
         for (k = 0; k <= top_gmax[2]; k++)
@@ -6523,6 +6621,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeMacPhi_MAC_vd(int flag)
 
     if (debugging("trace"))
         printf("enter poisson_solver3d_MacPhi_vd in computeMacPhi_MAC_vd()\n");
+    /*
+     * removal tag: HAOZ
+     * REFLECTION B.C. needs HOMOGENOUS NEUMANN B.C. for Poisson solver
+     * TODO && FIXME
+     * */
     poisson_solver3d_MacPhi_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,
                     array,&P_max,&P_min);
     if (debugging("trace"))
@@ -6878,6 +6981,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getEdgeVelocity_MAC_middleStep_hat_v
     else //dir == LOWER or dir == UPPER
         l = 2;
 
+    // removal tag: HAOZ
+    // slope limiter function need further REFLECTION BOUNDARY CONDITION treatment
     getLimitedSlope_Velocity_MAC_vd(icoords,xyz,slope_limited);
     //state_orig.m_U[xyz] = std::min(state_orig.m_U[xyz], 0.0);
     state_hat.m_U[xyz] = state_orig.m_U[xyz] + 0.5*(sL*top_h[l]*slope_limited[l] -
@@ -7057,6 +7162,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceScalar_MAC_middleStep_hat_vd(
             U_center = 0.5*(state_orig.m_U[2] + cell_center[index_nb[4]].m_state.m_U[2]);
     }
 
+    // removal tag: HAOZ scalar version of slope limiter need REFLECTION BOUNDARY CONDITION treatment
     getLimitedSlope_Scalar_MAC_vd(icoords,xyz,slope_limited,bGhostCell);
     state_hat.m_rho = state_orig.m_rho + 0.5*(sL*top_h[xyz] - m_dt*U_center)*slope_limited[0];
     state_hat.m_c = state_orig.m_c + 0.5*(sL*top_h[xyz] - m_dt*U_center)*slope_limited[1];
@@ -9739,6 +9845,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
         else if (flag==2)		t = m_t_new;
         else				assert(false);
 
+        /*
+         * removal tag: HAOZ
+         *
+         * REFLECTION BOUNDARY CONDITION
+         *
+         *
+         * */
         if (!bGhostCell) /*TODO and FIXME: bGhostCell = True for RSSY??? */
             bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_vd(icoords,dir[nb],statenb,t);
         else
@@ -10215,6 +10328,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     bNoBoundary[1] = YES;
     bNoBoundary[2] = YES;
     bNoBoundary[3] = YES;
+    // removal tag: HAOZ
+    // wrt REFLECTION
     // LOWER
     if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
             comp,&intfc_state,&hs,crx_coords,m_t_old) &&
@@ -12081,6 +12196,21 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
 */
         }
 
+        /*
+         * removal tag: HAOZ
+         * REFLECTION BOUNDARY CONDITION COMMENTS. WILL BE REMOVED LATER.
+         * Search for HAOZ as tag for all possible comment spots
+         * scatMeshArray() mirror
+         * scalar field:
+         * m_Dcoef
+         * m_rho
+         * m_rho_old
+         * m_c
+         * m_P
+         * vector field:
+         * m_U
+         *
+        */
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -12156,8 +12286,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 index = d_index3d(i,j,k,top_gmax);
                 array[index] = cell_center[index].m_state.m_U[l];
             }
-            scatMeshArray();//TODO && FIXME: REFLECTION BOUNDARY CONDITION REQUIRES SPECIAL VELOCITY TREATMENT.
-            //Solute_Reflect(l, array);
+            scatMeshArray();//TODO && FIXME: REFLECTION BOUNDARY CONDITION REQUIRES SPECIAL VELOCITY TREATMENT. removal tag HAOZ
+            //Solute_Reflect(l, array); // removal tag HAOZ
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
             for (i = 0; i <= top_gmax[0]; i++)
@@ -12176,6 +12306,22 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
+        /*
+         * removal tag: HAOZ
+         *
+         * before computation starts, the vector field need further REFLECTION BOUNDARY CONDITION TREATMENT.
+         * concern: match field->vel and cell_center().m_state.m_U
+         *
+        */
+        enforceReflectionState(vel);// on m_U
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -12184,8 +12330,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
+            // removal tag: HAOZ, REFLECTION B.C.
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -12302,6 +12450,17 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
+        // removal tag: HAOZ
+        // REFLECTION installed
+        enforceReflectionState(vel);// on m_U
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U[l] = vel[l][index];
+        }
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -12312,6 +12471,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
         }
+        // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -12367,6 +12527,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 icoords[0] = i;
                 icoords[1] = j;
                 icoords[2] = k;
+                // removal tag: HAOZ
+                // scalar function
+                // wrt REFLECTION
                 getDivU_MAC_vd(icoords,&diffusion,0,bGhostCell); //get the divergence constraint S^0
                 source[index] = diffusion;
             }
@@ -16032,7 +16195,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
             }
             //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu-mean_u*mean_u)/fabs(A*g*H),(mean_vv-mean_v*mean_v)/fabs(A*g*H),(mean_ww-mean_w*mean_w)/fabs(A*g*H),(mean_uu_raw-mean_u_raw*mean_u_raw)/fabs(A*g*H),(mean_vv_raw-mean_v_raw*mean_v_raw)/fabs(A*g*H),(mean_ww_raw-mean_w_raw*mean_w_raw)/fabs(A*g*H));
             //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu_raw-mean_u_raw*mean_u_raw),(mean_vv_raw-mean_v_raw*mean_v_raw),(mean_ww_raw-mean_w_raw*mean_w_raw),(mean_uw_raw-mean_u_raw*mean_w_raw),(mean_vw_raw-mean_v_raw*mean_w_raw));
-            fprintf(outfile, "%e %e %e %e %e %e\n", front->time, front->time*front->time, h_bubble_corner, h_spike_corner, h_bubble_edge, h_spike_edge);
+            fprintf(outfile, "%e\t%e\t%e\t%e\t%e\t%e\n", front->time, front->time*front->time, h_bubble_corner, h_spike_corner, h_bubble_edge, h_spike_edge);
 
             fclose(outfile);
         }
@@ -16296,7 +16459,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates()
 
 void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
 {
-        int i,j,k,d,index;
+        int i,j,k,d,l,index;
         double **vel = field->vel;
 //        double *pres = field->pres;
 //        double *vort = field->vort;
@@ -16343,6 +16506,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
         FT_ParallelExchGridArrayBuffer(vel[0],front);
         FT_ParallelExchGridArrayBuffer(vel[1],front);
         FT_ParallelExchGridArrayBuffer(vel[2],front);
+        // removal tag: HAOZ
+        enforceReflectionState(vel);// on m_U
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U[l] = vel[l][index];
+        }
         // Update Reflection Boundary Condition TODO && FIXME: Solute_Reflect contribute divergence non-free situation.
         //Solute_Reflect(0, vel[0]);
         //Solute_Reflect(1, vel[1]);
@@ -16887,6 +17060,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
             }
 	}
         //scatter states
+        /*
+         * removal tag: HAOZ
+         * there is a vector field grad_q
+         * should this be done in a fashion same as for velocity?????
+         * */
 	for (l = 0; l < dim; ++l)
 	{
 	    for (k = kmin; k <= kmax; k++)
@@ -16903,8 +17081,18 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
 	    {
 	    	index = d_index3d(i,j,k,top_gmax);
 		cell_center[index].m_state.grad_q[l] = array[index];
+        vecarray[l][index] = array[index];
 	    }
 	}
+    enforceReflectionState(vecarray);// on grad_q
+    for (l = 0; l < dim; l++)
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.grad_q[l] = vecarray[l][index];
+    }
 } /* end computeGradientQ_MAC_vd */
 
 
@@ -17387,6 +17575,28 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
 	index_nb[2] = d_index3d(i,j-1,k,top_gmax);
 	index_nb[4] = d_index3d(i,j,k-1,top_gmax);
 
+    /*
+     * removal tag: HAOZ
+     * for PERIODIC_BOUNDARY, bNoBoundary[0..3] = YES.
+     * // if a computation cell is at Boundary, use its corresponding one due to the nature of PERIODIC
+     *
+     * for REFLECTION_BOUNDARY, bNoBoundary[0..3] = YES.
+     * // if a computation cell is at Boundary, simply use this cell since the buffer size and REFLECTION nature
+     *
+     * for FT_StateStructAtGridCrossing_tmp,
+     * this function can only examine DIRICHLET and NEUMANN B.C.
+     *
+     * for rect_boundary_type(interface, dir, side)
+     * this macro can only examine PERIODIC and REFLECTION B.C.
+     *
+     * and there is no crossover
+     *
+     * without changing the code, when using REFLECTION_BOUNDARY,
+     * the current function calls FT_StateStructAtGridCrossing_tmp and returns bNoBoundary[4,5] = YES,
+     * which means function choose to pick neighbor cells or
+     * For Reflection B.C., there is no Boundary Cell.
+     *
+    */
         // 4 directions
         bNoBoundary[0] = YES;
         bNoBoundary[1] = YES;
@@ -17413,9 +17623,20 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
             div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
             div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
             div += (field[2][index] - 0)/top_h[2];
+            /*
+             * removal tag: HAOZ
+             * when using REFLECTION, this block should never be called
+             * print function as debugging line
+             * PERIODIC_BOUNDARY debugging print will carry out here.
+            */
         }
         else //other cells
         {
+            /*
+             * removal tag: HAOZ
+             *
+             *
+             * */
             div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
             div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
             div += (field[2][index] - field[2][index_nb[4]])/top_h[2];
@@ -17614,6 +17835,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGrad_MAC_vd(
         index_nb[4] = d_index3d(i,j,k-1,top_gmax);
         index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
+        /*
+         * removal tag: HAOZ
+         * REFLECTION B.C.
+         * */
         for (nb = 0; nb < 6; nb++)
         {
             if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
@@ -21126,9 +21351,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
 }
 
 //Reflection Boundary Condition Treatment
-void Incompress_Solver_Smooth_3D_Cartesian::enforceReflectionState(void)
+void Incompress_Solver_Smooth_3D_Cartesian::enforceReflectionState(double **vel)
 {
-     double **vel = field->vel;
      int    dir;
 
      for (dir = 0; dir < dim; dir++)
