@@ -1329,5 +1329,6 @@ extern void fluid_read_front_states_vd(FILE*,Front*,bool);
 extern void read_iF_movie_options(char*,IF_PARAMS*);
 extern void read_iF_dirichlet_bdry_data(char*,Front*,F_BASIC_DATA);
 extern boolean isDirichletPresetBdry(Front*,int*,GRID_DIRECTION,COMPONENT);
+extern void convertGridDirectionToDirSide(GRID_DIRECTION, int*, int*);
 
 #endif

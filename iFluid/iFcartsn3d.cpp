@@ -4,8 +4,6 @@
 #include "iFluid.h"
 #include "solver.h"
 
-// keep tracking velocities
-static int countingnow = 0;
 
 //--------------------------------------------------------------------------
 // 		   Incompress_Solver_Smooth_3D_Cartesian
@@ -4011,7 +4009,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel); //removal tag: adjust Reflection B.C. afterwards
         }
         //removal tag: HAOZ. adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -4337,7 +4335,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
         //removal tag: HAOZ. adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -5005,7 +5003,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
         // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -5073,7 +5071,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
         // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -5181,7 +5179,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
                 icoords[1] = j;
                 icoords[2] = k;
                 index = d_index3d(i,j,k,top_gmax);
-                source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+                source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
             }
             // removal tag: HAOZ adjust
             FT_ParallelExchGridArrayBuffer(source,front);
@@ -5374,7 +5372,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
         // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -12331,7 +12329,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
             // removal tag: HAOZ, REFLECTION B.C.
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
         // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -12469,7 +12467,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             icoords[1] = j;
             icoords[2] = k;
             index = d_index3d(i,j,k,top_gmax);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
         // removal tag: HAOZ adjust
         FT_ParallelExchGridArrayBuffer(source,front);
@@ -17564,6 +17562,9 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
         double coords[MAXD],crx_coords[MAXD];
         POINTER intfc_state;
         HYPER_SURF *hs;
+        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+        INTERFACE *intfc = front->interf;
+        int dirr, side;
 
 	i = icoords[0];
 	j = icoords[1];
@@ -17598,6 +17599,37 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
      *
     */
         // 4 directions
+        for (nb = 0; nb < 6; nb++)
+        {
+            convertGridDirectionToDirSide(dir[nb], &dirr, &side);
+            if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
+                    comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            {
+                //examine NEUMANN Boundary or DIRICHLET Boundary
+                if (wave_type(hs) == NEUMANN_BOUNDARY)
+                {
+                    bNoBoundary[nb] = NO;
+                    printf("Debugging print nb = %d is NEUMANN BC\n",nb);
+                }
+		        if (wave_type(hs) == DIRICHLET_BOUNDARY)
+                {
+                    printf("DIRICHLET BOUNDARY was NOT implemented in func %s\n", __func__);
+                }
+            }
+            else{
+                if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY)
+                {
+                    //printf("REFLECTION BC is at dirr = %d side = %d\n", dirr, side);
+                    // possibly flag REFLECTION B.C.
+                    // possibly velocity adjustment.
+                    // reflectWall[nb] = YES; // YES means that There is a REFLECTION WALL at (DIRECTION, SIDE)
+                    // reflectWall[nb] = NO; // NO as default option
+                }
+                else // This is for either PERIODIC BC or simply INTERIOR CELL
+                    bNoBoundary[nb] = YES;
+            }
+        }
         bNoBoundary[0] = YES;
         bNoBoundary[1] = YES;
         bNoBoundary[2] = YES;
@@ -21248,14 +21280,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
  * */
 
 
-//FUNC REFLECTION BOUNDARY CONDITION REVISED!
+//FUNC REFLECTION BOUNDARY CONDITION REVISED! Free-Slip Wall Condition
 void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
         int dir,
         int side,
         double *solute)
 {
     int i, j, k;
-    int InIndex, BIndex;
+    int InIndex, BIndex, OnIndex;
     //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
 
     // This is where the code takes care of Reflecting Boundary Condition.
@@ -21266,32 +21298,44 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
             case 0: // X Lower
                  for (j = 0; j <= jmax+ubuf[1]; j++)
                      for (k = 0; k <= kmax+ubuf[2]; k++)
-                         for (i = imin; i < imin+lbuf[0]; i++)
+                     {
+                         for (i = imin; i < imin+lbuf[0]-1; i++)
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                              BIndex = d_index3d(lbuf[0]-1-i+imin,j,k,top_gmax);//This is Boundary State index
+                              BIndex = d_index3d(lbuf[0]-2-i+imin,j,k,top_gmax);//This is Boundary State index
                               solute[BIndex] = -solute[InIndex];
                          }
+                         OnIndex = d_index3d(imin-1,j,k,top_gmax);
+                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                     }
                  break;
             case 1: // Y Lower
                  for (i = 0; i <= imax+ubuf[0]; i++)
                      for (k = 0; k <= kmax+ubuf[2]; k++)
-                         for (j = jmin; j < jmin+lbuf[1]; j++)
+                     {
+                         for (j = jmin; j < jmin+lbuf[1]-1; j++)
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                              BIndex = d_index3d(i,lbuf[1]-1-j+jmin,k,top_gmax);//This is Boundary State index
+                              BIndex = d_index3d(i,lbuf[1]-2-j+jmin,k,top_gmax);//This is Boundary State index
                               solute[BIndex] = -solute[InIndex];
                          }
+                         OnIndex = d_index3d(i,jmin-1,k,top_gmax);
+                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                     }
                  break;
             case 2: // Z Lower
                  for (i = 0; i <= imax+ubuf[0]; i++)
                      for (j = 0; j <= jmax+ubuf[1]; j++)
-                         for (k = kmin; k < kmin+lbuf[2]; k++)
+                     {
+                         for (k = kmin; k < kmin+lbuf[2]-1; k++)
                          {
                               InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                              BIndex = d_index3d(i,j,lbuf[2]-1-k+kmin,top_gmax);//This is Boundary State index
+                              BIndex = d_index3d(i,j,lbuf[2]-2-k+kmin,top_gmax);//This is Boundary State index
                               solute[BIndex] = -solute[InIndex];
                          }
+                         OnIndex = d_index3d(i,j,kmin-1,top_gmax);
+                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                     }
                  break;
         }
     }
@@ -21302,33 +21346,45 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
             case 0: // X Upper
                  for (j = 0; j <= jmax+ubuf[1]; j++)
                      for (k = 0; k <= kmax+ubuf[2]; k++)
-                         for (i = imax-ubuf[0]+1; i <= imax; i++)// X Upper
+                     {
+                         for (i = imax-ubuf[0]+1; i <= imax-1; i++)// X Upper
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                             BIndex = d_index3d(imax+ubuf[0]-i,j,k,top_gmax);//This is Boundary State index
+                             BIndex = d_index3d(2*imax-i,j,k,top_gmax);//This is Boundary State index
                              solute[BIndex] = -solute[InIndex];
 
                          }
+                         OnIndex = d_index3d(imax,j,k,top_gmax);
+                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                     }
                  break;
             case 1: // Y Upper
                  for(i = 0; i <= imax+ubuf[0]; i++)
                      for (k = 0; k <= kmax+ubuf[2]; k++)
-                         for (j = jmax-ubuf[1]+1; j <= jmax; j++)//Y Upper
+                     {
+                         for (j = jmax-ubuf[1]+1; j <= jmax-1; j++)//Y Upper
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                             BIndex = d_index3d(i,jmax+ubuf[1]-j,k,top_gmax);//This is Boundary State index
+                             BIndex = d_index3d(i,2*jmax-j,k,top_gmax);//This is Boundary State index
                              solute[BIndex] = -solute[InIndex];
                          }
+                         OnIndex = d_index3d(i,jmax,k,top_gmax);
+                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                     }
                  break;
             case 2: // Z Upper
                  for (i = 0; i <= imax+ubuf[0]; i++)
                      for (j = 0; j <= jmax+ubuf[1]; j++)
-                         for (k = kmax-ubuf[2]+1; k <= kmax; k++)//Z Upper
+                     {
+                         for (k = kmax-ubuf[2]+1; k <= kmax-1; k++)//Z Upper
                          {
                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                             BIndex = d_index3d(i,j,kmax+ubuf[2]-k,top_gmax);//This is Boundary State index
+                             BIndex = d_index3d(i,j,2*kmax-k,top_gmax);//This is Boundary State index
                              solute[BIndex] = -solute[InIndex];
                          }
+                         OnIndex = d_index3d(i,j,kmax,top_gmax);
+                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                     }
                  break;
         }
     }
