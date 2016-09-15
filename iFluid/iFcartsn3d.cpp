@@ -2901,6 +2901,46 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         solver.Reset_A();
         solver.Reset_b();
         solver.Reset_x();
+        // removal tag: HAOZ REFLECTION BC
+        for (l = 0; l < 3; ++l)
+        {
+            for (k = kmin; k <= kmax; k++)
+            for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                array[index] = cell_center[index].m_state.m_U[l];
+            }
+            scatMeshArray();
+            for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+            for (i = 0; i <= top_gmax[0]; i++)
+
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_U[l] = array[index];
+            }
+        }
+
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            vel[l][index] = cell_center[index].m_state.m_U[l];
+        }
+        // removal tag: HAOZ
+        enforceReflectionState(vel);//m_U
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U[l] = vel[l][index];
+        }// end of Reflection Treatment
 
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
@@ -17599,6 +17639,7 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
      *
     */
         // 4 directions
+        // This should be removed. removal tag: HAOZ
         for (nb = 0; nb < 6; nb++)
         {
             convertGridDirectionToDirSide(dir[nb], &dirr, &side);
@@ -17610,7 +17651,6 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
                 if (wave_type(hs) == NEUMANN_BOUNDARY)
                 {
                     bNoBoundary[nb] = NO;
-                    printf("Debugging print nb = %d is NEUMANN BC\n",nb);
                 }
 		        if (wave_type(hs) == DIRICHLET_BOUNDARY)
                 {
