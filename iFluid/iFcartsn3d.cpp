@@ -2902,6 +2902,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         solver.Reset_b();
         solver.Reset_x();
         // removal tag: HAOZ REFLECTION BC
+        /*
         for (l = 0; l < 3; ++l)
         {
             for (k = kmin; k <= kmax; k++)
@@ -2941,6 +2942,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             index = d_index3d(i,j,k,top_gmax);
             cell_center[index].m_state.m_U[l] = vel[l][index];
         }// end of Reflection Treatment
+        */
+        copyMeshStates_vd();
 
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
