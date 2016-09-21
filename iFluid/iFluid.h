@@ -856,6 +856,8 @@ public:
 	~Incompress_Solver_Smooth_3D_Cartesian() {};
     // enforce Reflection Boundary Condition
     void enforceReflectionState(double**);
+    void checkBoundaryCondition(GRID_DIRECTION,int*,int*,double,COMPONENT);
+    bool FT_Reflect(int*,int,int);
 
         void printExpandedMesh(char* outname,bool binary);
         void printExpandedMesh_big_endian(char* outname);

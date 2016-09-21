@@ -17596,17 +17596,14 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
         int *icoords,
         double **field)
 {
-        bool bNoBoundary[6];
+    int bNoBoundary[6];//bNoBoundary change type from bool to int
         int index;
         COMPONENT comp;
         int i,j,k,nb;
 	int index_nb[6];
         double div;
         double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-        INTERFACE *intfc = front->interf;
         int dirr, side;
 
 	i = icoords[0];
@@ -17621,10 +17618,10 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
 
     /*
      * removal tag: HAOZ
-     * for PERIODIC_BOUNDARY, bNoBoundary[0..3] = YES.
+     * for PERIODIC_BOUNDARY,
      * // if a computation cell is at Boundary, use its corresponding one due to the nature of PERIODIC
      *
-     * for REFLECTION_BOUNDARY, bNoBoundary[0..3] = YES.
+     * for REFLECTION_BOUNDARY,
      * // if a computation cell is at Boundary, simply use this cell since the buffer size and REFLECTION nature
      *
      * for FT_StateStructAtGridCrossing_tmp,
@@ -17636,7 +17633,7 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
      * and there is no crossover
      *
      * without changing the code, when using REFLECTION_BOUNDARY,
-     * the current function calls FT_StateStructAtGridCrossing_tmp and returns bNoBoundary[4,5] = YES,
+     * the current function calls FT_StateStructAtGridCrossing_tmp
      * which means function choose to pick neighbor cells or
      * For Reflection B.C., there is no Boundary Cell.
      *
@@ -17645,38 +17642,10 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
         // This should be removed. removal tag: HAOZ
         for (nb = 0; nb < 6; nb++)
         {
-            convertGridDirectionToDirSide(dir[nb], &dirr, &side);
-            if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-                    comp,&intfc_state,&hs,crx_coords,m_t_new) &&
-                    wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            {
-                //examine NEUMANN Boundary or DIRICHLET Boundary
-                if (wave_type(hs) == NEUMANN_BOUNDARY)
-                {
-                    bNoBoundary[nb] = NO;
-                }
-		        if (wave_type(hs) == DIRICHLET_BOUNDARY)
-                {
-                    printf("DIRICHLET BOUNDARY was NOT implemented in func %s\n", __func__);
-                }
-            }
-            else{
-                if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY)
-                {
-                    //printf("REFLECTION BC is at dirr = %d side = %d\n", dirr, side);
-                    // possibly flag REFLECTION B.C.
-                    // possibly velocity adjustment.
-                    // reflectWall[nb] = YES; // YES means that There is a REFLECTION WALL at (DIRECTION, SIDE)
-                    // reflectWall[nb] = NO; // NO as default option
-                }
-                else // This is for either PERIODIC BC or simply INTERIOR CELL
-                    bNoBoundary[nb] = YES;
-            }
+            checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_new,comp);
         }
-        bNoBoundary[0] = YES;
-        bNoBoundary[1] = YES;
-        bNoBoundary[2] = YES;
-        bNoBoundary[3] = YES;
+        // TODO && FIXME: remove later
+        /*
         // LOWER
         if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
                 comp,&intfc_state,&hs,crx_coords,m_t_new) &&
@@ -17691,9 +17660,9 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
             bNoBoundary[5] = NO;
         else
             bNoBoundary[5] = YES;
-
+        */
         div = 0;
-        if (!bNoBoundary[4]) //cells on LOWER bdry
+        if (bNoBoundary[4]==2) //cells on LOWER bdry NEUMANN
         {
             div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
             div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
@@ -21494,4 +21463,68 @@ extern void convertGridDirectionToDirSide(GRID_DIRECTION direct, int *dir, int *
           *dir = 2;
           *side = 1;
      }
+}
+/**
+ * Doxygen compatible:
+ *
+ * this function check
+ * PERIODIC_BOUNDARY/INTERIOR_STATE  = 0
+ * DIRICHLET_BOUNDARY = 1
+ * NEUMANN_BOUNDARY = 2
+ * REFLECTION_BOUNDARY = 3
+ *
+ * logic setup: if statement (!0), means a boundary occurred.
+ * if (>=2) DERIVATIVE BOUNDARY(NEUMANN, REFLECTION)
+ * if (1) SIMPLE BOUNDARY(DIRICHLET)
+ *
+ *
+ * if (!0)
+ * {
+ *      if (1)
+ *          // DIRICHLET TREATMENT
+ *      if (2)
+ *          // NEUMANN TREATMENT
+ *      if (3)
+ *          // REFLECTION TREATMENT
+ * }
+ * */
+void Incompress_Solver_Smooth_3D_Cartesian::checkBoundaryCondition(GRID_DIRECTION dir, int *icoords, int *bNoBoundary, double m_t_new, COMPONENT comp)
+{
+        POINTER intfc_state;
+        HYPER_SURF *hs;
+        INTERFACE *intfc = front->interf;
+        int dirr, side;
+        double crx_coords[MAXD];
+
+        convertGridDirectionToDirSide(dir, &dirr, &side);
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+        {
+            //examine NEUMANN Boundary or DIRICHLET Boundary
+            if (wave_type(hs) == NEUMANN_BOUNDARY)
+            {
+                *bNoBoundary = 2;
+            }
+            if (wave_type(hs) == DIRICHLET_BOUNDARY)
+            {
+                *bNoBoundary = 1;
+                printf("DIRICHLET BOUNDARY was NOT implemented in func %s\n", __func__);
+                clean_up(ERROR);
+            }
+        }
+        else if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_Reflect(icoords, dirr, side))
+            *bNoBoundary = 3;
+        else // This is for either PERIODIC BC or simply INTERIOR CELL
+            *bNoBoundary = 0;
+}
+
+// REFLECTION BOUNDARY CONDITION check if icoords is on the WALL.
+bool Incompress_Solver_Smooth_3D_Cartesian::FT_Reflect(int *icoords, int dir, int side)
+{
+    int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+
+    if (icoords[dir] == wallIndex[dir][side])
+        return true;
+    return false;
 }
