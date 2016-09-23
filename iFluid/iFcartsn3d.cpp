@@ -5654,7 +5654,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         int *icoords,
         double m_t_int)
 {
-    bool bNoBoundary[6];
+    int bNoBoundary[6];//type change
     int ICoords[3];
     int index,index_nb[18];
     int i,j,k;
@@ -5665,8 +5665,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
 
     COMPONENT comp;
     double w_nb, crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+
+    int nb;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     i = icoords[0];
     j = icoords[1];
@@ -5700,6 +5701,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     index_nb[16] = d_index3d(i+1,j,k+1,top_gmax);
     index_nb[17] = d_index3d(i-1,j,k+1,top_gmax);
 
+    //TODO && FIXME: Replace this with general formula, remove
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -5719,6 +5722,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+    }
 
 
     //////////////////////// Get the U_hat & U_bar on cell centers //////////////////////////
@@ -5727,33 +5735,41 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     ICoords[0] = icoords[0] - 1;
     ICoords[1] = icoords[1];
     ICoords[2] = icoords[2];
-    //u_hat
-    getCenterVelocity_MAC_middleStep_hat_vd(ICoords,EAST,state_center_hat_l);
-    getCenterVelocity_MAC_middleStep_hat_vd(icoords,WEST,state_center_hat_r);
-    //u_bar
-    getVelocity_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,EAST,sl,state_center_hat_l);
-    getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,sr,state_center_hat_r);
-    getRiemannSolution_MAC_CenterVelocity_vd(COORD_X,sl,sr,state_center_bar,icoords);
+    if ((!bNoBoundary[0] && !bNoBoundary[1]) || bNoBoundary[0] == 3 || bNoBoundary[1] == 3)// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
+    {
+        //u_hat
+        getCenterVelocity_MAC_middleStep_hat_vd(ICoords,EAST,state_center_hat_l);
+        getCenterVelocity_MAC_middleStep_hat_vd(icoords,WEST,state_center_hat_r);
+        //u_bar
+        getVelocity_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,EAST,sl,state_center_hat_l);
+        getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,sr,state_center_hat_r);
+        getRiemannSolution_MAC_CenterVelocity_vd(COORD_X,sl,sr,state_center_bar,icoords);
+    }
+    else assert(false);;
 
 
     // SOUTH & NORTH, get v_hat & v_bar
     ICoords[0] = icoords[0];
     ICoords[1] = icoords[1] - 1;
     ICoords[2] = icoords[2];
-    //v_hat
-    getCenterVelocity_MAC_middleStep_hat_vd(ICoords,NORTH,state_center_hat_l);
-    getCenterVelocity_MAC_middleStep_hat_vd(icoords,SOUTH,state_center_hat_r);
-    //v_bar
-    getVelocity_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,NORTH,sl,state_center_hat_l);
-    getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,sr,state_center_hat_r);
-    getRiemannSolution_MAC_CenterVelocity_vd(COORD_Y,sl,sr,state_center_bar,icoords);
+    if ((!bNoBoundary[2] && !bNoBoundary[3]) || bNoBoundary[2] == 3 || bNoBoundary[3] == 3)// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
+    {
+        //v_hat
+        getCenterVelocity_MAC_middleStep_hat_vd(ICoords,NORTH,state_center_hat_l);
+        getCenterVelocity_MAC_middleStep_hat_vd(icoords,SOUTH,state_center_hat_r);
+        //v_bar
+        getVelocity_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,NORTH,sl,state_center_hat_l);
+        getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,sr,state_center_hat_r);
+        getRiemannSolution_MAC_CenterVelocity_vd(COORD_Y,sl,sr,state_center_bar,icoords);
+    }
+    else assert(false);
 
 
     // LOWER & UPPER, get w_hat & w_bar
     ICoords[0] = icoords[0];
     ICoords[1] = icoords[1];
     ICoords[2] = icoords[2] - 1;
-    if (bNoBoundary[4] && bNoBoundary[5])
+    if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
     {
         //w_hat
         getCenterVelocity_MAC_middleStep_hat_vd(ICoords,UPPER,state_center_hat_l);
@@ -5763,18 +5779,18 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,LOWER,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_Z,sl,sr,state_center_bar,icoords);
     }
-    else if (!bNoBoundary[4]) //cells on LOWER bdry
+    else if (bNoBoundary[4] == 2) //cells on LOWER NEUMANN bdry no slip
     {
         //w_hat
         getCenterVelocity_MAC_middleStep_hat_vd(icoords,LOWER,state_center_hat_r);
         //w_bar
         //cells on the out side of LOWER bdry (i.e. icoords[2] = -1)
         w_nb = cell_center[index].m_state.m_U[2];
-        sl.m_U[2] = 0.0 + top_h[2]/2.0*(w_nb - 0.0)/top_h[2] + 0.0;
+        sl.m_U[2] = 0.0 + top_h[2]/2.0*(w_nb - 0.0)/top_h[2] + 0.0;//no slip ONLY
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,LOWER,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_Z,sl,sr,state_center_bar,icoords);
     }
-    else if (!bNoBoundary[5]) //cells on UPPER bdry
+    else if (bNoBoundary[5] == 2) //cells on UPPER NEUMANN bdry no slip
     {
         //w_hat
         getCenterVelocity_MAC_middleStep_hat_vd(ICoords,UPPER,state_center_hat_l);
@@ -10337,14 +10353,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         double slope[3])
 {
     int i, j, k;
-    bool bNoBoundary[6];
+    int bNoBoundary[6];//type change
     int index,index_nb[6];
     COMPONENT comp;
     double dx, dy, dz;
     L_STATE U0, U1, U2;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    double onWallvel; // if on wall. average interior and exterior
+
+    int nb;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     dx = top_h[0];
     dy = top_h[1];
@@ -10364,6 +10382,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     index_nb[4] = d_index3d(i,j,k-1,top_gmax);
     index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
+    //TODO && FIXME: remove
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -10385,6 +10405,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+    }
 
     //Limited slopes on u-faces, v-faces, or w-faces
     U1 = cell_center[index].m_state;
@@ -10393,31 +10418,76 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     if (xyz==COORD_X)
     {
         //u_x
-        U0 = cell_center[index_nb[0]].m_state;
-        U2 = cell_center[index_nb[1]].m_state;
-        slope[0] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dx, (U2.m_U[0]-U1.m_U[0])/dx);
+        if ((!bNoBoundary[0] && !bNoBoundary[1]) || bNoBoundary[0] == 3 || bNoBoundary[1] == 3) // PERIODIC, INTERIOR, REFLECT
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            slope[0] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dx, (U2.m_U[0]-U1.m_U[0])/dx);
+            //TODO && FIXME: check the velocity normal to the wall is zero
+            /*
+            if (bNoBoundary[0] == 3)
+                printf("U0.m_U[0] = %24.24f\n", U0.m_U[0]);
+            if (bNoBoundary[1] == 3)
+                printf("U1.m_U[0] = %24.24f\n", U1.m_U[0]);
+            */
+        }
+        else assert(false);
 
         //u_y
-        U0 = cell_center[index_nb[2]].m_state;
-        U2 = cell_center[index_nb[3]].m_state;
-        slope[1] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dy, (U2.m_U[0]-U1.m_U[0])/dy);
+        if (!bNoBoundary[2] && !bNoBoundary[3])
+        {
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            slope[1] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dy, (U2.m_U[0]-U1.m_U[0])/dy);
+        }
+        else if (bNoBoundary[2] == 3)
+        {
+            //printf("WEST REFLECTION\n");
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            onWallvel = 0.5 * (U0.m_U[0] + U1.m_U[0]);
+            slope[1] = EBM_minmod(2.0*(U1.m_U[0]-onWallvel)/dy, (U2.m_U[0]-U1.m_U[0])/dy);
+        }
+        else if (bNoBoundary[3] == 3)
+        {
+            //printf("EAST REFLECTION\n");
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            onWallvel = 0.5 * (U2.m_U[0] + U1.m_U[0]);
+            slope[1] = EBM_minmod(2.0*(onWallvel-U1.m_U[0])/dy, (U1.m_U[0]-U0.m_U[0])/dy);
+        }
+        else assert(false);
 
         //u_z
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if (!bNoBoundary[4] && !bNoBoundary[5])
         {
             U0 = cell_center[index_nb[4]].m_state;
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dz, (U2.m_U[0]-U1.m_U[0])/dz);
         }
-        else if (!bNoBoundary[4]) //cells on LOWER boundary
+        else if (bNoBoundary[4] == 2) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((2.0*U1.m_U[0])/dz, (U2.m_U[0]-U1.m_U[0])/dz);
         }
-        else if (!bNoBoundary[5]) //cells on UPPER boundary
+        else if (bNoBoundary[5] == 2) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dz, (-2.0*U1.m_U[0])/dz);
+        }
+        else if (bNoBoundary[4] == 3) // reflect
+        {
+            U0 = cell_center[index_nb[4]].m_state;
+            U2 = cell_center[index_nb[5]].m_state;
+            onWallvel = 0.5 * (U0.m_U[0] + U1.m_U[0]);
+            slope[2] = EBM_minmod(2.0*(U1.m_U[0]-onWallvel)/dz, (U2.m_U[0]-U1.m_U[0])/dz);
+        }
+        else if (bNoBoundary[5] == 3) // reflect
+        {
+            U0 = cell_center[index_nb[4]].m_state;
+            U2 = cell_center[index_nb[5]].m_state;
+            onWallvel = 0.5 * (U1.m_U[0] + U2.m_U[0]);
+            slope[2] = EBM_minmod(2.0*(onWallvel-U1.m_U[0])/dz, (U1.m_U[0]-U0.m_U[0])/dz);
         }
         else assert(false);
     }
@@ -10426,31 +10496,72 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     else if (xyz==COORD_Y)
     {
         //v_x
-        U0 = cell_center[index_nb[0]].m_state;
-        U2 = cell_center[index_nb[1]].m_state;
-        slope[0] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dx, (U2.m_U[1]-U1.m_U[1])/dx);
+        if (!bNoBoundary[2] && !bNoBoundary[3])
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            slope[0] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dx, (U2.m_U[1]-U1.m_U[1])/dx);
+        }
+        else if (bNoBoundary[2] == 3)
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            onWallvel = 0.5 * (U0.m_U[1] + U1.m_U[1]);
+            slope[0] = EBM_minmod(2.0*(U1.m_U[1]-onWallvel)/dx, (U2.m_U[1]-U1.m_U[1])/dx);
+        }
+        else if (bNoBoundary[3] == 3)
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            onWallvel = 0.5 * (U1.m_U[1] + U2.m_U[1]);
+            slope[0] = EBM_minmod(2.0*(onWallvel-U1.m_U[1])/dx, (U1.m_U[1]-U0.m_U[1])/dx);
+        }
+        else assert(false);
 
         //v_y
-        U0 = cell_center[index_nb[2]].m_state;
-        U2 = cell_center[index_nb[3]].m_state;
-        slope[1] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dy, (U2.m_U[1]-U1.m_U[1])/dy);
+        if ((!bNoBoundary[2] && !bNoBoundary[3]) || bNoBoundary[2] == 3 || bNoBoundary[3] == 3) // PERIODIC, INTERIOR, REFLECT
+        {
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            slope[1] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dy, (U2.m_U[1]-U1.m_U[1])/dy);
+            //TODO && FIXME: remove printout should be zero
+            if (bNoBoundary[2] == 3)
+                printf("U0.m_U[1] = %24.24f\n", U0.m_U[1]);
+            if (bNoBoundary[3] == 3)
+                printf("U1.m_U[1] = %24.24f\n", U1.m_U[1]);
+        }
+        else assert(false);
 
         //v_z
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if (!bNoBoundary[4] && !bNoBoundary[5])
         {
             U0 = cell_center[index_nb[4]].m_state;
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dz, (U2.m_U[1]-U1.m_U[1])/dz);
         }
-        else if (!bNoBoundary[4]) //cells on LOWER boundary
+        else if (bNoBoundary[4] == 2) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((2.0*U1.m_U[1])/dz, (U2.m_U[1]-U1.m_U[1])/dz);
         }
-        else if (!bNoBoundary[5]) //cells on UPPER boundary
+        else if (bNoBoundary[5] == 2) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dz, (-2.0*U1.m_U[1])/dz);
+        }
+        else if (bNoBoundary[4] == 3)
+        {
+            U0 = cell_center[index_nb[4]].m_state;
+            U2 = cell_center[index_nb[5]].m_state;
+            onWallvel = 0.5 * (U0.m_U[1] + U1.m_U[1]);
+            slope[2] = EBM_minmod(2.0*(U1.m_U[1]-onWallvel)/dz, (U2.m_U[1]-U1.m_U[1])/dz);
+        }
+        else if (bNoBoundary[5] == 3)
+        {
+            U0 = cell_center[index_nb[4]].m_state;
+            U2 = cell_center[index_nb[5]].m_state;
+            onWallvel = 0.5 * (U1.m_U[1] + U2.m_U[1]);
+            slope[2] = EBM_minmod(2.0*(onWallvel-U1.m_U[1])/dz, (U1.m_U[1]-U0.m_U[1])/dz);
         }
         else assert(false);
     }
@@ -10459,28 +10570,68 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     else if (xyz==COORD_Z)
     {
         //w_x
-        U0 = cell_center[index_nb[0]].m_state;
-        U2 = cell_center[index_nb[1]].m_state;
-        slope[0] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dx, (U2.m_U[2]-U1.m_U[2])/dx);
+        if (!bNoBoundary[0] && !bNoBoundary[1])
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            slope[0] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dx, (U2.m_U[2]-U1.m_U[2])/dx);
+        }
+        else if (bNoBoundary[0]==3) // WEST REFLECT
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            onWallvel = 0.5 * (U0.m_U[2]+U1.m_U[2]);
+            slope[0] = EBM_minmod(2.0*(U1.m_U[2]-onWallvel)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
+        }
+        else if (bNoBoundary[1]==3) // EAST REFLECT
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            U2 = cell_center[index_nb[1]].m_state;
+            onWallvel = 0.5 * (U1.m_U[2]+U2.m_U[2]);
+            slope[0] = EBM_minmod(2.0*(onWallvel-U1.m_U[2])/dz, (U1.m_U[2]-U0.m_U[2])/dz);
+        }
+        else assert(false);
 
         //w_y
-        U0 = cell_center[index_nb[2]].m_state;
-        U2 = cell_center[index_nb[3]].m_state;
-        slope[1] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dy, (U2.m_U[2]-U1.m_U[2])/dy);
+        if (!bNoBoundary[2] && !bNoBoundary[3])
+        {
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            slope[1] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dy, (U2.m_U[2]-U1.m_U[2])/dy);
+        }
+        else if (bNoBoundary[2]==3) // SOUTH REFLECT
+        {
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            onWallvel = 0.5 *(U0.m_U[2] + U1.m_U[2]);
+            slope[1] = EBM_minmod(2.0*(U1.m_U[2]-onWallvel)/dy, (U2.m_U[2]-U1.m_U[2])/dy);
+        }
+        else if (bNoBoundary[3]==3) // NORTH REFLECT
+        {
+            U0 = cell_center[index_nb[2]].m_state;
+            U2 = cell_center[index_nb[3]].m_state;
+            onWallvel = 0.5 *(U1.m_U[2] + U2.m_U[2]);
+            slope[1] = EBM_minmod(2.0*(onWallvel-U1.m_U[2])/dy, (U1.m_U[2]-U0.m_U[2])/dy);
+        }
+        else assert(false);
 
         //w_z
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
         {
             U0 = cell_center[index_nb[4]].m_state;
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dz, (U2.m_U[2]-U1.m_U[2])/dz);
+            if (bNoBoundary[4] == 3)
+                printf("U0.m_U[2] = %24.24f\n",U0.m_U[2]);
+            if (bNoBoundary[5] == 3)
+                printf("U1.m_U[2] = %24.24f\n",U1.m_U[2]);
         }
-        else if (!bNoBoundary[4]) //cells on LOWER boundary
+        else if (bNoBoundary[4] == 2) //cells on LOWER boundary
         {
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
         }
-        else if (!bNoBoundary[5]) //cells on UPPER boundary
+        else if (bNoBoundary[5] == 2) //cells on UPPER boundary
         {
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);
@@ -17604,7 +17755,6 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
         double div;
         double coords[MAXD],crx_coords[MAXD];
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-        int dirr, side;
 
 	i = icoords[0];
 	j = icoords[1];
