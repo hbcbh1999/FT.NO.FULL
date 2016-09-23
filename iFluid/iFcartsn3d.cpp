@@ -10525,10 +10525,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U2 = cell_center[index_nb[3]].m_state;
             slope[1] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dy, (U2.m_U[1]-U1.m_U[1])/dy);
             //TODO && FIXME: remove printout should be zero
+            /*
             if (bNoBoundary[2] == 3)
                 printf("U0.m_U[1] = %24.24f\n", U0.m_U[1]);
             if (bNoBoundary[3] == 3)
                 printf("U1.m_U[1] = %24.24f\n", U1.m_U[1]);
+            */
         }
         else assert(false);
 
@@ -10621,10 +10623,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U0 = cell_center[index_nb[4]].m_state;
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dz, (U2.m_U[2]-U1.m_U[2])/dz);
+            /*
             if (bNoBoundary[4] == 3)
                 printf("U0.m_U[2] = %24.24f\n",U0.m_U[2]);
             if (bNoBoundary[5] == 3)
                 printf("U1.m_U[2] = %24.24f\n",U1.m_U[2]);
+                */
         }
         else if (bNoBoundary[4] == 2) //cells on LOWER boundary
         {
