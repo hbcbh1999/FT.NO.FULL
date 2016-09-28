@@ -5814,7 +5814,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellFaceVelocityBar_MAC_decoupled
         int *icoords,
         double m_t_int)
 {
-    bool bNoBoundary[6];
+    int bNoBoundary[6];
     int index;
     int i,j,k,l;
     L_STATE state_face_bar[3];
@@ -5822,8 +5822,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellFaceVelocityBar_MAC_decoupled
 
     COMPONENT comp;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    int nb;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     i = icoords[0];
     j = icoords[1];
@@ -5831,6 +5831,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellFaceVelocityBar_MAC_decoupled
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
     comp = cell_center[index].comp;
 
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+    }
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -5850,6 +5855,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellFaceVelocityBar_MAC_decoupled
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
 
     //////////////////////// Get the U_hat & U_bar on cell faces //////////////////////////
 
@@ -5867,7 +5873,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellFaceVelocityBar_MAC_decoupled
 
 
     //w-faces, get w_hat & w_bar
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5]==2) //cells on UPPER bdry
         state_face_bar[2].m_U[2] = 0.0;
     else //other cells
     {
