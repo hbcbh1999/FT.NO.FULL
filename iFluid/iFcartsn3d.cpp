@@ -9871,7 +9871,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
     double rho,rho_nb[6],rho_face[6];
     double Dcoef,Dcoef_t,Dcoef_face[6];
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-    bool bNoBoundary[6];
+    int bNoBoundary[6];
     double dh[3],dh0[3],dh1[3];
     int i = icoords[0];
     int j = icoords[1];
@@ -9913,10 +9913,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
          *
          *
          * */
-        if (!bGhostCell) /*TODO and FIXME: bGhostCell = True for RSSY??? */
+        if (!bGhostCell)
             bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_vd(icoords,dir[nb],statenb,t);
-        else
-            bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,dir[nb],statenb,t);
 
         //homogeneous Neumann B.C. for rho and Dcoef
         if (flag==0 || flag==2)
@@ -9929,7 +9927,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
 
         //TODO: implement Dcoef_face[] for Dcoef_t on 3 cell-faces
         //Dcoef_t at m_t_old, which is a first-order approx. in time
-        if (!bNoBoundary[nb]) {
+        if (bNoBoundary[nb]==2) {
             rho_face[nb] = rho_nb[nb];
             if (useSGSCellCenter) {
                 Dcoef_face[nb] = statenb.m_Dcoef + statenb.m_Dcoef_turbulent[3];
@@ -9957,29 +9955,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
     dh[1] = top_h[1];
     dh[2] = top_h[2];
 
-    if (bNoBoundary[0])
+    for (nb = 0; nb < 6; nb++) // no DIRICHLET here
+        if (bNoBoundary[nb] == 1)
+            clean_up(ERROR);
+
+    if (bNoBoundary[0] < 1)
         dh0[0] = top_h[0];
     else
         dh0[0] = top_h[0]/2;
-    if (bNoBoundary[1])
+    if (bNoBoundary[1] < 1)
         dh1[0] = top_h[0];
     else
         dh1[0] = top_h[0]/2;
 
-    if (bNoBoundary[2])
+    if (bNoBoundary[2] < 1)
         dh0[1] = top_h[1];
     else
         dh0[1] = top_h[1]/2;
-    if (bNoBoundary[3])
+    if (bNoBoundary[3] < 1)
         dh1[1] = top_h[1];
     else
         dh1[1] = top_h[1]/2;
 
-    if (bNoBoundary[4])
+    if (bNoBoundary[4] < 1)
         dh0[2] = top_h[2];
     else
         dh0[2] = top_h[2]/2;
-    if (bNoBoundary[5])
+    if (bNoBoundary[5] < 1)
         dh1[2] = top_h[2];
     else
         dh1[2] = top_h[2]/2;
@@ -10825,8 +10827,8 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryState_vd(
     }
 } /* end getNeighborOrBoundaryState_vd */
 
-
-bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
+//function return type from bool to int
+int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
         int icoords[3],
         GRID_DIRECTION dir,
         L_STATE &state,
@@ -10838,13 +10840,14 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
     int index_nb;
     int index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
     COMPONENT comp = top_comp[index];
+    INTERFACE *intfc = front->interf;
+    int dirr, side;
 
     if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir,
             comp,&intfc_state,&hs,crx_coords,t) &&
             wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
     {
-        if (wave_type(hs) == DIRICHLET_BOUNDARY ||
-            wave_type(hs) == NEUMANN_BOUNDARY)
+        if (wave_type(hs) == DIRICHLET_BOUNDARY)
         {
 /*
             state.m_rho = cell_center[index].m_state.m_rho;
@@ -10853,12 +10856,18 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
             state.m_Dcoef = cell_center[index].m_state.m_Dcoef;
 */
             state = cell_center[index].m_state;
-            return false;
+            clean_up(ERROR);
+            return 1;
+        }
+        else if (wave_type(hs) == NEUMANN_BOUNDARY)
+        {
+            state = cell_center[index].m_state;
+            return 2;
         }
         else //we don't consider other BC types here
         {
             assert (false);
-            return true;
+            return 0;
         }
     }
     else
@@ -10887,7 +10896,11 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
             assert(false);
         }
         state = cell_center[index_nb].m_state;
-        return true;
+        convertGridDirectionToDirSide(dir, &dirr, &side);
+        if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_Reflect(icoords, dirr, side))
+            return 3;
+        else
+            return 0;
     }
 } /* end getNeighborOrBoundaryScalar_MAC_vd */
 
