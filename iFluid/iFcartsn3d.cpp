@@ -8555,13 +8555,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
         double transverseD[3])
 {
     int i, j, k;
-    bool bNoBoundary[6];
+    int bNoBoundary[6];
     int index,index_nb[18],ICoords[MAXD];
     double tmp, dx, dy, dz, rho, rho_nb;
     COMPONENT comp;
     double crx_coords[MAXD], diff[3], diff_nb[3];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    int nb;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     transverseD[0] = 0.0;
     transverseD[1] = 0.0;
@@ -8603,6 +8603,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
     index_nb[16] = d_index3d(i+1,j,k+1,top_gmax);
     index_nb[17] = d_index3d(i-1,j,k+1,top_gmax);
 
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_old,comp);
+    }
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -8624,6 +8629,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
         bNoBoundary[5] = NO; //cells on UPPER bdry
     else
         bNoBoundary[5] = YES;
+    */
 
 
 ///////////////////////////////////////////////////
@@ -8665,7 +8671,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
     }
 
     //w*u_z
-    if (bNoBoundary[4] && bNoBoundary[5])
+    if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
     {
         tmp = (cell_center[index].m_state.m_U[2] +
                cell_center[index_nb[1]].m_state.m_U[2] +
@@ -8699,7 +8705,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
             transverseD[0] += tmp*m_dt/2.0*(diff_nb[0]/rho_nb - diff[0]/rho);
         }
     }
-    else if (!bNoBoundary[4]) //cells on LOWER boundary
+    else if (bNoBoundary[4] == 2) //cells on LOWER boundary
     {
         tmp = (cell_center[index].m_state.m_U[2] +
                cell_center[index_nb[1]].m_state.m_U[2] + 0.0 + 0.0)/4.0;
@@ -8727,7 +8733,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
             transverseD[0] += tmp*m_dt/2.0*(diff_nb[0]/rho_nb - diff[0]/rho);
         }
     }
-    else if (!bNoBoundary[5]) //cells on UPPER boundary
+    else if (bNoBoundary[5] == 2) //cells on UPPER boundary
     {
         tmp = (cell_center[index].m_state.m_U[2] +
                cell_center[index_nb[1]].m_state.m_U[2] +
@@ -8797,7 +8803,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
     }
 
     //w*v_z
-    if (bNoBoundary[4] && bNoBoundary[5])
+    if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
     {
         tmp = (cell_center[index].m_state.m_U[2] +
                cell_center[index_nb[3]].m_state.m_U[2] +
@@ -8831,7 +8837,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
             transverseD[1] += tmp*m_dt/2.0*(diff_nb[1]/rho_nb - diff[1]/rho);
         }
     }
-    else if (!bNoBoundary[4]) //cells on LOWER boundary
+    else if (bNoBoundary[4] == 2) //cells on LOWER boundary
     {
         tmp = (cell_center[index].m_state.m_U[2] +
                cell_center[index_nb[3]].m_state.m_U[2] + 0.0 + 0.0)/4.0;
@@ -8859,7 +8865,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
             transverseD[1] += tmp*m_dt/2.0*(diff_nb[1]/rho_nb - diff[1]/rho);
         }
     }
-    else if (!bNoBoundary[5]) //cells on UPPER boundary
+    else if (bNoBoundary[5] == 2) //cells on UPPER boundary
     {
         tmp = (cell_center[index].m_state.m_U[2] +
                cell_center[index_nb[3]].m_state.m_U[2] +
@@ -8896,7 +8902,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
 ///////////////////////////////////////////////////
 
     //u*w_x
-    if (!bNoBoundary[5]) //cells on UPPER boundary
+    if (bNoBoundary[5] == 2) //cells on UPPER boundary
     {
         tmp = 0.0; //u = 0 on UPPER bdry
         transverseD[2] += 0.0;
@@ -8937,7 +8943,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Velocity_MAC_vd(
     }
 
     //v*w_y
-    if (!bNoBoundary[5]) //UPPER boundary
+    if (bNoBoundary[5] == 2) //UPPER boundary
     {
         tmp = 0.0; //v = 0 on UPPER bdry
         transverseD[2] += 0.0;
