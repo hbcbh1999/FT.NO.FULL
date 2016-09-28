@@ -1,4 +1,5 @@
 #include "solver.h"
+#include "iFluid.h"
 
 void poisson_solver3d_P0_vd(
         Front *front,       /* front structure containing interface geometry */
@@ -105,7 +106,7 @@ void poisson_solver3d_P0_vd(
                     {
                         if (!boundary_state(hs))
                         {
-                            /* The boundary condition of phi at present 
+                            /* The boundary condition of phi at present
                                Dirichlet boundary is set to zero, it then
                                uses non-Neumann poisson solver
                             */
@@ -301,7 +302,7 @@ void poisson_solver2d(
 	    I_nb[3] = ij_to_I[i][j+1];
 	    icoords[0] = i;
 	    icoords[1] = j;
-	
+
 	    k0 = k[index];
 	    num_nb = 0;
 	    for (l = 0; l < 4; ++l)
@@ -310,7 +311,7 @@ void poisson_solver2d(
 		    index_nb[l] = index;
 		else num_nb++;
 		k_nb[l] = 0.5*(k0 + k[index_nb[l]]);
-	    	coeff[l] = 1.0/k_nb[l]/(top_h[l/2]*top_h[l/2]); 
+	    	coeff[l] = 1.0/k_nb[l]/(top_h[l/2]*top_h[l/2]);
 	    }
 
 	    rhs = source[index];
@@ -331,7 +332,7 @@ void poisson_solver2d(
 		    {
 			if (!boundary_state(hs))
 			{
-			    /* The boundary condition of phi at preset 
+			    /* The boundary condition of phi at preset
 			       Dirichlet boundary is set to zero, it then
 			       uses non-Neumann poisson solver
 			    */
@@ -353,13 +354,13 @@ void poisson_solver2d(
 	    }
             else
             {
-	
+
                 solver.Set_A(I,I,1.0);
             }
             solver.Set_b(I,rhs);
 	}
 	use_neumann_solver = pp_min_status(use_neumann_solver);
-	
+
 	solver.SetMaxIter(40000);
 	solver.SetTol(1e-14);
 
@@ -407,9 +408,9 @@ void poisson_solver2d(
 
 	if (debugging("PETSc"))
 	    (void) printf("In poisson_solver(): "
-	       		"num_iter = %d, rel_residual = %le \n", 
+	       		"num_iter = %d, rel_residual = %le \n",
 			num_iter, rel_residual);
-	
+
 	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
 	{
@@ -531,7 +532,7 @@ void poisson_solver2d_vd(
                     {
                         if (!boundary_state(hs))
                         {
-                            /* The boundary condition of phi at preset 
+                            /* The boundary condition of phi at preset
                                Dirichlet boundary is set to zero, it then
                                uses non-Neumann poisson solver
                             */
@@ -727,7 +728,7 @@ void poisson_solver2d_MacPhi_vd(
                     {
                         if (!boundary_state(hs))
                         {
-                            /* The boundary condition of phi at preset 
+                            /* The boundary condition of phi at preset
                                Dirichlet boundary is set to zero, it then
                                uses non-Neumann poisson solver
                             */
@@ -932,7 +933,7 @@ void poisson_solver3d_vd(
                     {
                         if (!boundary_state(hs))
                         {
-                            /* The boundary condition of phi at preset 
+                            /* The boundary condition of phi at preset
                                Dirichlet boundary is set to zero, it then
                                uses non-Neumann poisson solver
                             */
@@ -942,7 +943,7 @@ void poisson_solver3d_vd(
                     }
                     else //homogeneous Neumann B.C., do nothing!
                     {
-                    } 
+                    }
                 }
             }
             /*
@@ -1093,6 +1094,7 @@ void poisson_solver3d_MacPhi_vd(
         int *top_gmax = rgr->gmax;
         double *top_h = rgr->h;
         HYPER_SURF *hs;
+        int bNoBoundary[6], nb;
 
         if (debugging("storage"))
             printf("enter poisson_solver3d_MacPhi_vd()\n");
@@ -1168,6 +1170,14 @@ void poisson_solver3d_MacPhi_vd(
             icoords[1] = j;
             icoords[2] = k;
 
+            for (nb = 0; nb < 6; nb++) // general way to determine bc type
+            {
+                checkBoundaryConditionHelp(dir[nb],icoords,&bNoBoundary[nb],front);
+                //printf("bNoBoundary[%d] = %d\n", nb, bNoBoundary[nb]);
+                if (bNoBoundary[nb] >=2 ) // Neumann or Reflect bc
+                    I_nb[nb] = -1;
+            }
+
             k0 = kk[index];
             num_nb = 0;
             for (l = 0; l < 6; ++l)
@@ -1197,7 +1207,7 @@ void poisson_solver3d_MacPhi_vd(
                     {
                         if (!boundary_state(hs))
                         {
-                            /* The boundary condition of phi at present 
+                            /* The boundary condition of phi at present
                                Dirichlet boundary is set to zero, it then
                                uses non-Neumann poisson solver
                             */
@@ -1207,7 +1217,7 @@ void poisson_solver3d_MacPhi_vd(
                     }
                     else // homogeneous Neumann B.C. for phi_mac, do nothing!
                     {
-                    } 
+                    }
                 }
             }
 
@@ -1445,12 +1455,12 @@ void poisson_solver3d_Expand_vd(
                 solver.Set_A(I,I_nb[5],coeff[10]);
             }
             else if (I_nb[4] == 1 && I_nb[10] == -1)
-            {    
+            {
                 coeff[10] = (1.0/kk[index_nb[4]] + 1.0/kk_old[index_nb[4]])/2.0/4.0/(top_h[2]*top_h[2]);
                 solver.Set_A(I,I_nb[4],coeff[10]);
             }
             else
-            {    
+            {
                 coeff[10] = (1.0/kk[index_nb[4]] + 1.0/kk_old[index_nb[4]])/2.0/4.0/(top_h[2]*top_h[2]);
                 solver.Set_A(I,I_nb[10],coeff[10]);
             }
@@ -1458,17 +1468,17 @@ void poisson_solver3d_Expand_vd(
 
             // UPPER
             if (I_nb[5] == -1)
-            {    
+            {
                 coeff[11] = (1.0/kk[index] + 1.0/kk_old[index])/2.0/4.0/(top_h[2]*top_h[2]);
                 solver.Set_A(I,I_nb[4],coeff[11]);
             }
             else if (I_nb[5] == 1 && I_nb[11] == -1)
-            {    
+            {
                 coeff[11] = (1.0/kk[index_nb[5]] + 1.0/kk_old[index_nb[5]])/2.0/4.0/(top_h[2]*top_h[2]);
                 solver.Set_A(I,I_nb[5],coeff[11]);
             }
             else
-            {    
+            {
                 coeff[11] = (1.0/kk[index_nb[5]] + 1.0/kk_old[index_nb[5]])/2.0/4.0/(top_h[2]*top_h[2]);
                 solver.Set_A(I,I_nb[11],coeff[11]);
             }
@@ -1581,3 +1591,42 @@ void poisson_solver3d_Expand_vd(
 
         FT_FreeThese(1,x);
 } /* end poisson_solver3d_Expand_vd */
+
+
+// duplicate function in iFcarstn3d.cpp
+bool    FT_ReflectHelp(int *icoords, int dir, int side, Front *front)
+{
+    int imin, imax, jmin, jmax, kmin, kmax;
+    imin = front->rect_grid->lbuf[0];
+    imax = front->rect_grid->gmax[0]+front->rect_grid->ubuf[0] - 1;
+
+    jmin = front->rect_grid->lbuf[1];
+    jmax = front->rect_grid->gmax[1]+front->rect_grid->ubuf[1] - 1;
+
+    kmin = front->rect_grid->lbuf[2];
+    kmax = front->rect_grid->gmax[2]+front->rect_grid->ubuf[2] - 1;
+
+    int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+
+    if (icoords[dir] == wallIndex[dir][side])
+        return true;
+    return false;
+}
+// duplicate function in iFcarstn3d.cpp
+void    checkBoundaryConditionHelp(GRID_DIRECTION dir, int *icoords, int *bNoBoundary, Front *front)
+{
+        HYPER_SURF *hs;
+        int dirr, side;
+        INTERFACE *intfc = front->interf;
+
+        hs = FT_HyperSurfAtGridCrossing(front,icoords,dir);
+        convertGridDirectionToDirSide(dir, &dirr, &side);
+        if (hs != NULL && wave_type(hs) == DIRICHLET_BOUNDARY)
+            *bNoBoundary = 1;
+        else if (hs != NULL && wave_type(hs) == NEUMANN_BOUNDARY)
+            *bNoBoundary = 2;
+        else if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_ReflectHelp(icoords, dirr, side, front))
+            *bNoBoundary = 3;
+        else
+            *bNoBoundary = 0;
+}
