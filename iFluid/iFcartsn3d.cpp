@@ -8222,11 +8222,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
     double mu[2*MAXD];
     double U0_nb[18],U1_nb[18],U2_nb[18],U0_center,U1_center,U2_center;
     double mu_nb[18], mu_t_nb[18], mu_center, mu_t_center;
-    bool bNoBoundary[2*MAXD];
+    int bNoBoundary[2*MAXD];
     double dh[MAXD], crx_coords[MAXD];
     COMPONENT comp;
-    POINTER intfc_state;
-    HYPER_SURF *hs;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
     int i=icoords[0];
     int j=icoords[1];
@@ -8274,14 +8272,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
         assert(false);
     }
 
-    //periodic B.C. for WEST,EAST,SOUTH,NORTH
-    for (nb=0; nb<4; ++nb) {
-        bNoBoundary[nb] = YES;
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_old,comp);
+    }
 
+    for (nb=0; nb<6; ++nb) {
+        if(!bNoBoundary[nb] || bNoBoundary[nb] == 3) // reflect
+        {
         U0_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[0];
         U1_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[1];
         U2_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[2];
         mu_nb[nb] = cell_center[index_nb[nb]].m_state.m_mu;
+        }
         if (useSGSCellCenter) {
             mu_t_nb[nb] = cell_center[index_nb[nb]].m_state.m_mu_turbulent[3];
         }
@@ -8293,14 +8296,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
 
     //physical B.C. for LOWER & UPPER
     for (nb=4; nb<6; ++nb) {
-        if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
-                comp,&intfc_state,&hs,crx_coords,m_t_old) &&
-                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
-            bNoBoundary[nb] = NO;
-        else
-            bNoBoundary[nb] = YES;
 
-        if (!bNoBoundary[nb]) { //cells on LOWER/UPPER bdry
+        if (bNoBoundary[nb] == 2) { //cells on LOWER/UPPER bdry
             U0_nb[nb] = -U0_center;
             U1_nb[nb] = -U1_center;
             //w[4] = 0
@@ -8312,19 +8309,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
             mu_nb[nb] = mu_center;
             if (useSGSCellCenter) {
                 mu_t_nb[nb] = mu_t_center;
-            }
-            else {
-                printf("codes needed for mu_turbulent on cell-faces.\n");
-                assert(false);
-            }
-        }
-        else { //interior cells
-            U0_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[0];
-            U1_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[1];
-            U2_nb[nb] = cell_center[index_nb[nb]].m_state.m_U[2];
-            mu_nb[nb] = cell_center[index_nb[nb]].m_state.m_mu;
-            if (useSGSCellCenter) {
-                mu_t_nb[nb] = cell_center[index_nb[nb]].m_state.m_mu_turbulent[3];
             }
             else {
                 printf("codes needed for mu_turbulent on cell-faces.\n");
@@ -8343,7 +8327,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
     {
     //u-face
     case COORD_X:
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if (bNoBoundary[2] == 3) // SOUTH DIR is Reflect
+        {
+            //printf("if no-slip, need implement\n");
+        }
+        if (bNoBoundary[3] == 3) // NORTH DIR is Reflect
+        {
+            //printf("if no-slip, need implement\n");
+        }
+        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3) // reflect
         {
             U2_nb[15] = cell_center[index_nb[15]].m_state.m_U[2];
             mu_nb[15] = cell_center[index_nb[15]].m_state.m_mu;
@@ -8357,7 +8349,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (!bNoBoundary[4]) //cells on LOWER bdry
+        else if (bNoBoundary[4] == 2) //cells on LOWER bdry
         {
             U2_nb[15] = 0;
             mu_nb[15] = mu_nb[1];
@@ -8371,7 +8363,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (!bNoBoundary[5]) //cells on UPPER bdry
+        else if (bNoBoundary[5] == 2) //cells on UPPER bdry
         {
             U2_nb[15] = cell_center[index_nb[15]].m_state.m_U[2];
             mu_nb[15] = cell_center[index_nb[15]].m_state.m_mu;
@@ -8418,7 +8410,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
 
     //v-face
     case COORD_Y:
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
         {
             U2_nb[11] = cell_center[index_nb[11]].m_state.m_U[2];
             mu_nb[11] = cell_center[index_nb[11]].m_state.m_mu;
@@ -8432,7 +8424,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (!bNoBoundary[4]) //cells on LOWER bdry
+        else if (bNoBoundary[4] == 2) //cells on LOWER bdry
         {
             U2_nb[11] = 0;
             mu_nb[11] = mu_nb[3];
@@ -8446,7 +8438,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (!bNoBoundary[5]) //cells on UPPER bdry
+        else if (bNoBoundary[5] == 2) //cells on UPPER bdry
         {
             U2_nb[11] = cell_center[index_nb[11]].m_state.m_U[2];
             mu_nb[11] = cell_center[index_nb[11]].m_state.m_mu;
@@ -8493,7 +8485,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
 
     //w-face
     case COORD_Z:
-        if (!bNoBoundary[5]) //cells on UPPER bdry
+        if (bNoBoundary[5] == 2) //cells on UPPER bdry
         {
             U0_nb[17] = -U0_nb[0];
             U1_nb[13] = -U1_nb[2];
