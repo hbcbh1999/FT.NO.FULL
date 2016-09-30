@@ -5893,7 +5893,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
         int *icoords,
         double m_t_int)
 {
-    bool bNoBoundary[6];
+    int bNoBoundary[6],nb;
     int ICoords[3],ICOORDs[3];
     int index,index_nb[18];
     int i, j, k;
@@ -5908,8 +5908,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     L_STATE state_edge_hat_l[18], state_edge_hat_r[18];
     COMPONENT comp;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     i = icoords[0];
     j = icoords[1];
@@ -5943,6 +5942,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     index_nb[16] = d_index3d(i+1,j,k+1,top_gmax);
     index_nb[17] = d_index3d(i-1,j,k+1,top_gmax);
 
+    for (nb = 0; nb < 6; nb++) // general way to determine bc type
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+    }
+
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -5964,6 +5969,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
 
 
     //***********************************************************************************//
@@ -6077,7 +6083,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2];
-    if (!bNoBoundary[4]) //cells on LOWER bdry
+    if (bNoBoundary[4] == 2) //cells on LOWER bdry
     {
         vl.m_U[1] = 0.0;
         vr.m_U[1] = 0.0;
@@ -6099,7 +6105,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1] + 1;
     ICOORDs[2] = icoords[2] - 1;
-    if (!bNoBoundary[4]) //cells on LOWER bdry
+    if (bNoBoundary[4] == 2) //cells on LOWER bdry
     {
         wl.m_U[2] = 0.0;
         wr.m_U[2] = 0.0;
@@ -6126,7 +6132,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2] + 1;
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         vl.m_U[1] = 0.0;
         vr.m_U[1] = 0.0;
@@ -6148,7 +6154,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1] + 1;
     ICOORDs[2] = icoords[2];
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         wl.m_U[2] = 0.0;
         wr.m_U[2] = 0.0;
@@ -6175,7 +6181,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1] - 1;
     ICOORDs[2] = icoords[2] + 1;
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         vl.m_U[1] = 0.0;
         vr.m_U[1] = 0.0;
@@ -6197,7 +6203,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2];
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         wl.m_U[2] = 0.0;
         wr.m_U[2] = 0.0;
@@ -6224,7 +6230,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0] + 1;
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2] - 1;
-    if (!bNoBoundary[4]) //cells on LOWER bdry
+    if (bNoBoundary[4] == 2) //cells on LOWER bdry
     {
         wl.m_U[2] = 0.0;
         wr.m_U[2] = 0.0;
@@ -6246,7 +6252,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2];
-    if (!bNoBoundary[4]) //cells on LOWER bdry
+    if (bNoBoundary[4] == 2) //cells on LOWER bdry
     {
         ul.m_U[0] = 0.0;
         ur.m_U[0] = 0.0;
@@ -6273,7 +6279,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0] + 1;
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2];
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         wl.m_U[2] = 0.0;
         wr.m_U[2] = 0.0;
@@ -6295,7 +6301,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2] + 1;
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         ul.m_U[0] = 0.0;
         ur.m_U[0] = 0.0;
@@ -6322,7 +6328,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0];
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2];
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         wl.m_U[2] = 0.0;
         wr.m_U[2] = 0.0;
@@ -6344,7 +6350,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     ICOORDs[0] = icoords[0] - 1;
     ICOORDs[1] = icoords[1];
     ICOORDs[2] = icoords[2] + 1;
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
     {
         ul.m_U[0] = 0.0;
         ur.m_U[0] = 0.0;
@@ -6394,7 +6400,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellEdgeVelocityBar_MAC_decoupled
     //u*w_x + v*w_y + w*w_z on w-faces
     tmp = cell_center[index].m_state.m_U_center_bar[2];
     tmp_nb = cell_center[index_nb[5]].m_state.m_U_center_bar[2];
-    if (!bNoBoundary[5]) //cells on UPPER bdry
+    if (bNoBoundary[5] == 2) //cells on UPPER bdry
         cell_center[index].m_state.m_adv[2] += 0.0;
     else //other cells
     {
