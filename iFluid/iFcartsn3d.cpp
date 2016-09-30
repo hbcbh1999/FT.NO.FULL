@@ -6425,7 +6425,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
         double m_t_int,
         boolean bGhostCell)
 {
-    bool bNoBoundary[6];
+    int bNoBoundary[6],nb;
     int ICoords[3];
     int index;
     L_STATE sl, sr, state_west_bar, state_east_bar, state_south_bar, state_north_bar, state_lower_bar, state_upper_bar;
@@ -6438,12 +6438,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
     L_STATE state_upper_hat_l, state_upper_hat_r;
     COMPONENT comp;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
     comp = top_comp[index];
 
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+        if (bNoBoundary[nb] == 1) // no DIRICHLET BC
+            clean_up(ERROR);
+    }
+
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -6465,39 +6472,68 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
 
     //////////////////////// Get the scalar_hat on six surfaces first //////////////////////////
 
     // WEST
-    ICoords[0] = icoords[0] - 1;
-    ICoords[1] = icoords[1];
-    ICoords[2] = icoords[2];
-    getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_X,EAST,state_west_hat_l,bGhostCell);
-    getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_X,WEST,state_west_hat_r,bGhostCell);
+    if (bNoBoundary[0]>=2)
+    {
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_X,WEST,state_west_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_X,EAST,state_west_hat_l,bGhostCell);
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_X,WEST,state_west_hat_r,bGhostCell);
+    }
 
     // EAST
-    ICoords[0] = icoords[0] + 1;
-    ICoords[1] = icoords[1];
-    ICoords[2] = icoords[2];
-    getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_X,WEST,state_east_hat_r,bGhostCell);
-    getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_X,EAST,state_east_hat_l,bGhostCell);
+    if (bNoBoundary[1]>=2)
+    {
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_X,EAST,state_east_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_X,WEST,state_east_hat_r,bGhostCell);
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_X,EAST,state_east_hat_l,bGhostCell);
+    }
 
     // SOUTH
-    ICoords[0] = icoords[0];
-    ICoords[1] = icoords[1] - 1;
-    ICoords[2] = icoords[2];
-    getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_Y,NORTH,state_south_hat_l,bGhostCell);
-    getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Y,SOUTH,state_south_hat_r,bGhostCell);
+    if (bNoBoundary[2]>=2)
+    {
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Y,SOUTH,state_east_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_Y,NORTH,state_south_hat_l,bGhostCell);
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Y,SOUTH,state_south_hat_r,bGhostCell);
+    }
 
     // NORTH
-    ICoords[0] = icoords[0];
-    ICoords[1] = icoords[1] + 1;
-    ICoords[2] = icoords[2];
-    getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_Y,SOUTH,state_north_hat_r,bGhostCell);
-    getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Y,NORTH,state_north_hat_l,bGhostCell);
+    if (bNoBoundary[2]>=2)
+    {
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Y,NORTH,state_east_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getFaceScalar_MAC_middleStep_hat_vd(ICoords,COORD_Y,SOUTH,state_north_hat_r,bGhostCell);
+        getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Y,NORTH,state_north_hat_l,bGhostCell);
+    }
 
     // LOWER
-    if(!bNoBoundary[4]) //Neumann BC for scalar_hat
+    if(bNoBoundary[4]>=2) //Neumann BC for scalar_hat
     {
         getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Z,LOWER,state_lower_hat,bGhostCell);
     }
@@ -6511,7 +6547,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
     }
 
     // UPPER
-    if(!bNoBoundary[5]) //Neumann BC for scalar_hat
+    if(bNoBoundary[5]>=2) //Neumann BC for scalar_hat
     {
         getFaceScalar_MAC_middleStep_hat_vd(icoords,COORD_Z,UPPER,state_upper_hat,bGhostCell);
     }
@@ -6527,39 +6563,67 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
     ///////////////////////////// get the scalar_bar on six surfaces ////////////////////////////////
 
     // WEST
-    ICoords[0] = icoords[0] - 1;
-    ICoords[1] = icoords[1];
-    ICoords[2] = icoords[2];
-    getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,EAST,sl,state_west_hat_l,bGhostCell); //stability?????
-    getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,sr,state_west_hat_r,bGhostCell);
-    getRiemannSolution_MAC_Scalar_vd(sl,sr,state_west_bar,icoords,WEST);
+    if(bNoBoundary[0]>=2) //homogeneous Neumann BC for scalar
+    {
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,state_west_bar,state_west_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0] - 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,EAST,sl,state_west_hat_l,bGhostCell); //stability?????
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,sr,state_west_hat_r,bGhostCell);
+        getRiemannSolution_MAC_Scalar_vd(sl,sr,state_west_bar,icoords,WEST);
+    }
 
     // EAST
-    ICoords[0] = icoords[0] + 1;
-    ICoords[1] = icoords[1];
-    ICoords[2] = icoords[2];
-    getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,WEST,sr,state_east_hat_r,bGhostCell);
-    getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,EAST,sl,state_east_hat_l,bGhostCell);
-    getRiemannSolution_MAC_Scalar_vd(sl,sr,state_east_bar,icoords,EAST);
+    if(bNoBoundary[1]>=2) //homogeneous Neumann BC for scalar
+    {
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,EAST,state_east_bar,state_east_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0] + 1;
+        ICoords[1] = icoords[1];
+        ICoords[2] = icoords[2];
+        getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,WEST,sr,state_east_hat_r,bGhostCell);
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,EAST,sl,state_east_hat_l,bGhostCell);
+        getRiemannSolution_MAC_Scalar_vd(sl,sr,state_east_bar,icoords,EAST);
+    }
 
     // SOUTH
-    ICoords[0] = icoords[0];
-    ICoords[1] = icoords[1] - 1;
-    ICoords[2] = icoords[2];
-    getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,NORTH,sl,state_south_hat_l,bGhostCell);
-    getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,sr,state_south_hat_r,bGhostCell);
-    getRiemannSolution_MAC_Scalar_vd(sl,sr,state_south_bar,icoords,SOUTH);
+    if(bNoBoundary[2]>=2) //homogeneous Neumann BC for scalar
+    {
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,state_south_bar,state_south_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] - 1;
+        ICoords[2] = icoords[2];
+        getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,NORTH,sl,state_south_hat_l,bGhostCell);
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,sr,state_south_hat_r,bGhostCell);
+        getRiemannSolution_MAC_Scalar_vd(sl,sr,state_south_bar,icoords,SOUTH);
+    }
 
     // NORTH
-    ICoords[0] = icoords[0];
-    ICoords[1] = icoords[1] + 1;
-    ICoords[2] = icoords[2];
-    getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,SOUTH,sr,state_north_hat_r,bGhostCell);
-    getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,NORTH,sl,state_north_hat_l,bGhostCell);
-    getRiemannSolution_MAC_Scalar_vd(sl,sr,state_north_bar,icoords,NORTH);
+    if(bNoBoundary[3]>=2) //homogeneous Neumann BC for scalar
+    {
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,NORTH,state_north_bar,state_north_hat,bGhostCell);
+    }
+    else
+    {
+        ICoords[0] = icoords[0];
+        ICoords[1] = icoords[1] + 1;
+        ICoords[2] = icoords[2];
+        getScalar_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,SOUTH,sr,state_north_hat_r,bGhostCell);
+        getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,NORTH,sl,state_north_hat_l,bGhostCell);
+        getRiemannSolution_MAC_Scalar_vd(sl,sr,state_north_bar,icoords,NORTH);
+    }
 
     // LOWER
-    if(!bNoBoundary[4]) //homogeneous Neumann BC for scalar
+    if(bNoBoundary[4]>=2) //homogeneous Neumann BC for scalar
     {
         getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,LOWER,state_lower_bar,state_lower_hat,bGhostCell);
     }
@@ -6574,7 +6638,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
     }
 
     // UPPER
-    if(!bNoBoundary[5]) //homogeneous Neumann BC for scalar
+    if(!bNoBoundary[5]>=2) //homogeneous Neumann BC for scalar
     {
         getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,UPPER,state_upper_bar,state_upper_hat,bGhostCell);
     }
@@ -7172,11 +7236,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceScalar_MAC_middleStep_hat_vd(
     int index, index_nb[6];
     double sL, U_center;
     double slope_limited[2] = {0, 0};
-    bool bNoBoundary[6];
+    int bNoBoundary[6],nb;
     COMPONENT comp;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    GRID_DIRECTION dir_n[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
     comp = top_comp[index];
@@ -7188,6 +7251,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceScalar_MAC_middleStep_hat_vd(
     index_nb[4] = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
     index_nb[5] = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
 
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir_n[nb],icoords,&bNoBoundary[nb],m_t_old,comp);
+    }
+
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -7207,6 +7276,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceScalar_MAC_middleStep_hat_vd(
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
 
     state_orig = cell_center[index].m_state;
     state_hat.m_rho = 0;
@@ -7223,9 +7293,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::getFaceScalar_MAC_middleStep_hat_vd(
         U_center = 0.5*(state_orig.m_U[1] + cell_center[index_nb[2]].m_state.m_U[1]);
     else //average w at cell centers
     {
-        if (!bNoBoundary[4]) //cells on LOWER boundary
+        if (bNoBoundary[4]==2) //cells on LOWER boundary
             U_center = 0.5*(state_orig.m_U[2] + 0);
-        else if (!bNoBoundary[5]) //cells on UPPER boundary
+        else if (bNoBoundary[5]==2) //cells on UPPER boundary
             U_center = 0.5*(0 + cell_center[index_nb[4]].m_state.m_U[2]);
         else //other cells
             U_center = 0.5*(state_orig.m_U[2] + cell_center[index_nb[4]].m_state.m_U[2]);
@@ -9399,13 +9469,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         boolean bGhostCell)
 {
     int i, j, k;
-    bool bNoBoundary[6];
+    int bNoBoundary[6], nb;
     int index,index_nb[6];
     double tmp, dx, dy, dz;
     COMPONENT comp;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
     transverseD[0] = 0;
     transverseD[1] = 0;
@@ -9428,6 +9497,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
     index_nb[4] = d_index3d(i,j,k-1,top_gmax);
     index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_old,comp);
+    }
+    /*
     //4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -9449,6 +9523,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         bNoBoundary[5] = NO; //cells on UPPER bdry
     else
         bNoBoundary[5] = YES;
+    */
 
 
     switch(xyz)
@@ -9458,6 +9533,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         //v*rho_y & v*c_y
         tmp = (cell_center[index].m_state.m_U[1] +
                cell_center[index_nb[2]].m_state.m_U[1])/2.0;
+        if (bNoBoundary[2] == 3 || bNoBoundary[3] == 3)
+            dy = 0.5 * dy;
         tmp /= dy;
         if (tmp > 0)
         {
@@ -9487,10 +9564,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         }
 
         //w*rho_z & w*c_z
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
         {
             tmp = (cell_center[index].m_state.m_U[2] +
                    cell_center[index_nb[4]].m_state.m_U[2])/2.0;
+            if (bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
+                dz = 0.5 * dz;
             tmp /= dz;
             if (tmp > 0)
             {
@@ -9519,7 +9598,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
                 }
             }
         }
-        else if (!bNoBoundary[4]) //cells on LOWER boundary
+        else if (bNoBoundary[4]==2) //cells on LOWER boundary
         {
             tmp = (cell_center[index].m_state.m_U[2] + 0.0)/2.0;
             tmp /= dz;
@@ -9542,7 +9621,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
                 }
             }
         }
-        else if (!bNoBoundary[5]) //cells on UPPER boundary
+        else if (bNoBoundary[5]==2) //cells on UPPER boundary
         {
             tmp = (0.0 + cell_center[index_nb[4]].m_state.m_U[2])/2.0;
             tmp /= dz;
@@ -9573,6 +9652,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         //u*rho_x & u*c_x
         tmp = (cell_center[index].m_state.m_U[0] +
                cell_center[index_nb[0]].m_state.m_U[0])/2.0;
+        if (bNoBoundary[0] == 3 || bNoBoundary[1] == 3)
+            dx = 0.5 * dx;
         tmp /= dx;
         if (tmp > 0.0)
         {
@@ -9602,10 +9683,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         }
 
         //w*rho_z & w*c_z
-        if (bNoBoundary[4] && bNoBoundary[5])
+        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
         {
             tmp = (cell_center[index].m_state.m_U[2] +
                    cell_center[index_nb[4]].m_state.m_U[2])/2.0;
+            if (bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
+                dz = 0.5 * dz;
             tmp /= dz;
             if (tmp > 0.0)
             {
@@ -9634,7 +9717,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
                 }
             }
         }
-        else if (!bNoBoundary[4]) //cells on LOWER boundary
+        else if (bNoBoundary[4]==2) //cells on LOWER boundary
         {
             tmp = (cell_center[index].m_state.m_U[2] + 0.0)/2.0;
             tmp /= dz;
@@ -9657,7 +9740,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
                 }
             }
         }
-        else if (!bNoBoundary[5]) //cells on UPPER boundary
+        else if (bNoBoundary[5]==2) //cells on UPPER boundary
         {
             tmp = (0.0 + cell_center[index_nb[4]].m_state.m_U[2])/2.0;
             tmp /= dz;
@@ -9688,6 +9771,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         //u*rho_x & u*c_x
         tmp = (cell_center[index].m_state.m_U[0] +
                cell_center[index_nb[0]].m_state.m_U[0])/2.0;
+        if (bNoBoundary[0] == 3 || bNoBoundary[1] == 3)
+            dx = 0.5 * dx;
         tmp /= dx;
         if (tmp > 0.0)
         {
@@ -9719,6 +9804,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getTransverseDTerm_Scalar_MAC_vd(
         //v*rho_y & v*c_y
         tmp = (cell_center[index].m_state.m_U[1] +
                cell_center[index_nb[2]].m_state.m_U[1])/2.0;
+        if (bNoBoundary[2] == 3 || bNoBoundary[3] == 3)
+            dy = 0.5 * dy;
         tmp /= dy;
         if (tmp > 0.0)
         {
@@ -10111,7 +10198,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusionC_MAC_vd(
     double c,c_nb[6];
     L_STATE statenb;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
-    bool bNoBoundary[6];
+    int bNoBoundary[6];
     double dh[3],dh0[3],dh1[3];
     int i = icoords[0];
     int j = icoords[1];
@@ -10137,15 +10224,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusionC_MAC_vd(
     {
         if (!bGhostCell)
             bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_vd(icoords,dir[nb],statenb,m_t_old);
-        else
-            bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,dir[nb],statenb,m_t_old);
 
         //homogeneous Neumann B.C. for c, rho, and Dcoef
         c_nb[nb] = statenb.m_c;
         rho_nb[nb] = statenb.m_rho;
 
         //TODO: implement Dcoef_face[] for Dcoef_t on 3 cell-faces
-        if (!bNoBoundary[nb]) { //cells on LOWER/UPPER bdry
+        if (bNoBoundary[nb]==2) { //cells on LOWER/UPPER bdry
             rho_face[nb] = rho_nb[nb];
             if (useSGSCellCenter) {
                 Dcoef_face[nb] = statenb.m_Dcoef + statenb.m_Dcoef_turbulent[3];
@@ -10173,29 +10258,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDiffusionC_MAC_vd(
     dh[1] = top_h[1];
     dh[2] = top_h[2];
 
-    if (bNoBoundary[0])
+    for (nb = 0; nb < 6; nb++)
+        if (bNoBoundary[nb] == 1) // NO DIRICHLET
+            clean_up(ERROR);
+
+    if (bNoBoundary[0]<1)
         dh0[0] = top_h[0];
     else
         dh0[0] = top_h[0]/2.0;
-    if (bNoBoundary[1])
+    if (bNoBoundary[1]<1)
         dh1[0] = top_h[0];
     else
         dh1[0] = top_h[0]/2.0;
 
-    if (bNoBoundary[2])
+    if (bNoBoundary[2]<1)
         dh0[1] = top_h[1];
     else
         dh0[1] = top_h[1]/2.0;
-    if (bNoBoundary[3])
+    if (bNoBoundary[3]<1)
         dh1[1] = top_h[1];
     else
         dh1[1] = top_h[1]/2.0;
 
-    if (bNoBoundary[4])
+    if (bNoBoundary[4]<1)
         dh0[2] = top_h[2];
     else
         dh0[2] = top_h[2]/2.0;
-    if (bNoBoundary[5])
+    if (bNoBoundary[5]<1)
         dh1[2] = top_h[2];
     else
         dh1[2] = top_h[2]/2.0;
@@ -10289,15 +10378,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Scalar_MAC_vd(
 
     U1 = cell_center[d_index3d(icoords[0],icoords[1],icoords[2],top_gmax)].m_state;
 
-    bool bNoBoundary[2];
+    int bNoBoundary[2];
 
     if (xyz==COORD_X)
     {
         if (!bGhostCell)
             bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_vd(icoords,WEST,U0,m_t_old);
         else
-            bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,WEST,U0,m_t_old);
-        if(bNoBoundary[0])
+            bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,WEST,U0,m_t_old);//need to change
+        if(bNoBoundary[0]<1)
             dh0 = top_h[0];
         else
             dh0 = top_h[0]/2;
@@ -10306,7 +10395,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Scalar_MAC_vd(
             bNoBoundary[1] = getNeighborOrBoundaryScalar_MAC_vd(icoords,EAST,U2,m_t_old);
         else
             bNoBoundary[1] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,EAST,U2,m_t_old);
-        if(bNoBoundary[1])
+        if(bNoBoundary[1]<1)
             dh1 = top_h[0];
         else
             dh1 = top_h[0]/2;
@@ -10317,7 +10406,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Scalar_MAC_vd(
             bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_vd(icoords,SOUTH,U0,m_t_old);
         else
             bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,SOUTH,U0,m_t_old);
-        if(bNoBoundary[0])
+        if(bNoBoundary[0]<1)
             dh0 = top_h[1];
         else
             dh0 = top_h[1]/2;
@@ -10326,7 +10415,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Scalar_MAC_vd(
             bNoBoundary[1] = getNeighborOrBoundaryScalar_MAC_vd(icoords,NORTH,U2,m_t_old);
         else
             bNoBoundary[1] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,NORTH,U2,m_t_old);
-        if(bNoBoundary[1])
+        if(bNoBoundary[1]<1)
             dh1 = top_h[1];
         else
             dh1 = top_h[1]/2;
@@ -10337,7 +10426,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Scalar_MAC_vd(
             bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_vd(icoords,LOWER,U0,m_t_old);
         else
             bNoBoundary[0] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,LOWER,U0,m_t_old);
-        if(bNoBoundary[0])
+        if(bNoBoundary[0]<1)
             dh0 = top_h[2];
         else
             dh0 = top_h[2]/2;
@@ -10346,7 +10435,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Scalar_MAC_vd(
             bNoBoundary[1] = getNeighborOrBoundaryScalar_MAC_vd(icoords,UPPER,U2,m_t_old);
         else
             bNoBoundary[1] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,UPPER,U2,m_t_old);
-        if(bNoBoundary[1])
+        if(bNoBoundary[1]<1)
             dh1 = top_h[2];
         else
             dh1 = top_h[2]/2;
