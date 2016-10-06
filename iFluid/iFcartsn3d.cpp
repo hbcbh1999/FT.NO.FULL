@@ -10967,6 +10967,9 @@ int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
     }
     else
     {
+        convertGridDirectionToDirSide(dir, &dirr, &side);
+        if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_Reflect(icoords, dirr, side))
+            return 3;
         switch(dir)
         {
         case WEST:
@@ -10991,11 +10994,7 @@ int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
             assert(false);
         }
         state = cell_center[index_nb].m_state;
-        convertGridDirectionToDirSide(dir, &dirr, &side);
-        if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_Reflect(icoords, dirr, side))
-            return 3;
-        else
-            return 0;
+        return 0;
     }
 } /* end getNeighborOrBoundaryScalar_MAC_vd */
 
@@ -16090,7 +16089,397 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
         stop_clock("solve_vd");
 } /* end solve_vd */
 
+//calc parameters for RT simulation
+void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char *out_name, int nStep_velo_var)
+{
+        INTERFACE *intfc = front->interf;
+	const RECT_GRID *rgr = front->rect_grid;
+	const double *GL = rgr->GL;
+        const double *GU = rgr->GU;
+        POINT   *p;
+        SURFACE **s;
+        TRI     *tri;
+        HYPER_SURF *hs;
+        HYPER_SURF_ELEMENT *hse;
+        boolean  bdry = NO;
+        int i,j,k,l,index,count,ucount;
+        double *crds, coords[MAXD];
+        double zmin=HUGE, zmax=-HUGE;
+        double A,g,t2,Agt2,tau;
+	double h_bubble_intfc,h_spike_intfc; //bubble/spike height of contact interface
+        double h_bubble_vf,h_spike_vf; //bubble/spike height of n% volume fraction contour
+        //H = 32cm is the vertical height of the water channel
+        //refer to Eq. (18) of Mueschke's paper in 2009
+        double H = 32.0;
+        FILE *outfile;
+        double z_coord,max_dens,min_dens,Dens;
+        double sum_vf1,sum_vf2,sum_vf1vf2,mean_vf1,mean_vf2,mean_vf1vf2;
+        double usum_vf1,usum_vf2,usum_vf1vf2,umean_vf1,umean_vf2,umean_vf1vf2;
+        double vf1,vf2,vf1vf2,uvf1,uvf2,uvf1vf2;
 
+	z0 = (GL[dim-1] + GU[dim-1])/2.0;
+        A = fabs(m_rho[1]-m_rho[0])/(m_rho[1]+m_rho[0]);
+        g = fabs(iFparams->gravity[dim-1]);
+        t2 = front->time*front->time;
+        Agt2 = A*g*t2;
+        tau = sqrt(A*g/H)*front->time;
+        max_dens = (m_rho[0]>m_rho[1])? m_rho[0] : m_rho[1];
+        min_dens = (m_rho[0] + m_rho[1]) - max_dens;
+
+	//0. print intfc for selected tau's
+        if ( fabs(tau-0.21) <= 0.5*sqrt(A*g/H)*front->dt ||
+             fabs(tau-0.50) <= 0.5*sqrt(A*g/H)*front->dt ||
+             fabs(tau-1.01) <= 0.5*sqrt(A*g/H)*front->dt ||
+             fabs(tau-1.52) <= 0.5*sqrt(A*g/H)*front->dt )
+	{
+            //print P-node/intfc files for making plot
+            FT_AddMovieFrame(front,out_name,NO);
+	}
+
+
+	//1. get bubble/spike height of interface
+
+	bdry = NO;
+        for (s = intfc->surfaces; s && *s; ++s)
+        {
+            for (tri=first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
+            {
+                for (k = 0; k < dim; ++k)
+                    Index_of_point(Point_of_tri(tri)[k]) = -1;
+            }
+        }
+
+        for (s = intfc->surfaces; s && *s; ++s)
+        {
+            if (bdry == YES  &&  !Boundary(*s))
+                continue;
+            if (bdry == NO  &&  Boundary(*s))
+                continue;
+            else
+            {
+                for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
+                     tri = tri->next)
+                {
+                    for (k = 0; k < dim; ++k)
+                    {
+                        p = Point_of_tri(tri)[k];
+                        if (Index_of_point(p) == -1)
+                        {
+                            crds = Coords(p);
+                            if (crds[dim-1] > zmax)
+                                zmax = crds[dim-1];
+                            if (crds[dim-1] < zmin)
+                                zmin = crds[dim-1];
+                        }
+                    }
+                }
+            }
+        }
+        pp_global_max(&zmax,1);
+        pp_global_min(&zmin,1);
+	// store zmax and zmin
+	zmax_intfc = zmax;
+	zmin_intfc = zmin;
+        if (debugging("glayer"))
+        {
+            printf("\n\tzmin_intfc = %lf\n", zmin);
+            printf("\tzmax_intfc = %lf\n", zmax);
+        }
+        h_bubble_intfc = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
+        h_spike_intfc = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
+
+
+	//2. get bubble/spike height of volume fraction contour
+	//1%~99% or 5%~95% vol frac contour
+	//Note that vf = 100% at top bdry and vf = 0 at bottom bdry
+
+        double tol = iFparams->vol_frac_threshold;
+	if (tol > 0.5)	tol = 1.0-tol;
+        //if (debugging("glayer"))
+	{
+	    printf("vol_frac_threshold = %lf\n", tol);
+	}
+	//search for zmin from lowest cell centers in z-direction
+        zmin = new_height_at_fraction_vd(GL[dim-1]+0.5*top_h[dim-1],+1,tol);
+        //search for zmax from highest cell centers in z-direction
+        zmax = new_height_at_fraction_vd(GU[dim-1]-0.5*top_h[dim-1],-1,1.0-tol);
+        // store zmax and zmin
+        zmax_vf = zmax;
+        zmin_vf = zmin;
+        if (debugging("glayer"))
+        {
+            printf("\nAfter calls to height_at_fraction_vd():\n");
+            printf("\n\tzmin_vf = %lf\n", zmin);
+            printf("\tzmax_vf = %lf\n", zmax);
+        }
+        h_bubble_vf = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
+        h_spike_vf = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
+
+
+        //3. get molecular mixing parameter theta
+        //theta = <vf1vf2>/(<vf1><vf2>)
+
+        count = 0;
+        sum_vf1 = sum_vf2 = sum_vf1vf2 = 0;
+
+        ucount = 0;
+        usum_vf1 = usum_vf2 = usum_vf1vf2 = 0;
+
+        double vf1_midPlane,vf2_midPlane,vf1vf2_midPlane,mean_vf1_midPlane,mean_vf2_midPlane,mean_vf1vf2_midPlane;
+        double Dens_nb, Dens_midPlane;
+        double sum_vf1_midPlane = 0, sum_vf2_midPlane = 0, sum_vf1vf2_midPlane = 0;
+
+        for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            Dens = cell_center[index].m_state.m_rho;
+            z_coord = cell_center[index].m_coords[dim-1];
+
+            if (z_coord > z0-top_h[dim-1] && z_coord < z0)
+            {
+                count++;
+
+                //volume/mole fraction
+                vf2 = (Dens-max_dens)/(min_dens-max_dens);
+                vf1 = (Dens-min_dens)/(max_dens-min_dens);
+                vf1vf2 = vf1*vf2;
+                sum_vf1 += vf1;
+                sum_vf2 += vf2;
+                sum_vf1vf2 += vf1vf2;
+
+                Dens_nb = cell_center[d_index3d(i,j,k+1,top_gmax)].m_state.m_rho;
+                Dens_midPlane = 0.5*(Dens + Dens_nb);
+                vf2_midPlane = (Dens_midPlane-max_dens)/(min_dens-max_dens);
+                vf1_midPlane = (Dens_midPlane-min_dens)/(max_dens-min_dens);
+                vf1vf2_midPlane = vf1_midPlane*vf2_midPlane;
+                sum_vf1_midPlane += vf1_midPlane;
+                sum_vf2_midPlane += vf2_midPlane;
+                sum_vf1vf2_midPlane += vf1vf2_midPlane;
+            }
+
+            if (z_coord > z0 && z_coord < z0+top_h[dim-1])
+            {
+                ucount++;
+
+                //volume/mole fraction
+                uvf2 = (Dens-max_dens)/(min_dens-max_dens);
+                uvf1 = (Dens-min_dens)/(max_dens-min_dens);
+                uvf1vf2 = uvf1*uvf2;
+                usum_vf1 += uvf1;
+                usum_vf2 += uvf2;
+                usum_vf1vf2 += uvf1vf2;
+            }
+        }
+
+        if (pp_numnodes() > 1)
+        {
+            pp_global_isum(&count,1);
+            pp_global_sum(&sum_vf1,1);
+            pp_global_sum(&sum_vf2,1);
+            pp_global_sum(&sum_vf1vf2,1);
+
+            pp_global_isum(&ucount,1);
+            pp_global_sum(&usum_vf1,1);
+            pp_global_sum(&usum_vf2,1);
+            pp_global_sum(&usum_vf1vf2,1);
+
+            pp_global_sum(&sum_vf1_midPlane,1);
+            pp_global_sum(&sum_vf2_midPlane,1);
+            pp_global_sum(&sum_vf1vf2_midPlane,1);
+        }
+        mean_vf1 = sum_vf1/count;
+        mean_vf2 = sum_vf2/count;
+        mean_vf1vf2 = sum_vf1vf2/count;
+
+        umean_vf1 = usum_vf1/ucount;
+        umean_vf2 = usum_vf2/ucount;
+        umean_vf1vf2 = usum_vf1vf2/ucount;
+
+        mean_vf1_midPlane = sum_vf1_midPlane/count;
+        mean_vf2_midPlane = sum_vf2_midPlane/count;
+        mean_vf1vf2_midPlane = sum_vf1vf2_midPlane/count;
+
+
+        //4. get velocity variance
+        //Var(X) = E[X*X] - E[X]*E[X]
+
+        double u,v,w,mean_u,mean_v,mean_w,mean_uu,mean_vv,mean_ww;
+        double sum_u = 0, sum_v = 0, sum_w = 0, sum_uu = 0, sum_vv = 0, sum_ww = 0;
+        double sum_u_raw = 0, sum_v_raw = 0, sum_w_raw = 0;
+	double sum_uu_raw = 0, sum_vv_raw = 0, sum_ww_raw = 0;
+        double sum_uw_raw = 0, sum_vw_raw = 0;
+
+	double mean_u_raw, mean_v_raw, mean_w_raw, mean_uu_raw, mean_vv_raw, mean_ww_raw, mean_uw_raw, mean_vw_raw;
+
+        // escape velocity for laser sheet, unit: cm/s
+        // v_esc = 0.5*(w+d)/(1/f)
+        // where w = 532 (nm) is width of laser sheet, d = 13 (micron) is mean particle diamater of Conduct-O-Fil silver-coated hollow glass spheres, f = 30 (Hz) is the sampling rate of 2 lasers.
+        double v_esc = 0.040596; //unit: cm/s
+        int count_nonEsc = 0;
+        count = 0;
+
+        int ii, jj, kk;
+        //average to interrogation window, whose size is 0.135*0.135 cm^2 (in uw-plane)
+        int NB[3] = {1, 1, 1}; // coarse and medium grid
+        //if (fabs(top_h[0] - 0.05) < 1e-12) // fine grid
+        //    NB[0] = NB[2] = 2;
+
+        for (k = 0; k <= ((kmax-kmin+1)/NB[2])-1; k++)
+        for (j = 0; j <= ((jmax-jmin+1)/NB[1])-1; j++)
+        for (i = 0; i <= ((imax-imin+1)/NB[0])-1; i++)
+        {
+            kk = (NB[2]*k)+kmin;
+            jj = (NB[1]*j)+jmin;
+            ii = (NB[0]*i)+imin;
+
+            if (NB[0] == 1 && NB[1] == 1 && NB[2] == 1) // coarse and medium grid
+            {
+                z_coord = cell_center[d_index3d(ii,jj,kk,top_gmax)].m_coords[2];
+            }
+            else if (NB[0] == 2 && NB[1] == 1 && NB[2] == 2) // fine grid
+            {
+                z_coord = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_coords[2]+
+                           cell_center[d_index3d(ii,jj,kk+1,top_gmax)].m_coords[2])/2;
+            }
+
+            if (z_coord > z0-top_h[dim-1]*NB[2] && z_coord < z0)
+            {
+                count++;
+
+                // cell center of (i, j, k)
+                if (NB[0] == 1 && NB[1] == 1 && NB[2] == 1) // coarse and medium grid
+                {
+                    u = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_state.m_U_velo_var[0]+
+                         cell_center[d_index3d(ii-1,jj,kk,top_gmax)].m_state.m_U_velo_var[0])/2;
+                    v = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii,jj-1,kk,top_gmax)].m_state.m_U_velo_var[1])/2;
+                    w = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_state.m_U_velo_var[2]+
+                         cell_center[d_index3d(ii,jj,kk-1,top_gmax)].m_state.m_U_velo_var[2])/2;
+                }
+                else if (NB[0] == 2 && NB[1] == 1 && NB[2] == 2) // fine grid
+                {
+                    u = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_state.m_U_velo_var[0]+
+                         cell_center[d_index3d(ii,jj,kk+1,top_gmax)].m_state.m_U_velo_var[0])/2;
+                    v = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii,jj,kk+1,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii+1,jj,kk+1,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii+1,jj,kk,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii,jj-1,kk,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii,jj-1,kk+1,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii+1,jj-1,kk+1,top_gmax)].m_state.m_U_velo_var[1]+
+                         cell_center[d_index3d(ii+1,jj-1,kk,top_gmax)].m_state.m_U_velo_var[1])/8;
+                    w = (cell_center[d_index3d(ii,jj,kk,top_gmax)].m_state.m_U_velo_var[2]+
+                         cell_center[d_index3d(ii+1,jj,kk,top_gmax)].m_state.m_U_velo_var[2])/2;
+                }
+                else
+                {
+                    printf("ERROR: unrecognized grids\n");
+                    clean_up(ERROR);
+                }
+
+                // temporal-average
+                u /= nStep_velo_var;
+                v /= nStep_velo_var;
+                w /= nStep_velo_var;
+
+                sum_u_raw += u;
+                sum_v_raw += v;
+                sum_w_raw += w;
+                sum_uu_raw += u*u;
+                sum_vv_raw += v*v;
+                sum_ww_raw += w*w;
+                sum_uw_raw += u*w;
+                sum_vw_raw += v*w;
+
+                if (fabs(v) <= v_esc)
+                {
+                    count_nonEsc++;
+                    sum_u += u;
+                    sum_v += v;
+                    sum_w += w;
+                    sum_uu += u*u;
+                    sum_vv += v*v;
+                    sum_ww += w*w;
+                }
+            }
+        }
+
+        // re-initialize m_U_velo_var to be 0
+        for (l = 0; l < dim; ++l)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_U_velo_var[l] = 0;
+        }
+
+        if (pp_numnodes() > 1)
+        {
+            pp_global_isum(&count,1);
+            pp_global_isum(&count_nonEsc,1);
+            pp_global_sum(&sum_u,1);
+            pp_global_sum(&sum_v,1);
+            pp_global_sum(&sum_w,1);
+            pp_global_sum(&sum_uu,1);
+            pp_global_sum(&sum_vv,1);
+            pp_global_sum(&sum_ww,1);
+
+            pp_global_sum(&sum_u_raw,1);
+            pp_global_sum(&sum_v_raw,1);
+            pp_global_sum(&sum_w_raw,1);
+            pp_global_sum(&sum_uu_raw,1);
+            pp_global_sum(&sum_vv_raw,1);
+            pp_global_sum(&sum_ww_raw,1);
+            pp_global_sum(&sum_uw_raw,1);
+            pp_global_sum(&sum_vw_raw,1);
+        }
+        mean_u = sum_u/count_nonEsc;
+        mean_v = sum_v/count_nonEsc;
+        mean_w = sum_w/count_nonEsc;
+        mean_uu = sum_uu/count_nonEsc;
+        mean_vv = sum_vv/count_nonEsc;
+        mean_ww = sum_ww/count_nonEsc;
+
+        mean_u_raw = sum_u_raw/count;
+        mean_v_raw = sum_v_raw/count;
+        mean_w_raw = sum_w_raw/count;
+        mean_uu_raw = sum_uu_raw/count;
+        mean_vv_raw = sum_vv_raw/count;
+        mean_ww_raw = sum_ww_raw/count;
+        mean_uw_raw = sum_uw_raw/count;
+        mean_vw_raw = sum_vw_raw/count;
+
+	//printf("(count, count_nonEsc) = (%d, %d)\n", count, count_nonEsc);
+        //printf("raw data, (mean_u, mean_v, mean_w) = (%lf, %lf, %lf)\n", mean_u_raw, mean_v_raw, mean_w_raw);
+        //printf("filter, (mean_u, mean_v, mean_w) = (%lf, %lf, %lf)\n", mean_u, mean_v, mean_w);
+
+        //print output file
+        char filename[256];
+        sprintf(filename,"%s/sim_hc_params.txt",out_name);
+        if (pp_mynode() == 0)
+        {
+            if (front->step == 0)
+            {
+                outfile = fopen(filename,"w");
+                fprintf(outfile,"  ts     time         tau          Agt2       hb_intfc     hs_intfc      hb_vf        hs_vf        theta1       theta2    var(u)/AgH                 var(v)/AgH   var(w)/AgH   raw_variances\n");
+            }
+            else {
+                outfile = fopen(filename,"a");
+            }
+            //fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu-mean_u*mean_u)/fabs(A*g*H),(mean_vv-mean_v*mean_v)/fabs(A*g*H),(mean_ww-mean_w*mean_w)/fabs(A*g*H),(mean_uu_raw-mean_u_raw*mean_u_raw)/fabs(A*g*H),(mean_vv_raw-mean_v_raw*mean_v_raw)/fabs(A*g*H),(mean_ww_raw-mean_w_raw*mean_w_raw)/fabs(A*g*H));
+            fprintf(outfile,"%4d %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n", front->step,front->time,tau,Agt2,h_bubble_intfc,h_spike_intfc,h_bubble_vf,h_spike_vf,0.5*(mean_vf1vf2/(mean_vf1*mean_vf2) + umean_vf1vf2/(umean_vf1*umean_vf2)),mean_vf1vf2_midPlane/(mean_vf1_midPlane*mean_vf2_midPlane),0.0,(mean_uu_raw-mean_u_raw*mean_u_raw),(mean_vv_raw-mean_v_raw*mean_v_raw),(mean_ww_raw-mean_w_raw*mean_w_raw),(mean_uw_raw-mean_u_raw*mean_w_raw),(mean_vw_raw-mean_v_raw*mean_w_raw));
+
+            fclose(outfile);
+        }
+
+
+        if (debugging("trace"))
+            printf("Leave computeRTParameters()\n");
+}  /* end computeRTParameters */
+/*
 //calc parameters for RT simulation
 void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char *out_name, int nStep_velo_var)
 {
@@ -16511,7 +16900,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
 
         if (debugging("trace"))
             printf("Leave computeRTParameters()\n");
-}  /* end computeRTParameters */
+}*/  /* end computeRTParameters */
 
 
 double Incompress_Solver_Smooth_3D_Cartesian::new_height_at_fraction_vd(
