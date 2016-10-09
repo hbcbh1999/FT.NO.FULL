@@ -11728,6 +11728,7 @@ int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
     COMPONENT comp = top_comp[index];
     INTERFACE *intfc = front->interf;
     int dirr, side;
+    int return_bdry;
 
     if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir,
             comp,&intfc_state,&hs,crx_coords,t) &&
@@ -11760,32 +11761,39 @@ int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
     {
         convertGridDirectionToDirSide(dir, &dirr, &side);
         if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_Reflect(icoords, dirr, side))
-            return 3;
-        switch(dir)
         {
-        case WEST:
-            index_nb = d_index3d(icoords[0]-1,icoords[1],icoords[2],top_gmax);
-            break;
-        case EAST:
-            index_nb = d_index3d(icoords[0]+1,icoords[1],icoords[2],top_gmax);
-            break;
-        case SOUTH:
-            index_nb = d_index3d(icoords[0],icoords[1]-1,icoords[2],top_gmax);
-            break;
-        case NORTH:
-            index_nb = d_index3d(icoords[0],icoords[1]+1,icoords[2],top_gmax);
-            break;
-        case LOWER:
-            index_nb = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
-            break;
-        case UPPER:
-            index_nb = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
-            break;
-        default:
-            assert(false);
+            state = cell_center[index].m_state;
+            return_bdry = 3;
         }
-        state = cell_center[index_nb].m_state;
-        return 0;
+        else
+        {
+            return_bdry = 0;//PERIODIC or INTERIOR
+            switch(dir)
+            {
+            case WEST:
+                index_nb = d_index3d(icoords[0]-1,icoords[1],icoords[2],top_gmax);
+                break;
+            case EAST:
+                index_nb = d_index3d(icoords[0]+1,icoords[1],icoords[2],top_gmax);
+                break;
+            case SOUTH:
+                index_nb = d_index3d(icoords[0],icoords[1]-1,icoords[2],top_gmax);
+                break;
+            case NORTH:
+                index_nb = d_index3d(icoords[0],icoords[1]+1,icoords[2],top_gmax);
+                break;
+            case LOWER:
+                index_nb = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
+                break;
+            case UPPER:
+                index_nb = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
+                break;
+            default:
+                assert(false);
+            }
+            state = cell_center[index_nb].m_state;
+        }
+        return return_bdry;
     }
 } /* end getNeighborOrBoundaryScalar_MAC_vd */
 
