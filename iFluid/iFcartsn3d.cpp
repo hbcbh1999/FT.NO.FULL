@@ -19318,6 +19318,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGrad_MAC_vd(
         POINTER intfc_state;
         HYPER_SURF *hs;
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+        int bNoBoundary[6];
 
         i = icoords[0];
         j = icoords[1];
@@ -19339,6 +19340,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGrad_MAC_vd(
          * */
         for (nb = 0; nb < 6; nb++)
         {
+            // TODO && FIXME: function computeFieldPointGrad_MAC_vd() ONLY in initial step
+            // so, set up time in checkBoundaryCondition to be 0
+            checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],0,comp);
+            /*
             if(FT_StateStructAtGridCrossing_tmp(front,icoords,dir[nb],
                         comp,&intfc_state,&hs,crx_coords) &&
                         wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
@@ -19350,7 +19355,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointGrad_MAC_vd(
                 else
                     p_nb[nb] = field[index_nb[nb]];
             }
-            else
+            */
+            if (bNoBoundary[nb] >=1)// DIRICHLET or REFLECT or NEUMANN
+                p_nb[nb] = p0;
+            else // PERIODIC or INTERIOR
                 p_nb[nb] = field[index_nb[nb]];
         }
         grad_field[0] = (p_nb[1] - p0)/top_h[0];
