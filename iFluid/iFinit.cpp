@@ -245,7 +245,7 @@ static void initRSSYIntfc(
         fscanf(infile,"%lf",&level_func_params.Meniscus);
         (void) printf("%12.8g\n",level_func_params.Meniscus);
         //TODO && FIXME: Need to check contact angle and meniscus : if contact angle is 0, then no meniscus.
-        if (level_func_params.contact_angle == 0.0)
+        if (level_func_params.contact_angle == 90.0)
             level_func_params.Meniscus = 0.0;
         front->contactangle = level_func_params.contact_angle;
         printf("in function %s Contact Angle is %24.24f\n", __func__, front->contactangle);
