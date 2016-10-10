@@ -10811,7 +10811,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
 
         //TODO: implement Dcoef_face[] for Dcoef_t on 3 cell-faces
         //Dcoef_t at m_t_old, which is a first-order approx. in time
-        if (bNoBoundary[nb]==2) {
+        if (bNoBoundary[nb]>=2) {
             rho_face[nb] = rho_nb[nb];
             if (useSGSCellCenter) {
                 Dcoef_face[nb] = statenb.m_Dcoef + statenb.m_Dcoef_turbulent[3];
