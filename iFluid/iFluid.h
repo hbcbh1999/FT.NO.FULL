@@ -1067,7 +1067,7 @@ protected:
         bool getNeighborOrBoundaryState_vd(int icoords[3],GRID_DIRECTION dir,L_STATE &state,double t);
         bool getNeighborOrBoundaryState_tmp_vd(int icoords[3],GRID_DIRECTION dir,L_STATE &state,double t);
         int  getNeighborOrBoundaryScalar_MAC_vd(int icoords[3],GRID_DIRECTION dir,L_STATE &state,double t);
-        bool getNeighborOrBoundaryScalar_MAC_GhostCell_vd(int icoords[3],GRID_DIRECTION dir,L_STATE &state,double t);
+        int  getNeighborOrBoundaryScalar_MAC_GhostCell_vd(int icoords[3],GRID_DIRECTION dir,L_STATE &state,double t);
         void getGhostDensity_vd(int icoords[3],COMPONENT,GRID_DIRECTION dir,L_STATE &state,double t);
 
 	void getRiemannSolution(EBM_COORD xyz,L_STATE &u_left,L_STATE &state_right,L_STATE &ans);

@@ -11799,7 +11799,7 @@ int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_vd(
 
 
 //split scheme, use constant extrapolations for ghost cell states rho and c
-bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_GhostCell_vd(
+int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_GhostCell_vd(
         int icoords[3],
         GRID_DIRECTION dir,
         L_STATE &state,
@@ -11808,17 +11808,19 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_Ghos
     double crx_coords[MAXD];
     POINTER intfc_state;
     HYPER_SURF *hs;
+    int dirr, side;
+    int return_bdry;
 
     int index_nb;
     int index = d_index3d(icoords[0],icoords[1],icoords[2],top_gmax);
     COMPONENT comp = top_comp[index];
+    INTERFACE *intfc = front->interf;
 
     if (FT_StateStructAtGridCrossing_tmp(front,icoords,dir,
             comp,&intfc_state,&hs,crx_coords,t) &&
             wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
     {
-        if (wave_type(hs) == DIRICHLET_BOUNDARY ||
-            wave_type(hs) == NEUMANN_BOUNDARY)
+        if (wave_type(hs) == DIRICHLET_BOUNDARY)
         {
 /*
             state.m_rho = cell_center[index].m_state.m_rho;
@@ -11827,64 +11829,78 @@ bool Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_Ghos
             state.m_Dcoef = cell_center[index].m_state.m_Dcoef;
 */
             state = cell_center[index].m_state;
-            return false;
+            clean_up(ERROR);
+            return 1;
+        }
+        else if(wave_type(hs) == NEUMANN_BOUNDARY)
+        {
+            state = cell_center[index].m_state;
+            return 2;
         }
         else //we don't consider other BC types here
         {
             assert (false);
-            return true;
         }
     }
     else
     {
-        switch(dir)
+        convertGridDirectionToDirSide(dir, &dirr, &side);
+        if (rect_boundary_type(intfc,dirr, side) == REFLECTION_BOUNDARY && FT_Reflect(icoords, dirr, side))
         {
-        case WEST:
-            index_nb = d_index3d(icoords[0]-1,icoords[1],icoords[2],top_gmax);
-            if (top_comp[index] == top_comp[index_nb])
-                state = cell_center[index_nb].m_state;
-            else
-                state = cell_center[index].m_state;
-            break;
-        case EAST:
-            index_nb = d_index3d(icoords[0]+1,icoords[1],icoords[2],top_gmax);
-            if (top_comp[index] == top_comp[index_nb])
-                state = cell_center[index_nb].m_state;
-            else
-                state = cell_center[index].m_state;
-            break;
-        case SOUTH:
-            index_nb = d_index3d(icoords[0],icoords[1]-1,icoords[2],top_gmax);
-            if (top_comp[index] == top_comp[index_nb])
-                state = cell_center[index_nb].m_state;
-            else
-                state = cell_center[index].m_state;
-            break;
-        case NORTH:
-            index_nb = d_index3d(icoords[0],icoords[1]+1,icoords[2],top_gmax);
-            if (top_comp[index] == top_comp[index_nb])
-                state = cell_center[index_nb].m_state;
-            else
-                state = cell_center[index].m_state;
-            break;
-        case LOWER:
-            index_nb = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
-            if (top_comp[index] == top_comp[index_nb])
-                state = cell_center[index_nb].m_state;
-            else
-                state = cell_center[index].m_state;
-            break;
-        case UPPER:
-            index_nb = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
-            if (top_comp[index] == top_comp[index_nb])
-                state = cell_center[index_nb].m_state;
-            else
-                state = cell_center[index].m_state;
-            break;
-        default:
-            assert(false);
+            state = cell_center[index].m_state;
+            return_bdry = 3;
         }
-        return true;
+        else
+        {
+            return_bdry = 0; // PERIODIC or INTERIOR
+            switch(dir)
+            {
+            case WEST:
+                index_nb = d_index3d(icoords[0]-1,icoords[1],icoords[2],top_gmax);
+                if (top_comp[index] == top_comp[index_nb])
+                    state = cell_center[index_nb].m_state;
+                else
+                    state = cell_center[index].m_state;
+                break;
+            case EAST:
+                index_nb = d_index3d(icoords[0]+1,icoords[1],icoords[2],top_gmax);
+                if (top_comp[index] == top_comp[index_nb])
+                    state = cell_center[index_nb].m_state;
+                else
+                    state = cell_center[index].m_state;
+                break;
+            case SOUTH:
+                index_nb = d_index3d(icoords[0],icoords[1]-1,icoords[2],top_gmax);
+                if (top_comp[index] == top_comp[index_nb])
+                    state = cell_center[index_nb].m_state;
+                else
+                    state = cell_center[index].m_state;
+                break;
+            case NORTH:
+                index_nb = d_index3d(icoords[0],icoords[1]+1,icoords[2],top_gmax);
+                if (top_comp[index] == top_comp[index_nb])
+                    state = cell_center[index_nb].m_state;
+                else
+                    state = cell_center[index].m_state;
+                break;
+            case LOWER:
+                index_nb = d_index3d(icoords[0],icoords[1],icoords[2]-1,top_gmax);
+                if (top_comp[index] == top_comp[index_nb])
+                    state = cell_center[index_nb].m_state;
+                else
+                    state = cell_center[index].m_state;
+                break;
+            case UPPER:
+                index_nb = d_index3d(icoords[0],icoords[1],icoords[2]+1,top_gmax);
+                if (top_comp[index] == top_comp[index_nb])
+                    state = cell_center[index_nb].m_state;
+                else
+                    state = cell_center[index].m_state;
+                break;
+            default:
+                assert(false);
+            }
+        }
     }
 } /* end getNeighborOrBoundaryScalar_MAC_GhostCell_vd */
 
