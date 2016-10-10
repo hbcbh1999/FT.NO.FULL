@@ -13208,13 +13208,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         int index_nb[6],icoords[MAXD];
         double rho,Dcoef,speed,rho0,rho1;
         double max_speed=0;
-        double dist=0, depth_diff_layer=0;
+        double dist=0;
         double **vel = iFparams->field->vel;
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
 
-        //depth_diff_layer = top_h[MAXD-1];
-        depth_diff_layer = iFparams->width_idl;
-        printf("\nThe width of initial diffusion layer for RSSY case is: %.16g\n",depth_diff_layer);
 
         FT_MakeGridIntfc(front);
         setDomain_vd();
@@ -13279,8 +13276,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
 
             rho0 = std::min(m_rho[0], m_rho[1]);
             rho1 = std::max(m_rho[0], m_rho[1]);
-            cell_center[index].m_state.m_rho = 0.5*(m_rho[1]+m_rho[0]) + 0.5*(m_rho[0]-m_rho[1])*
-                                               erf(dist/depth_diff_layer*2.0);
+            if (dist >= 0.0)
+                cell_center[index].m_state.m_rho = rho0;
+            else
+                cell_center[index].m_state.m_rho = rho1;
             cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
 
             //conservation of volume
@@ -13476,6 +13475,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         // ***************************************************************
         //  Add diffusion velocity according to the divergence constraint
         // ***************************************************************
+/*
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -13523,7 +13523,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
                 max_speed = speed;
         }
         pp_global_max(&max_speed,1);
-
+*/
         if (debugging("step_size"))
             (void) printf("\nmax_speed of U^0 WITH diffusion velocity added is %24.18g\n",max_speed);
 

@@ -250,13 +250,6 @@ static void initRSSYIntfc(
         front->contactangle = level_func_params.contact_angle;
         printf("in function %s Contact Angle is %24.24f\n", __func__, front->contactangle);
 
-        // TODO && FIXME: This was missing.
-        iFparams->width_idl = 0;
-        if (CursorAfterStringOpt(infile,"Enter width of initial diffusion layer:"))
-        {
-            fscanf(infile,"%lf",&iFparams->width_idl);
-            (void) printf("%lf\n",iFparams->width_idl);
-        }
 
         // TODO && FIXME: This was missing.
         if (CursorAfterStringOpt(infile,"Enter volume fraction threshold:"))
