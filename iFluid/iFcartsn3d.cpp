@@ -10799,6 +10799,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
          * */
         if (!bGhostCell)
             bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_vd(icoords,dir[nb],statenb,t);
+        else
+            bNoBoundary[nb] = getNeighborOrBoundaryScalar_MAC_GhostCell_vd(icoords,dir[nb],statenb,t);
 
         //homogeneous Neumann B.C. for rho and Dcoef
         if (flag==0 || flag==2)
