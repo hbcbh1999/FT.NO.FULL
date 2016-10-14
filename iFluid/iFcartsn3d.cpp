@@ -22247,6 +22247,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     double ***ldeno, ***lnume;
     double ***cdeno, ***cnume;
     double delta2, tdelta2;
+    int    bNoBoundary[6];//Boundary
+    int    nb, icoords[MAXD];
+    COMPONENT comp;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
     delta2 = sqr(pow((top_h[0]*top_h[1]*top_h[2]),(1.0/3.0)));
     tdelta2 = sqr(pow((NB*top_h[0]*NB*top_h[1]*NB*top_h[2]),(1.0/3.0)));
 
@@ -22286,9 +22290,17 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     for (i = 0; i <= top_gmax[0]; i++)
     {
         index = d_index3d(i,j,k,top_gmax);
+        icoords[0] = i;
+        icoords[1] = j;
+        icoords[2] = k;
+        comp = top_comp[index];
+        for (nb = 0; nb < 6; nb++)
+        {
+            checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+        }
 
         //LOWER bdry
-        if (ppz==0 && k==kmin-1)
+        if (ppz==0 && k==kmin-1 && bNoBoundary[4] == 2)
         {
             index_nbb = d_index3d(i,j,kmin,top_gmax);
             u[index] = -cell_center[index_nbb].m_state.m_U[0];
@@ -22301,7 +22313,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
         }
 
         //UPPER bdry
-        if (ppz==ppgmax[2]-1 && k==kmax+1)
+        if (ppz==ppgmax[2]-1 && k==kmax+1 && bNoBoundary[5] == 2)
         {
             index_nbb = d_index3d(i,j,kmax,top_gmax);
             u[index] = -cell_center[index_nbb].m_state.m_U[0];
