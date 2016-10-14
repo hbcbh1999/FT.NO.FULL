@@ -3052,7 +3052,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
             //physical B.C. for LOWER & UPPER
             for (nb=4; nb<6; ++nb) {
-                if (bNoBoundary[nb] >= 2) { //cells on LOWER/UPPER bdry NEUMANN or REFLECT
+                if (bNoBoundary[nb] == 2) { //cells on LOWER/UPPER bdry NEUMANN or REFLECT
                     U0_nb[nb] = -U0_center;
                     U1_nb[nb] = -U1_center;
                     //w[4] = 0
