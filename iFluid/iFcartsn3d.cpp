@@ -7429,7 +7429,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getScalarBar_MAC_vd(
     }
 
     // UPPER
-    if(!bNoBoundary[5]>=2) //homogeneous Neumann BC for scalar
+    if(bNoBoundary[5]>=2) //homogeneous Neumann BC for scalar
     {
         getScalar_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,UPPER,state_upper_bar,state_upper_hat,bGhostCell);
     }
