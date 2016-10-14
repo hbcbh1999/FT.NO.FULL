@@ -5032,7 +5032,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_vd(void)
 // computeNewVelocity_fullMAC_vd
 void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
 {
-        bool bNoBoundary;
+        int bNoBoundary[6];
         int i,j,k,l,index0,index,tol_num;
         double grad_phi[3],rho;
         COMPONENT comp;
@@ -5041,8 +5041,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
         double **vel = iFparams->field->vel;
         int I, index_nb[6];
         double crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
+        int nb;
+        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         double t;
         max_speed = 0;
 
@@ -5068,7 +5068,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
             comp = top_comp[index];
-            if (!ifluid_comp(comp))
+            for (nb = 0; nb < 6; nb++)
+            {
+                checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+            }
+            if ((!ifluid_comp(comp)) && (bNoBoundary[4] == 2 || bNoBoundary[5] == 2))
             {
                 cell_center[index].m_state.m_U[0] = 0.0;
                 cell_center[index].m_state.m_U[1] = 0.0;
@@ -5079,6 +5083,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             icoords[0] = i;
             icoords[1] = j;
             icoords[2] = k;
+            /*
             // UPPER
             if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
                     comp,&intfc_state,&hs,crx_coords,m_t_int) &&
@@ -5086,8 +5091,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
                 bNoBoundary = NO;
             else
                 bNoBoundary = YES;
+            */
 
-            if (!bNoBoundary) //cells on UPPER bdry
+            if (bNoBoundary[5] == 2) //cells on UPPER bdry
             {
                 for (l = 0; l < 2; ++l)
                 {
