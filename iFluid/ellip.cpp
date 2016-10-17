@@ -32,6 +32,7 @@ void poisson_solver3d_P0_vd(
         int *top_gmax = rgr->gmax;
         double *top_h = rgr->h;
         HYPER_SURF *hs;
+        int nb, bNoBoundary[6];
 
         if (front->grid_intfc == NULL) clean_up(ERROR);
         PETSc solver;
@@ -80,6 +81,13 @@ void poisson_solver3d_P0_vd(
             icoords[1] = j;
             icoords[2] = k;
 
+            for (nb = 0; nb < 6; nb++) // general way to determine bc type
+            {
+                checkBoundaryConditionHelp(dir[nb],icoords,&bNoBoundary[nb],front);
+                //printf("bNoBoundary[%d] = %d\n", nb, bNoBoundary[nb]);
+                if (bNoBoundary[nb] >=2 ) // Neumann or Reflect bc
+                    I_nb[nb] = -1;
+            }
             num_nb = 0;
             for (l = 0; l < 6; ++l)
             {

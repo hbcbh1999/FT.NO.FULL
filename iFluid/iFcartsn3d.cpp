@@ -13692,6 +13692,52 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             max_value = 0;
         }
 //TEST INITIALIZE PRESSURE START
+        // ***************************************************************
+        //    Initialize pressure field by laplace(p) = div(rho*g)
+        //                                 dp/dn = rho*g on bdry
+        // ***************************************************************
+        double P_max,P_min;
+        double gz = iFparams->gravity[dim-1];
+        int    I;
+
+        for (l = 0; l < dim; l++)
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            vel[l][index] = cell_center[index].m_state.m_rho*iFparams->gravity[l];
+            //nonhomogeneous Neumann BC for top/bottom bdry
+            diff_coeff[index] = cell_center[index].m_state.m_rho*gz;
+        }
+
+        for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+        {
+            I = ijk_to_I[i][j][k];
+            if (I == -1) continue;
+
+            icoords[0] = i;
+            icoords[1] = j;
+            icoords[2] = k;
+            index = d_index3d(i,j,k,top_gmax);
+            //rhs = div(rho*g), vel stands for g.
+            //source[index] = computeFieldPointDiv_Neumann_vd(icoords,vel);
+            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
+        }
+        FT_ParallelExchGridArrayBuffer(source,front);
+        poisson_solver3d_P0_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,
+                        array,&P_max,&P_min);
+
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_P = array[index];
+            cell_center[index].m_state.m_q = array[index];
+        }
 //TEST INITIALIZE PRESSURE END
         computeGradientQ_MAC_vd();
         copyMeshStates_vd();
