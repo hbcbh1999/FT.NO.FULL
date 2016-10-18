@@ -11909,6 +11909,7 @@ int Incompress_Solver_Smooth_3D_Cartesian::getNeighborOrBoundaryScalar_MAC_Ghost
                 assert(false);
             }
         }
+        return return_bdry;
     }
 } /* end getNeighborOrBoundaryScalar_MAC_GhostCell_vd */
 
