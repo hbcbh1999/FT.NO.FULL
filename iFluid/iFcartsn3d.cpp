@@ -7586,6 +7586,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
         POINTER intfc_state;
         HYPER_SURF *hs;
         int ind[6],index_nb[6];
+        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+        int bNoBoundary[6];
 
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
@@ -7603,17 +7605,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
             comp = cell_center[index].comp;
             phi = cell_center[index].m_state.m_phi;
 
+            /*
             if (!ifluid_comp(comp))
             {
                 for (l=0; l<3; l++)
                     cell_center[index].m_state.m_U_face_bar[l] = 0.0;
                 continue;
             }
+            */
 
             icoords[0] = i;
             icoords[1] = j;
             icoords[2] = k;
-
+            /*
             // 4 directions
             ind[0] = 1;
             ind[1] = 1;
@@ -7633,13 +7637,20 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
                 ind[5] = 0;
             else
                 ind[5] = 1;
+            */
+
+            for (nb = 0; nb < 6; nb++)
+            {
+                checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],t,comp);
+            }
 
             if (!flag) //flag == 0
             {
                 rho = cell_center[index].m_state.m_rho;
                 for (nb = 0; nb < 6; nb++)
                 {
-                    if (ind[nb] == 0)
+                    if (bNoBoundary[nb] >= 2)//NEUMANN, REFLECT
+                    //if (ind[nb] == 0)
                         rho_nb[nb] = rho;
                     else
                         rho_nb[nb] = cell_center[index_nb[nb]].m_state.m_rho;
@@ -7650,14 +7661,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewUFaceBar_MAC_vd(double t, 
                 rho = cell_center[index].m_state.m_rho_old;
                 for (nb = 0; nb < 6; nb++)
                 {
-                    if (ind[nb] == 0)
+                    //if (ind[nb] == 0)
+                    if (bNoBoundary[nb] >= 2)
                         rho_nb[nb] = rho;
                     else
                         rho_nb[nb] = cell_center[index_nb[nb]].m_state.m_rho_old;
                 }
             }
 
-            if (ind[5] == 0) //cells on UPPER bdry
+            if (bNoBoundary[5] >=2) //cells on UPPER bdry
+            //if (ind[5] == 0) //cells on UPPER bdry
             {
                 //u-faces
                 tmp = m_dt/4.0*(1.0/rho_nb[1] + 1.0/rho);
