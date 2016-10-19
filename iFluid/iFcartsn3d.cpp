@@ -13738,7 +13738,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             //rhs = div(rho*g), vel stands for g.
             //source[index] = computeFieldPointDiv_Neumann_vd(icoords,vel);
-            source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
+            source[index] = computeFieldPointDiv_General_vd(icoords,vel);// FUNC FOR ONE TIME ONLY
         }
         FT_ParallelExchGridArrayBuffer(source,front);
         poisson_solver3d_P0_vd(front,ilower,iupper,ijk_to_I,source,diff_coeff,
@@ -19056,6 +19056,92 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv(
         return div;
 } /* end computeFieldPointDiv */
 
+//This is a modified copy of computeFieldPointDiv_Neumann_vd for more general Boundary Condition
+double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_General_vd(
+        int *icoords,
+        double **field)
+{
+        int index;
+        COMPONENT comp;
+        int i,j,k,nb;
+        int index_nb[6];
+        double div,temp_nb[6];
+        double coords[MAXD],crx_coords[MAXD];
+        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+        int bNoBoundary[6];
+
+        i = icoords[0];
+        j = icoords[1];
+        k = icoords[2];
+        index = d_index3d(i,j,k,top_gmax);
+        comp = top_comp[index];
+
+        index_nb[0] = d_index3d(i-1,j,k,top_gmax);
+        index_nb[1] = d_index3d(i+1,j,k,top_gmax);
+        index_nb[2] = d_index3d(i,j-1,k,top_gmax);
+        index_nb[3] = d_index3d(i,j+1,k,top_gmax);
+        index_nb[4] = d_index3d(i,j,k-1,top_gmax);
+        index_nb[5] = d_index3d(i,j,k+1,top_gmax);
+
+        //use homogeneous Neumann B.C.
+        for (nb = 0; nb < 6; nb++)
+        {
+            checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_new,comp);
+            if (bNoBoundary[nb] == 1)
+                clean_up(ERROR);
+            if (bNoBoundary[nb] >=2) // REFLECT or NEUMANN
+              temp_nb[nb] = field[nb/2][index];
+            else
+              temp_nb[nb] = (field[nb/2][index] + field[nb/2][index_nb[nb]])/2.0;
+        }
+        /*
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,WEST,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            u_nb[0] = field[0][index];
+        else
+            u_nb[0] = (field[0][index] + field[0][index_nb[0]])/2.0;
+
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,EAST,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            u_nb[1] = field[0][index];
+        else
+            u_nb[1] = (field[0][index] + field[0][index_nb[1]])/2.0;
+
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,SOUTH,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            v_nb[0] = field[1][index];
+        else
+            v_nb[0] = (field[1][index] + field[1][index_nb[2]])/2.0;
+
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,NORTH,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            v_nb[1] = field[1][index];
+        else
+            v_nb[1] = (field[1][index] + field[1][index_nb[3]])/2.0;
+
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,LOWER,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            w_nb[0] = field[2][index];
+        else
+            w_nb[0] = (field[2][index] + field[2][index_nb[4]])/2.0;
+
+        if (FT_StateStructAtGridCrossing_tmp(front,icoords,UPPER,
+                comp,&intfc_state,&hs,crx_coords,m_t_new) &&
+                wave_type(hs) != FIRST_PHYSICS_WAVE_TYPE)
+            w_nb[1] = field[2][index];
+        else
+            w_nb[1] = (field[2][index] + field[2][index_nb[5]])/2.0;
+        */
+
+        div = (temp_nb[1]-temp_nb[0])/top_h[0] + (temp_nb[3]-temp_nb[2])/top_h[1] + (temp_nb[5]-temp_nb[4])/top_h[2];
+        //div = (u_nb[1]-u_nb[0])/top_h[0] + (v_nb[1]-v_nb[0])/top_h[1] + (w_nb[1]-w_nb[0])/top_h[2];
+        return div;
+} /* end computeFieldPointDiv_General_vd */
 
 double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_Neumann_vd(
         int *icoords,

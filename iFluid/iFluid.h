@@ -965,6 +965,7 @@ protected:
 
 	double computeFieldPointDiv(int*, double**);
         double computeFieldPointDiv_Neumann_vd(int*, double**);
+        double computeFieldPointDiv_General_vd(int*, double**);
         double computeFieldPointDiv_MAC_vd(int*, double**);
 	void   computeFieldPointGrad(int*, double*, double*);
         void   computeFieldPointGradPhi(int*, double*, double*);
