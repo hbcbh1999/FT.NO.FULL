@@ -18566,16 +18566,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ(void)
 
 void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
 {
-        bool bNoBoundary[6];
+        int bNoBoundary[6];
 	int index_nb[6];
 	int i,j,k,l,index;
 	double rho,g;
 	int icoords[MAXD];
         L_STATE gravity;
         double coords[MAXD],crx_coords[MAXD];
-        POINTER intfc_state;
-        HYPER_SURF *hs;
         COMPONENT comp;
+        GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+        int nb;
 
 	for (k = kmin; k <= kmax; k++)
 	for (j = jmin; j <= jmax; j++)
@@ -18594,6 +18594,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
 	    icoords[0] = i;
 	    icoords[1] = j;
 	    icoords[2] = k;
+            /*
             //4 directions
             bNoBoundary[0] = YES;
             bNoBoundary[1] = YES;
@@ -18613,8 +18614,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
                 bNoBoundary[5] = NO;
             else
                 bNoBoundary[5] = YES;
+            */
 
-            if (!bNoBoundary[5]) //cells on UPPER bdry
+            for (nb = 0; nb < 6; nb++)
+            {
+                checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_int,comp);
+            }
+
+            if (bNoBoundary[5]>=2) //cells on UPPER bdry
             {
                 //get gravity force terms
                 getRectangleCenter(index, coords);
