@@ -13833,6 +13833,17 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                     vel_z = cell_center[index].m_state.m_U[2];
                     fprintf(outfile, "%.16g %.16g %.16g\n",vel_x, vel_y, vel_z);
                 }
+                fprintf(outfile, "VECTORS grad_phi double\n");
+                for(i = 0; i <= top_gmax[0]; ++i)
+                for(j = 0; j <= top_gmax[1]; ++j)
+                for(k = 0; k <= top_gmax[2]; ++k)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    vel_x = cell_center[index].m_state.grad_q[0];
+                    vel_y = cell_center[index].m_state.grad_q[1];
+                    vel_z = cell_center[index].m_state.grad_q[2];
+                    fprintf(outfile, "%.16g %.16g %.16g\n",vel_x, vel_y, vel_z);
+                }
             }
             if(iFparams->movie_option->plot_velo)
             {
@@ -13844,6 +13855,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                 {
                     index = d_index3d(i,j,k,top_gmax);
                     vel_x = cell_center[index].m_state.m_U[0];
+                    fprintf(outfile, "%.16g\n",vel_x);
+                }
+                fprintf(outfile, "SCALARS grad_phi_x double\n");
+                fprintf(outfile, "LOOKUP_TABLE default\n");
+                for(i = 0; i <= top_gmax[0]; ++i)
+                for(j = 0; j <= top_gmax[1]; ++j)
+                for(k = 0; k <= top_gmax[2]; ++k)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    vel_x = cell_center[index].m_state.grad_q[0];
                     fprintf(outfile, "%.16g\n",vel_x);
                 }
             }
@@ -13859,6 +13880,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                     vel_y = cell_center[index].m_state.m_U[1];
                     fprintf(outfile, "%.16g\n",vel_y);
                 }
+                fprintf(outfile, "SCALARS grad_phi_y double\n");
+                fprintf(outfile, "LOOKUP_TABLE default\n");
+                for(i = 0; i <= top_gmax[0]; ++i)
+                for(j = 0; j <= top_gmax[1]; ++j)
+                for(k = 0; k <= top_gmax[2]; ++k)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    vel_y = cell_center[index].m_state.grad_q[1];
+                    fprintf(outfile, "%.16g\n",vel_y);
+                }
             }
             if(iFparams->movie_option->plot_velo)
             {
@@ -13870,6 +13901,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                 {
                     index = d_index3d(i,j,k,top_gmax);
                     vel_z = cell_center[index].m_state.m_U[2];
+                    fprintf(outfile, "%.16g\n",vel_z);
+                }
+                fprintf(outfile, "SCALARS grad_phi_z double\n");
+                fprintf(outfile, "LOOKUP_TABLE default\n");
+                for(i = 0; i <= top_gmax[0]; ++i)
+                for(j = 0; j <= top_gmax[1]; ++j)
+                for(k = 0; k <= top_gmax[2]; ++k)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    vel_z = cell_center[index].m_state.grad_q[2];
                     fprintf(outfile, "%.16g\n",vel_z);
                 }
             }
