@@ -22991,7 +22991,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
         double *solute)
 {
     int i, j, k;
-    int InIndex, BIndex, OnIndex;
+    int InIndex, BIndex, OnIndex, BLast;
     //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
 
     // This is where the code takes care of Reflecting Boundary Condition.
@@ -23060,6 +23060,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                          OnIndex = d_index3d(imax,j,k,top_gmax);
                          solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                         BLast = d_index3d(imax+ubuf[0],j,k,top_gmax);//This is Last Boundary State index
+                         BIndex = d_index3d(imax-ubuf[0],j,k,top_gmax);//This is right next to the Last Boundary State index from Inside
+                         //BIndex = d_index3d(imax+ubuf[0]-1,j,k,top_gmax);//This is right next to the Last Boundary State index from Inside
+                         solute[BLast] = -solute[BIndex];
                      }
                  break;
             case 1: // Y Upper
@@ -23074,6 +23078,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                          OnIndex = d_index3d(i,jmax,k,top_gmax);
                          solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                         BLast = d_index3d(i,jmax+ubuf[1],k,top_gmax);//This is Last Boundary State index
+                         BIndex = d_index3d(i,jmax-ubuf[1],k,top_gmax);//This is right next to the Last Boundary State index from Inside
+                         //BIndex = d_index3d(i,jmax+ubuf[1]-1,k,top_gmax);//This is right next to the Last Boundary State index from Inside
+                         solute[BLast] = -solute[BIndex];
                      }
                  break;
             case 2: // Z Upper
@@ -23088,6 +23096,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
                          }
                          OnIndex = d_index3d(i,j,kmax,top_gmax);
                          solute[OnIndex] = 0.0; // On wall normal velocity component vanish
+                         BLast = d_index3d(i,j,kmax+ubuf[2],top_gmax);//This is Last Boundary State index
+                         BIndex = d_index3d(i,j,kmax-ubuf[2],top_gmax);//This is right next to the Last Boundary State index from Inside
+                         //BIndex = d_index3d(i,j,kmax+ubuf[2]-1,top_gmax);//This is right next to the Last Boundary State index from Inside
+                         solute[BLast] = -solute[BIndex];
                      }
                  break;
         }
