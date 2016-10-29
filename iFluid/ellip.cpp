@@ -81,6 +81,7 @@ void poisson_solver3d_P0_vd(
             icoords[1] = j;
             icoords[2] = k;
 
+            /*
             for (nb = 0; nb < 6; nb++) // general way to determine bc type
             {
                 checkBoundaryConditionHelp(dir[nb],icoords,&bNoBoundary[nb],front);
@@ -88,6 +89,7 @@ void poisson_solver3d_P0_vd(
                 if (bNoBoundary[nb] >=2 ) // Neumann or Reflect bc
                     I_nb[nb] = -1;
             }
+            */
             num_nb = 0;
             for (l = 0; l < 6; ++l)
             {
