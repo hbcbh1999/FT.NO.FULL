@@ -319,7 +319,7 @@ void Incompress_Solver_Smooth_Basis::setIndexMap(void)
                     index++;
                 }
 	    }
-	    FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
+	    //FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
 	    break;
 	}
 
