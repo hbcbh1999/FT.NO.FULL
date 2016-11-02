@@ -81,7 +81,6 @@ void poisson_solver3d_P0_vd(
             icoords[1] = j;
             icoords[2] = k;
 
-            /*
             for (nb = 0; nb < 6; nb++) // general way to determine bc type
             {
                 checkBoundaryConditionHelp(dir[nb],icoords,&bNoBoundary[nb],front);
@@ -89,7 +88,7 @@ void poisson_solver3d_P0_vd(
                 if (bNoBoundary[nb] >=2 ) // Neumann or Reflect bc
                     I_nb[nb] = -1;
             }
-            */
+
             num_nb = 0;
             for (l = 0; l < 6; ++l)
             {
@@ -126,8 +125,11 @@ void poisson_solver3d_P0_vd(
                     }
                     else //nonhomogeneous Neumann B.C. for p0 on top/bottom: dp/dn = rho*g
                     {
+                        if (bNoBoundary[4] >=2 || bNoBoundary[5] >=2)
+                        {
                         sign = (l%2==0)? 1 : -1;
                         rhs += sign*kk[index]/top_h[l/2];
+                        }
                     }
                 }
             }
