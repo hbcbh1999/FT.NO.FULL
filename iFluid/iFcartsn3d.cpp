@@ -5067,6 +5067,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index_nb[4] = d_index3d(i,j,k-1,top_gmax);
             index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
+            icoords[0] = i;
+            icoords[1] = j;
+            icoords[2] = k;
+
             comp = top_comp[index];
             for (nb = 0; nb < 6; nb++)
             {
