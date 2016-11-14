@@ -20150,6 +20150,8 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
             bNoBoundary[5] = YES;
         */
         div = 0;
+        if (bNoBoundary[5]==2)
+            field[2][index] = 0.0;
         if (bNoBoundary[4]==2) //cells on LOWER bdry NEUMANN
         {
             div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
