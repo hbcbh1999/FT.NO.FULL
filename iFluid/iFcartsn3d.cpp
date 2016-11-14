@@ -3097,13 +3097,22 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             /************************************************************************/
 
             //set rho on u-face
-            rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
-                       1.0/cell_center[index].m_state.m_rho_old +
-                       1.0/cell_center[index_nb[1]].m_state.m_rho +
-                       1.0/cell_center[index_nb[1]].m_state.m_rho_old);
+            if(!bNoBoundary[1])// PERIODIC or INTERIOR
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[1]].m_state.m_rho +
+                           1.0/cell_center[index_nb[1]].m_state.m_rho_old);
+            }
+            else if (bNoBoundary[1] == 3)//REFLECTION BC
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+            }
 
             //set mu[0] ~ mu[5]
-            if (I_nb[4]>=0 && I_nb[5]>=0) {
+            if (I_nb[4]>=0 && I_nb[5]>=0 && !bNoBoundary[1]) // PERIODIC or INTERIOR
+            {
                 mu_nb[15] = cell_center[index_nb[15]].m_state.m_mu;
                 mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
                 mu_nb_old[15] = cell_center[index_nb[15]].m_state.m_mu_old;
@@ -3117,7 +3126,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     assert(false);
                 }
             }
-            else if (I_nb[4] < 0) { //cells on LOWER bdry
+            else if (!bNoBoundary[1] && I_nb[4] < 0) // LOWER bdry ONLY
+            {
                 mu_nb[15] = mu_nb[1];
                 mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
                 mu_nb_old[15] = mu_nb_old[1];
@@ -3131,7 +3141,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     assert(false);
                 }
             }
-            else if (I_nb[5] < 0) { //cells on UPPER bdry
+            else if (!bNoBoundary[1] && I_nb[5] < 0) // UPPER bdry ONLY
+            {
                 mu_nb[15] = cell_center[index_nb[15]].m_state.m_mu;
                 mu_nb[16] = mu_nb[1];
                 mu_nb_old[15] = cell_center[index_nb[15]].m_state.m_mu_old;
@@ -3145,18 +3156,145 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     assert(false);
                 }
             }
-
-            mu_nb[7] = cell_center[index_nb[7]].m_state.m_mu;
-            mu_nb[8] = cell_center[index_nb[8]].m_state.m_mu;
-            mu_nb_old[7] = cell_center[index_nb[7]].m_state.m_mu_old;
-            mu_nb_old[8] = cell_center[index_nb[8]].m_state.m_mu_old;
-            if (useSGSCellCenter) {
-                mu_t_nb[7] = cell_center[index_nb[7]].m_state.m_mu_turbulent[3];
-                mu_t_nb[8] = cell_center[index_nb[8]].m_state.m_mu_turbulent[3];
+            else if (bNoBoundary[1] == 3) // EAST REFLECT
+            {
+                if (I_nb[4] < 0) { //cells on LOWER bdry
+                    mu_nb[15] = mu_center;
+                    mu_nb[16] = cell_center[index_nb[5]].m_state.m_mu;
+                    mu_nb_old[15] = mu_nb_old[1];
+                    mu_nb_old[16] = cell_center[index_nb[5]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[15] = mu_t_center;
+                        mu_t_nb[16] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else if (I_nb[5] < 0) { //cells on UPPER bdry
+                    mu_nb[15] = cell_center[index_nb[4]].m_state.m_mu;
+                    mu_nb[16] = mu_center;
+                    mu_nb_old[15] = cell_center[index_nb[4]].m_state.m_mu_old;
+                    mu_nb_old[16] = mu_center_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[15] = cell_center[index_nb[4]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[16] = mu_t_center;
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else // EAST REFLECT ONLY
+                {
+                    mu_nb[15] = cell_center[index_nb[4]].m_state.m_mu;
+                    mu_nb[16] = mu_nb[5];
+                    mu_nb_old[15] = cell_center[index_nb[4]].m_state.m_mu_old;
+                    mu_nb_old[16] = mu_nb_old[5];
+                    if (useSGSCellCenter) {
+                        mu_t_nb[15] = cell_center[index_nb[4]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[16] = mu_t_nb[5];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
             }
-            else {
-                printf("codes needed for mu_turbulent on cell-faces.\n");
-                assert(false);
+
+            if (!bNoBoundary[1] && !bNoBoundary[2] && !bNoBoundary[3])// EAST is PERIODIC or INTERIOR
+            {
+                mu_nb[7] = cell_center[index_nb[7]].m_state.m_mu;
+                mu_nb[8] = cell_center[index_nb[8]].m_state.m_mu;
+                mu_nb_old[7] = cell_center[index_nb[7]].m_state.m_mu_old;
+                mu_nb_old[8] = cell_center[index_nb[8]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[7] = cell_center[index_nb[7]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[8] = cell_center[index_nb[8]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[1] && bNoBoundary[2] == 3) // SOUTH REFLECT ONLY
+            {
+                mu_nb[7] = cell_center[index_nb[1]].m_state.m_mu;
+                mu_nb[8] = cell_center[index_nb[8]].m_state.m_mu;
+                mu_nb_old[7] = cell_center[index_nb[1]].m_state.m_mu_old;
+                mu_nb_old[8] = cell_center[index_nb[8]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[7] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[8] = cell_center[index_nb[8]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[1] && bNoBoundary[3] == 3) // NORTH REFLECT ONLY
+            {
+                mu_nb[7] = cell_center[index_nb[7]].m_state.m_mu;
+                mu_nb[8] = cell_center[index_nb[1]].m_state.m_mu;
+                mu_nb_old[7] = cell_center[index_nb[7]].m_state.m_mu_old;
+                mu_nb_old[8] = cell_center[index_nb[1]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[7] = cell_center[index_nb[7]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[8] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (bNoBoundary[1] == 3) // EAST is REFLECTION BC
+            {
+                if (bNoBoundary[2] == 3) // SOUTH is REFLECT
+                {
+                    mu_nb[7] = cell_center[index].m_state.m_mu;
+                    mu_nb[8] = cell_center[index_nb[3]].m_state.m_mu;
+                    mu_nb_old[7] = cell_center[index].m_state.m_mu_old;
+                    mu_nb_old[8] = cell_center[index_nb[3]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[7] = cell_center[index].m_state.m_mu_turbulent[3];
+                        mu_t_nb[8] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else if (bNoBoundary[3] == 3) // NORTH is REFLECT
+                {
+                    mu_nb[7] = cell_center[index_nb[2]].m_state.m_mu;
+                    mu_nb[8] = cell_center[index].m_state.m_mu;
+                    mu_nb_old[7] = cell_center[index_nb[2]].m_state.m_mu_old;
+                    mu_nb_old[8] = cell_center[index].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[7] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[8] = cell_center[index].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else // ONLY EAST is REFLECT
+                {
+                    mu_nb[7] = cell_center[index_nb[2]].m_state.m_mu;
+                    mu_nb[8] = cell_center[index_nb[3]].m_state.m_mu;
+                    mu_nb_old[7] = cell_center[index_nb[2]].m_state.m_mu_old;
+                    mu_nb_old[8] = cell_center[index_nb[3]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[7] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[8] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
             }
 
             mu[0] = mu_center + mu_t_center;
@@ -3583,13 +3721,23 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
 
             //set rho on v-face
-            rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
-                       1.0/cell_center[index].m_state.m_rho_old +
-                       1.0/cell_center[index_nb[3]].m_state.m_rho +
-                       1.0/cell_center[index_nb[3]].m_state.m_rho_old);
+            if (!bNoBoundary[3]) // PERIODIC or INTERIOR
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[3]].m_state.m_rho +
+                           1.0/cell_center[index_nb[3]].m_state.m_rho_old);
+            }
+            else if (bNoBoundary[3] == 3) // NORTH REFLECT
+            {
+
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+            }
 
             //set mu[0] ~ mu[5]
-            if (I_nb[4]>=0 && I_nb[5]>=0) {
+            if (I_nb[4]>=0 && I_nb[5]>=0 && !bNoBoundary[3]) // PERIODIC or INTERIOR
+            {
                 mu_nb[11] = cell_center[index_nb[11]].m_state.m_mu;
                 mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
                 mu_nb_old[11] = cell_center[index_nb[11]].m_state.m_mu_old;
@@ -3603,13 +3751,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     assert(false);
                 }
             }
-            else if (I_nb[4] < 0) { //cells on LOWER bdry
-                mu_nb[11] = mu_nb[3];
+            else if (!bNoBoundary[3] && I_nb[4] < 0) // LOWER ONLY
+            {
+
+                mu_nb[11] = cell_center[index_nb[3]].m_state.m_mu;
                 mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
-                mu_nb_old[11] = mu_nb_old[3];
+                mu_nb_old[11] = cell_center[index_nb[3]].m_state.m_mu_old;
                 mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
                 if (useSGSCellCenter) {
-                    mu_t_nb[11] = mu_t_nb[3];
+                    mu_t_nb[11] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
                     mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
                 }
                 else {
@@ -3617,34 +3767,164 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     assert(false);
                 }
             }
-            else if (I_nb[5] < 0) { //cells on UPPER bdry
+            else if (!bNoBoundary[3] && I_nb[5] < 0) // UPPER ONLY
+            {
+
                 mu_nb[11] = cell_center[index_nb[11]].m_state.m_mu;
-                mu_nb[12] = mu_nb[3];
+                mu_nb[12] = cell_center[index_nb[3]].m_state.m_mu;
                 mu_nb_old[11] = cell_center[index_nb[11]].m_state.m_mu_old;
-                mu_nb_old[12] = mu_nb_old[3];
+                mu_nb_old[12] = cell_center[index_nb[3]].m_state.m_mu_old;
                 if (useSGSCellCenter) {
                     mu_t_nb[11] = cell_center[index_nb[11]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[12] = mu_t_nb[3];
+                    mu_t_nb[12] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
                 }
                 else {
                     printf("codes needed for mu_turbulent on cell-faces.\n");
                     assert(false);
                 }
             }
-
-            mu_nb[8] = cell_center[index_nb[8]].m_state.m_mu;
-            mu_nb[9] = cell_center[index_nb[9]].m_state.m_mu;
-            mu_nb_old[8] = cell_center[index_nb[8]].m_state.m_mu_old;
-            mu_nb_old[9] = cell_center[index_nb[9]].m_state.m_mu_old;
-            if (useSGSCellCenter) {
-                mu_t_nb[8] = cell_center[index_nb[8]].m_state.m_mu_turbulent[3];
-                mu_t_nb[9] = cell_center[index_nb[9]].m_state.m_mu_turbulent[3];
+            else if (bNoBoundary[3] == 3) // NORTH FACE REFLECT
+            {
+                if (I_nb[4] < 0) { //cells on LOWER bdry
+                    mu_nb[11] = mu_center;
+                    mu_nb[12] = cell_center[index_nb[5]].m_state.m_mu;
+                    mu_nb_old[11] = mu_center_old;
+                    mu_nb_old[12] = cell_center[index_nb[5]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[11] = mu_t_center;
+                        mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else if (I_nb[5] < 0) { //cells on UPPER bdry
+                    mu_nb[11] = cell_center[index_nb[4]].m_state.m_mu;
+                    mu_nb[12] = mu_center;
+                    mu_nb_old[11] = cell_center[index_nb[4]].m_state.m_mu_old;
+                    mu_nb_old[12] = mu_center_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[11] = cell_center[index_nb[4]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[12] = mu_t_center;
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else // NORTH ONLY
+                {
+                    mu_nb[11] = cell_center[index_nb[4]].m_state.m_mu;
+                    mu_nb[12] = cell_center[index_nb[5]].m_state.m_mu;
+                    mu_nb_old[11] = cell_center[index_nb[4]].m_state.m_mu_old;
+                    mu_nb_old[12] = cell_center[index_nb[5]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[11] = cell_center[index_nb[4]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[12] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
             }
-            else {
-                printf("codes needed for mu_turbulent on cell-faces.\n");
-                assert(false);
+
+            if (!bNoBoundary[0] && !bNoBoundary[1] && !bNoBoundary[3]) // PERIODIC or INTERIOR
+            {
+                mu_nb[8] = cell_center[index_nb[8]].m_state.m_mu;
+                mu_nb[9] = cell_center[index_nb[9]].m_state.m_mu;
+                mu_nb_old[8] = cell_center[index_nb[8]].m_state.m_mu_old;
+                mu_nb_old[9] = cell_center[index_nb[9]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[8] = cell_center[index_nb[8]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[9] = cell_center[index_nb[9]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[3] && bNoBoundary[0] == 3) // WEST REFLECT ONLY
+            {
+                mu_nb[8] = cell_center[index_nb[8]].m_state.m_mu;
+                mu_nb[9] = cell_center[index_nb[3]].m_state.m_mu;
+                mu_nb_old[8] = cell_center[index_nb[8]].m_state.m_mu_old;
+                mu_nb_old[9] = cell_center[index_nb[3]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[8] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[9] = cell_center[index].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[3] && bNoBoundary[1] == 3) // EAST REFLECT ONLY
+            {
+                mu_nb[8] = cell_center[index_nb[3]].m_state.m_mu;
+                mu_nb[9] = cell_center[index_nb[9]].m_state.m_mu;
+                mu_nb_old[8] = cell_center[index_nb[3]].m_state.m_mu_old;
+                mu_nb_old[9] = cell_center[index_nb[9]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[8] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[9] = cell_center[index_nb[9]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (bNoBoundary[3] == 3) // NORTH REFLECT
+            {
+                if (bNoBoundary[0] == 3) // WEST REFLECT
+                {
+                    mu_nb[8] = cell_center[index_nb[1]].m_state.m_mu;
+                    mu_nb[9] = cell_center[index].m_state.m_mu;
+                    mu_nb_old[8] = cell_center[index_nb[1]].m_state.m_mu_old;
+                    mu_nb_old[9] = cell_center[index].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[8] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[9] = cell_center[index].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else if (bNoBoundary[1] == 3) // EAST REFLECT
+                {
+                    mu_nb[8] = cell_center[index].m_state.m_mu;
+                    mu_nb[9] = cell_center[index_nb[0]].m_state.m_mu;
+                    mu_nb_old[8] = cell_center[index].m_state.m_mu_old;
+                    mu_nb_old[9] = cell_center[index_nb[0]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[8] = cell_center[index].m_state.m_mu_turbulent[3];
+                        mu_t_nb[9] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
+                else // NORTH ONLY
+                {
+                    mu_nb[8] = cell_center[index_nb[1]].m_state.m_mu;
+                    mu_nb[9] = cell_center[index_nb[0]].m_state.m_mu;
+                    mu_nb_old[8] = cell_center[index_nb[1]].m_state.m_mu_old;
+                    mu_nb_old[9] = cell_center[index_nb[0]].m_state.m_mu_old;
+                    if (useSGSCellCenter) {
+                        mu_t_nb[8] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                        mu_t_nb[9] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
+                    }
+                    else {
+                        printf("codes needed for mu_turbulent on cell-faces.\n");
+                        assert(false);
+                    }
+                }
             }
 
+            // Consider NORTH and WEST FACE for mu[0]:
             mu[0] = (mu_center + mu_nb[0] + mu_nb[9] + mu_nb[3] +
                      mu_t_center + mu_t_nb[0] + mu_t_nb[9] + mu_t_nb[3])/4;
             mu[1] = (mu_center + mu_nb[1] + mu_nb[8] + mu_nb[3] +
@@ -4066,7 +4346,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
             //set rho on w-face
             //set mu[0] ~ mu[5]
-            if (I_nb[5] < 0) //cells on UPPER bdry
+            // ONLY 1 BC EXISTS
+            if (I_nb[5] < 0 && !bNoBoundary[0] && !bNoBoundary[1] && !bNoBoundary[2] && !bNoBoundary[3]) //cells on UPPER bdry ONLY
             {
                 rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
                            1.0/cell_center[index].m_state.m_rho_old);
@@ -4090,7 +4371,409 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     assert(false);
                 }
             }
-            else //other cells
+            else if (!bNoBoundary[5] && bNoBoundary[1]==3 && !bNoBoundary[2] && !bNoBoundary[3]) // on EAST bdry ONLY
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[5] && bNoBoundary[0]==3 && !bNoBoundary[2] && !bNoBoundary[3]) // on WEST bdry ONLY
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[5]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[5] && !bNoBoundary[0] && !bNoBoundary[1] && bNoBoundary[3]==3) // on NORTH bdry ONLY
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (!bNoBoundary[5] && !bNoBoundary[0] && !bNoBoundary[1] && bNoBoundary[2]==3) // on SOUTH bdry ONLY
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            // ONLY 2 BCs EXIST
+            else if (I_nb[5]<0 && bNoBoundary[1]==3 && !bNoBoundary[2] && !bNoBoundary[3]) // UPPER and EAST
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (I_nb[5]<0 && bNoBoundary[0]==3 && !bNoBoundary[2] && !bNoBoundary[3]) // UPPER and WEST
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (I_nb[5]<0 && bNoBoundary[3]==3 && !bNoBoundary[0] && !bNoBoundary[1]) // UPPER and NORTH
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (I_nb[5]<0 && bNoBoundary[2]==3 && !bNoBoundary[0] && !bNoBoundary[1]) // UPPER and SOUTH
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (bNoBoundary[1]==3 && bNoBoundary[3]==3 && !bNoBoundary[5]) // EAST and NORTH
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (bNoBoundary[1]==3 && bNoBoundary[2]==3 && !bNoBoundary[5]) // EAST and SOUTH
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (bNoBoundary[0]==3 && bNoBoundary[3]==3 && !bNoBoundary[5]) // WEST and NORTH
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[5]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (bNoBoundary[0]==3 && bNoBoundary[2]==3 && !bNoBoundary[5]) // WEST and SOUTH
+            {
+                rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho +
+                           1.0/cell_center[index_nb[5]].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[5]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[5]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[5]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[5]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            // 3 BCs EXIST
+            else if (I_nb[5]<0 && bNoBoundary[1]==3 && bNoBoundary[3]==3) // UPPER and EAST and NORTH
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[2]].m_state.m_mu;
+                mu_nb[16] = cell_center[index].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[0]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[2]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[0]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (I_nb[5]<0 && bNoBoundary[1]==3 && bNoBoundary[2]==3) // UPPER and EAST and SOUTH
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[3]].m_state.m_mu;
+                mu_nb[13] = cell_center[index].m_state.m_mu;
+                mu_nb[16] = cell_center[index].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[0]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[3]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[0]].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (I_nb[5]<0 && bNoBoundary[0]==3 && bNoBoundary[3]==3) // UPPER and WEST and NORTH
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[2]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[1]].m_state.m_mu;
+                mu_nb[17] = cell_center[index].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[2]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[1]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else if (I_nb[5]<0 && bNoBoundary[0]==3 && bNoBoundary[2]==3) // UPPER and WEST and SOUTH
+            {
+                rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
+                           1.0/cell_center[index].m_state.m_rho_old);
+
+                mu_nb[12] = cell_center[index_nb[3]].m_state.m_mu;
+                mu_nb[13] = cell_center[index].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[1]].m_state.m_mu;
+                mu_nb[17] = cell_center[index].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[3]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[1]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index].m_state.m_mu_old;
+                if (useSGSCellCenter) {
+                    mu_t_nb[12] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index].m_state.m_mu_turbulent[3];
+                }
+                else {
+                    printf("codes needed for mu_turbulent on cell-faces.\n");
+                    assert(false);
+                }
+            }
+            else //other INTERIOR cells
             {
                 rho = 4.0/(1.0/cell_center[index].m_state.m_rho +
                            1.0/cell_center[index].m_state.m_rho_old +
