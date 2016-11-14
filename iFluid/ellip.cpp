@@ -125,7 +125,7 @@ void poisson_solver3d_P0_vd(
                     }
                     else //nonhomogeneous Neumann B.C. for p0 on top/bottom: dp/dn = rho*g
                     {
-                        if (bNoBoundary[4] >=2 || bNoBoundary[5] >=2)
+                        if ((l==4 || l==5) && bNoBoundary[l] >=2)
                         {
                         sign = (l%2==0)? 1 : -1;
                         rhs += sign*kk[index]/top_h[l/2];
