@@ -7148,7 +7148,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     L_STATE state_center_hat_l, state_center_hat_r;
 
     COMPONENT comp;
-    double w_nb, crx_coords[MAXD];
+    double u_nb, v_nb, w_nb, crx_coords[MAXD];
 
     int nb;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
@@ -7219,7 +7219,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     ICoords[0] = icoords[0] - 1;
     ICoords[1] = icoords[1];
     ICoords[2] = icoords[2];
-    if ((!bNoBoundary[0] && !bNoBoundary[1]) || bNoBoundary[0] == 3 || bNoBoundary[1] == 3)// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
+    if (!bNoBoundary[0] && !bNoBoundary[1])// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
     {
         //u_hat
         getCenterVelocity_MAC_middleStep_hat_vd(ICoords,EAST,state_center_hat_l);
@@ -7229,6 +7229,26 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_X,sl,sr,state_center_bar,icoords);
     }
+    else if (bNoBoundary[0] == 3) // WEST REFLECT BC, HOMOGENEOUS NEUMANN
+    {
+        //u_hat
+        getCenterVelocity_MAC_middleStep_hat_vd(icoords,WEST,state_center_hat_r);
+        //u_bar
+        getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_X,WEST,sr,state_center_hat_r);
+        u_nb = cell_center[index].m_state.m_U[0];
+        sl.m_U[0] = 0.0 + top_h[0]/2.0*(u_nb - 0.0)/top_h[0] + 0.0; // HARDWIRE
+        getRiemannSolution_MAC_CenterVelocity_vd(COORD_X,sl,sr,state_center_bar,icoords);
+    }
+    else if (bNoBoundary[1] == 3) // EAST REFLECT BC, HOMOGENEOUS NEUMANN
+    {
+        //u_hat
+        getCenterVelocity_MAC_middleStep_hat_vd(ICoords,EAST,state_center_hat_l);
+        //u_bar
+        getVelocity_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_X,EAST,sl,state_center_hat_l);
+        u_nb = cell_center[index_nb[0]].m_state.m_U[0];
+        sr.m_U[0] = 0.0 - top_h[0]/2.0*(0.0-u_nb)/top_h[0] + 0.0; // HARDWIRE
+        getRiemannSolution_MAC_CenterVelocity_vd(COORD_X,sl,sr,state_center_bar,icoords);
+    }
     else assert(false);;
 
 
@@ -7236,7 +7256,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     ICoords[0] = icoords[0];
     ICoords[1] = icoords[1] - 1;
     ICoords[2] = icoords[2];
-    if ((!bNoBoundary[2] && !bNoBoundary[3]) || bNoBoundary[2] == 3 || bNoBoundary[3] == 3)// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
+    if (!bNoBoundary[2] && !bNoBoundary[3])// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
     {
         //v_hat
         getCenterVelocity_MAC_middleStep_hat_vd(ICoords,NORTH,state_center_hat_l);
@@ -7246,6 +7266,26 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_Y,sl,sr,state_center_bar,icoords);
     }
+    else if (bNoBoundary[2] == 3) // SOUTH REFLECT, HOMOGENEOUS NEUMANN
+    {
+        //v_hat
+        getCenterVelocity_MAC_middleStep_hat_vd(icoords,SOUTH,state_center_hat_r);
+        //v_bar
+        getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Y,SOUTH,sr,state_center_hat_r);
+        v_nb = cell_center[index].m_state.m_U[1];
+        sl.m_U[1] = 0.0 + top_h[1]/2.0*(v_nb - 0.0)/top_h[1] + 0.0; // HARDWIRE
+        getRiemannSolution_MAC_CenterVelocity_vd(COORD_Y,sl,sr,state_center_bar,icoords);
+    }
+    else if (bNoBoundary[3] == 3) // NORTH REFLECT, HOMOGENEOUS NEUMANN
+    {
+        //v_hat
+        getCenterVelocity_MAC_middleStep_hat_vd(ICoords,NORTH,state_center_hat_l);
+        //v_bar
+        getVelocity_MAC_middleStep_bar_decoupled_vd(ICoords,COORD_Y,NORTH,sl,state_center_hat_l);
+        v_nb = cell_center[index_nb[2]].m_state.m_U[1];
+        sr.m_U[1] = 0.0 - top_h[1]/2.0*(0.0-v_nb)/top_h[1] + 0.0; // HARDWIRE
+        getRiemannSolution_MAC_CenterVelocity_vd(COORD_Y,sl,sr,state_center_bar,icoords);
+    }
     else assert(false);
 
 
@@ -7253,7 +7293,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
     ICoords[0] = icoords[0];
     ICoords[1] = icoords[1];
     ICoords[2] = icoords[2] - 1;
-    if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
+    if ((!bNoBoundary[4] && !bNoBoundary[5]) )// PERIODIC or INTERIOR CELLs, bNoBoundary = 0
     {
         //w_hat
         getCenterVelocity_MAC_middleStep_hat_vd(ICoords,UPPER,state_center_hat_l);
