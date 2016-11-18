@@ -12764,13 +12764,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution_MAC_CenterVelocit
         int *icoords)
 {
     int i, j, k;
-    bool bNoBoundary[6];
+    int bNoBoundary[6]; // Type change
     int index, index_nb[6];
     double tmp, uL, uR;
     COMPONENT comp;
     double crx_coords[MAXD];
-    POINTER intfc_state;
-    HYPER_SURF *hs;
+    GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
+    int nb;
 
     i = icoords[0];
     j = icoords[1];
@@ -12786,6 +12786,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution_MAC_CenterVelocit
     index_nb[4] = d_index3d(i,j,k-1,top_gmax);
     index_nb[5] = d_index3d(i,j,k+1,top_gmax);
 
+    /*
     // 4 directions
     bNoBoundary[0] = YES;
     bNoBoundary[1] = YES;
@@ -12807,13 +12808,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::getRiemannSolution_MAC_CenterVelocit
         bNoBoundary[5] = NO;
     else
         bNoBoundary[5] = YES;
+    */
 
+    for (nb = 0; nb < 6; nb++)
+    {
+        checkBoundaryCondition(dir[nb],icoords,&bNoBoundary[nb],m_t_old,comp);
+    }
     uL = state_left.m_U[xyz];
     uR = state_right.m_U[xyz];
 
-    if (!bNoBoundary[4] && xyz==2) //for w on LOWER boundary cells
+    // NEUMANN BOUNDARY CONDITION FOR W velocity on Z Direction
+    if (bNoBoundary[4]==2 && xyz==2) //for w on LOWER boundary cells
         tmp = 0.5*(cell_center[index].m_state.m_U[xyz] + 0.0);
-    else if (!bNoBoundary[5] && xyz==2) //for w on UPPER boundary cells
+    else if (bNoBoundary[5]==2 && xyz==2) //for w on UPPER boundary cells
         tmp = 0.5*(0.0 + cell_center[index_nb[2*xyz]].m_state.m_U[xyz]);
     else
         tmp = 0.5*(cell_center[index].m_state.m_U[xyz] +
