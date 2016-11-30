@@ -20197,31 +20197,23 @@ double Incompress_Solver_Smooth_3D_Cartesian::computeFieldPointDiv_MAC_vd(
             bNoBoundary[5] = YES;
         */
         div = 0;
+        // TODO: REMOVE LATER. REDUNDANT SERVE AS DOUBLE CHECK
+        if (bNoBoundary[0] == 3)
+            field[0][index_nb[0]] = 0.0;
+        if (bNoBoundary[1] == 3)
+            field[0][index] = 0.0;
+        if (bNoBoundary[2] == 3)
+            field[1][index_nb[2]] = 0.0;
+        if (bNoBoundary[3] == 3)
+            field[1][index] = 0.0;
+        if (bNoBoundary[4] == 2)
+            field[2][index_nb[4]] = 0.0;
         if (bNoBoundary[5]==2)
             field[2][index] = 0.0;
-        if (bNoBoundary[4]==2) //cells on LOWER bdry NEUMANN
-        {
-            div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
-            div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
-            div += (field[2][index] - 0)/top_h[2];
-            /*
-             * removal tag: HAOZ
-             * when using REFLECTION, this block should never be called
-             * print function as debugging line
-             * PERIODIC_BOUNDARY debugging print will carry out here.
-            */
-        }
-        else //other cells
-        {
-            /*
-             * removal tag: HAOZ
-             *
-             *
-             * */
-            div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
-            div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
-            div += (field[2][index] - field[2][index_nb[4]])/top_h[2];
-        }
+
+        div += (field[0][index] - field[0][index_nb[0]])/top_h[0];
+        div += (field[1][index] - field[1][index_nb[2]])/top_h[1];
+        div += (field[2][index] - field[2][index_nb[4]])/top_h[2];
         return div;
 } /* end computeFieldPointDiv_MAC_vd */
 
