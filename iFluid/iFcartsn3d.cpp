@@ -3355,6 +3355,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 //u[c] = 0
                 //u[1] = - u[0]
                 //no contribution to u[c] or u[1]
+                solver.Add_A(I*3,I*3, coeff0[1]);
                 solver.Add_A(I*3,I_nb[0]*3,coeff0[1]);
                 rhs += coeff0_old[1]*(U0_nb[1] - U0_center);
             }
@@ -3373,13 +3374,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     // onWallvel = u*_c (REFLECT, NEUMANN)
                     // u*_nb[2], u*_c no contribution
                     // do nothing for coeff matrix
-                    rhs += coeff0_old[2]*(U0_nb[2] - U0_center);
+                    //rhs += coeff0_old[2]*(U0_nb[2] - U0_center); // This expression is O.K.
+                    // U0_nb[2] = U0_center
+                    rhs += 0.0;
                 }
                 else
                 {
                     // onWallvel = 0
-                    printf("NO SLIP CONDITION is not implemented yet in %s!\n", __func__);
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    solver.Add_A(I*3,I*3, 2.0*coeff0[2]);
+                    rhs += coeff0_old[2]*(U0_nb[2] - U0_center);
                 }
             }
             else if (!bNoBoundary[2]) // SOUTH FACE is PERIODIC or INTERIOR
@@ -3391,12 +3395,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             if (bNoBoundary[3] == 3) // NORTH FACE is on REFLECT BC
             {
                 if (SLIP)
-                    rhs += coeff0_old[3]*(U0_nb[3] - U0_center);
+                    //rhs += coeff0_old[3]*(U0_nb[3] - U0_center);
+                    rhs += 0.0;
                 else
                 {
                     // onWallvel = 0
-                    printf("NO SLIP CONDITION is not implemented yet in %s!\n", __func__);
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    solver.Add_A(I*3,I*3, 2.0*coeff0[3]);
+                    rhs += coeff0_old[3]*(U0_nb[3] - U0_center);
                 }
             }
             else if (!bNoBoundary[3]) // NORTH FACE is PERIODIC or INTERIOR
@@ -3405,45 +3411,23 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3,I_nb[3]*3, -coeff0[3]);
                 rhs += coeff0_old[3]*(U0_nb[3] - U0_center);
             }
-            if (bNoBoundary[4] == 3) // LOWER FACE is on REFLECT BC
-            {
-                if (SLIP)
-                    rhs += coeff0_old[4]*(U0_nb[4] - U0_center);
-                else
-                {
-                    printf("NO SLIP CONDITION is not implemented yet in %s!\n", __func__);
-                    clean_up(ERROR);
-                }
-            }
-            else if (!bNoBoundary[4]) // LOWER FACE is INTERIOR
+            // for NEUMANN BC
+            if (!bNoBoundary[4] && !bNoBoundary[5]) // INTERIOR
             {
                 solver.Add_A(I*3,I*3, coeff0[4]);
                 solver.Add_A(I*3,I_nb[4]*3, -coeff0[4]);
                 rhs += coeff0_old[4]*(U0_nb[4] - U0_center);
-            }
-            if (bNoBoundary[5] == 3) // UPPER FACE is on REFLECT BC
-            {
-                if (SLIP)
-                    rhs += coeff0_old[5]*(U0_nb[5] - U0_center);
-                else
-                {
-                    printf("NO SLIP CONDITION is not implemented yet in %s!\n", __func__);
-                    clean_up(ERROR);
-                }
-            }
-            else if (!bNoBoundary[5]) // UPPER FACE is INTERIOR
-            {
+
                 solver.Add_A(I*3,I*3, coeff0[5]);
                 solver.Add_A(I*3,I_nb[5]*3, -coeff0[5]);
                 rhs += coeff0_old[5]*(U0_nb[5] - U0_center);
             }
-            // for NEUMANN BC
-            if (bNoBoundary[4] == 2) // LOWER
+            else if (bNoBoundary[4] == 2) // LOWER
             {
                 solver.Add_A(I*3,I*3, 2.0*coeff0[4]);
                 rhs += coeff0_old[4]*(U0_nb[4] - U0_center);
             }
-            if (bNoBoundary[5] == 2) // UPPER
+            else if (bNoBoundary[5] == 2) // UPPER
             {
                 solver.Add_A(I*3,I*3, 2.0*coeff0[5]);
                 rhs += coeff0_old[5]*(U0_nb[5] - U0_center);
@@ -3512,6 +3496,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             else if ((bNoBoundary[3] == 3) && !bNoBoundary[1]) // ONLY NORTH is on BC
             {
                 // v[c] = 0 and v[1] = 0
+                //v[1]
+                coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[0]*top_h[1]);
+                coeff_temp -= 1.0/3*m_dt/rho*mu[1]/(top_h[0]*top_h[1]);
+                solver.Add_A(I*3,I_nb[1]*3+1, -coeff_temp);
+                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[0]*top_h[1]);
+                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
+                rhs += 0.0;
 
                 //v[7]
                 U1_nb[7] = cell_center[index_nb[7]].m_state.m_U[1];
@@ -3529,6 +3520,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
                 rhs += coeff_temp_old*U1_nb[2];
+
+                //v[c]
+                coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[0]*top_h[1]);
+                coeff_temp -= -1.0/3*m_dt/rho*mu[0]/(top_h[0]*top_h[1]);
+                solver.Add_A(I*3,I*3+1, -coeff_temp);
+                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[0]*top_h[1]);
+                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
+                rhs += 0.0;
 
             }
             else if (bNoBoundary[1] == 3) // EAST is on BC
@@ -3552,6 +3551,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
                     coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
                     rhs += coeff_temp_old*U1_nb[2];
+
+                    //v[c]
+                    solver.Add_A(I*3,I*3+1, -temp1);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[0]*top_h[1]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
+                    rhs += 0.0;
                 }
                 else
                 {
@@ -3607,7 +3612,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
                 rhs += coeff_temp_old*U2_center;
             }
-            else if ((bNoBoundary[4] == 3) && !bNoBoundary[1]) // ONLY LOWER is on BC
+            else if ((bNoBoundary[4] == 2) && !bNoBoundary[1]) // ONLY LOWER is on BC
             {
                 //w[4] = 0 w[15] = 0
                 //w[c]
@@ -3626,7 +3631,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
                 rhs += coeff_temp_old*U2_nb[1];
             }
-            else if ((bNoBoundary[5] == 3) && !bNoBoundary[1]) // ONLY UPPER is on BC
+            else if ((bNoBoundary[5] == 2) && !bNoBoundary[1]) // ONLY UPPER is on BC
             {
                 //w[c] 0 w[1] = 0
 
@@ -3647,6 +3652,22 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
                 rhs += coeff_temp_old*U2_nb[15];
+
+                //w[1]
+                coeff_temp  = 1.0/2*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                coeff_temp -= 1.0/3*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                solver.Add_A(I*3,I_nb[1]*3+2, -coeff_temp);
+                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                rhs += 0.0;
+
+                //w[c]
+                coeff_temp  = -1.0/2*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                coeff_temp -= -1.0/3*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                solver.Add_A(I*3,I*3+2, -coeff_temp);
+                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                rhs += 0.0;
             }
             else if (bNoBoundary[1] == 3) // EAST is on BC
             {
@@ -3654,7 +3675,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 double temp1 = -1.0/3*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
                 temp1 += 1.0/3*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
                 double temp2 = -temp1;
-                if (bNoBoundary[4] == 3) // LOWER added
+                if (bNoBoundary[4] == 2) // LOWER added
                 {
                     //w[c]
                     solver.Add_A(I*3,I*3+2, -temp1);
@@ -3662,13 +3683,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
                     rhs += coeff_temp_old*U2_center;
                 }
-                else if (bNoBoundary[5] == 3) // UPPER added
+                else if (bNoBoundary[5] == 2) // UPPER added
                 {
                     //w[4]
                     solver.Add_A(I*3,I_nb[4]*3+2, -temp2);
                     coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
                     coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
                     rhs += coeff_temp_old*U2_nb[4];
+
+                    //w[c]
+                    solver.Add_A(I*3,I*3+2, -temp1);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    rhs += 0.0;
                 }
                 else
                 {
@@ -3684,26 +3711,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
                     rhs += coeff_temp_old*U2_nb[4];
                 }
-            }
-            if (bNoBoundary[4] == 2) //cells on LOWER bdry
-            {
-                //w[4] = w[15] = 0
-
-                //w[1]
-                coeff_temp  = 1.0/2*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
-                coeff_temp -= 1.0/3*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
-                solver.Add_A(I*3,I_nb[1]*3+2, -coeff_temp);
-                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
-                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
-                rhs += coeff_temp_old*U2_nb[1];
-
-                //w[c]
-                coeff_temp  = -1.0/2*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
-                coeff_temp -= -1.0/3*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
-                solver.Add_A(I*3,I*3+2, -coeff_temp);
-                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
-                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
-                rhs += coeff_temp_old*U2_center;
             }
 
             //add other terms to rhs
@@ -3985,12 +3992,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 if (SLIP)
                 {
                     // do nothing for coeff matrix
-                    rhs += coeff1_old[0]*(U1_nb[0] - U1_center);
+                    //rhs += coeff1_old[0]*(U1_nb[0] - U1_center);
+                    rhs += 0.0;
                 }
                 else
                 {
-                    printf("NO SLIP CONDITION is not implmeneted yet in %s\n", __func__);
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    // onWallVel = 0.0
+                    solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[0]);
+                    rhs += coeff1_old[0]*(U1_nb[0] - U1_center);
                 }
             }
             else if (!bNoBoundary[0]) // WEST FACE PERIODIC or INTERIOR
@@ -4004,12 +4014,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 if (SLIP)
                 {
                     // do nothing for coeff matrix
-                    rhs += coeff1_old[1]*(U1_nb[1] - U1_center);
+                    //rhs += coeff1_old[1]*(U1_nb[1] - U1_center);
+                    rhs += 0.0;
                 }
                 else
                 {
-                    printf("NO SLIP CONDITION is not implmeneted yet in %s\n", __func__);
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    // onWallVel = 0.0
+                    solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[1]);
+                    rhs += coeff1_old[1]*(U1_nb[1] - U1_center);
                 }
             }
             else if (!bNoBoundary[1]) // EAST FACE PERIODIC or INTERIOR
@@ -4034,6 +4047,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             {
                 //v[c] = 0
                 //v[3] = -v[2]
+                solver.Add_A(I*3+1,I*3+1, coeff1[3]);
                 solver.Add_A(I*3+1,I_nb[2]*3+1, coeff1[3]);
                 rhs += coeff1_old[3]*(U1_nb[3] - U1_center);
             }
@@ -4043,54 +4057,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3+1,I_nb[3]*3+1, -coeff1[3]);
                 rhs += coeff1_old[3]*(U1_nb[3] - U1_center);
             }
-            if (bNoBoundary[4] == 3) // LOWER FACE is on REFLECT BC
-            {
-                if (SLIP)
-                {
-                    // do nothing for coeff matrix
-                    rhs += coeff1_old[4]*(U1_nb[4] - U1_center);
-                }
-                else
-                {
-                    printf("NO SLIP CONDITION is not implmeneted yet in %s\n", __func__);
-                    clean_up(ERROR);
-                }
-            }
-            else if (!bNoBoundary[4]) // LOWER FACE PERIODIC or INTERIOR
+            if (!bNoBoundary[4] && !bNoBoundary[5]) // INTERIOR
             {
                 solver.Add_A(I*3+1,I*3+1, coeff1[4]);
                 solver.Add_A(I*3+1,I_nb[4]*3+1, -coeff1[4]);
                 rhs += coeff1_old[4]*(U1_nb[4] - U1_center);
-            }
-            if (bNoBoundary[5] == 3) // UPPER FACE is on REFLECT BC
-            {
-                if (SLIP)
-                {
-                    // do nothing for coeff matrix
-                    rhs += coeff1_old[5]*(U1_nb[5] - U1_center);
-                }
-                else
-                {
-                    printf("NO SLIP CONDITION is not implmeneted yet in %s\n", __func__);
-                    clean_up(ERROR);
-                }
-            }
-            else if (!bNoBoundary[5]) // UPPER FACE PERIODIC or INTERIOR
-            {
+
                 solver.Add_A(I*3+1,I*3+1, coeff1[5]);
                 solver.Add_A(I*3+1,I_nb[5]*3+1, -coeff1[5]);
                 rhs += coeff1_old[5]*(U1_nb[5] - U1_center);
             }
-            // NEUMANN BC
-            if(bNoBoundary[4] == 2)
+            else if (bNoBoundary[4] == 2) // LOWER FACE is on REFLECT/NEUMANN BC
             {
-                solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[nb]);
-                rhs += coeff1_old[nb]*(U1_nb[nb] - U1_center);
+                solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[4]);
+                rhs += coeff1_old[4]*(U1_nb[4] - U1_center);
             }
-            if (bNoBoundary[5] == 2)
+            else if (bNoBoundary[5] == 2) // UPPER FACE is on REFLECT/NEUMANN BC
             {
-                solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[nb]);
-                rhs += coeff1_old[nb]*(U1_nb[nb] - U1_center);
+                solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[5]);
+                rhs += coeff1_old[5]*(U1_nb[5] - U1_center);
+            }
+            else
+            {
+                printf("NO MORE BOUNDARY CONDITION IMPLEMENTED at line %d in function %s\n", __LINE__, __func__);
+                assert(false);
             }
 
             //set the coefficients for U0 in the second equation, (mu*u_y)_x and (-2/3)*(mu*u_x)_y
@@ -4172,17 +4162,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
                 rhs += coeff_temp_old*U0_nb[0];
+
+                //u[3]
+                coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[1]);
+                coeff_temp -= 1.0/3*m_dt/rho*mu[3]/(top_h[0]*top_h[1]);
+                solver.Add_A(I*3+1,I_nb[3]*3, -coeff_temp);
+                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
+                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[3]/(top_h[0]*top_h[1]);
+                rhs += 0.0;
+
+                //u[c]
+                coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[1]);
+                coeff_temp -= -1.0/3*m_dt/rho*mu[2]/(top_h[0]*top_h[1]);
+                solver.Add_A(I*3+1,I*3, -coeff_temp);
+                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
+                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
+                rhs += 0.0;
             }
             else if (bNoBoundary[3] == 3)// NORTH FACE is on BC
             {
                 // hardwire for slip condition
-                double temp1 = 1.0/3*m_dt/rho*mu[3]/(top_h[0]*top_h[1]);
-                temp1 -= -1.0/3*m_dt/rho*mu[2]/(top_h[0]*top_h[1]);
+                double temp1 = -1.0/3*m_dt/rho*mu[3]/(top_h[0]*top_h[1]);
+                temp1 += 1.0/3*m_dt/rho*mu[2]/(top_h[0]*top_h[1]);
                 double temp2 = - temp1;
                 if (bNoBoundary[0] == 3) // WEST added
                 {
                     // u[c]
-                    solver.Add_A(I*3+1,I*3, -temp2);
+                    solver.Add_A(I*3+1,I*3, -temp1);
                     coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
                     coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
                     rhs += coeff_temp_old*U0_center;
@@ -4190,32 +4196,37 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 else if (bNoBoundary[1] == 3) // EAST added
                 {
                     // u[0]
-                    solver.Add_A(I*3+1,I_nb[0]*3, -temp1);
+                    solver.Add_A(I*3+1,I_nb[0]*3, -temp2);
                     coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
                     coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
                     rhs += coeff_temp_old*U0_nb[0];
+
+                    // u[c]
+                    solver.Add_A(I*3+1,I*3, -temp1);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
+                    rhs += 0.0;
                 }
                 else
                 {
-                    // u[c]
-                    solver.Add_A(I*3+1,I*3, -temp2);
-                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
-                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
-                    rhs += coeff_temp_old*U0_center;
-
                     // u[0]
-                    solver.Add_A(I*3+1,I_nb[0]*3, -temp1);
+                    solver.Add_A(I*3+1,I_nb[0]*3, -temp2);
                     coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[1]);
                     coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
                     rhs += coeff_temp_old*U0_nb[0];
 
+                    // u[c]
+                    solver.Add_A(I*3+1,I*3, -temp1);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[1]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[0]*top_h[1]);
+                    rhs += coeff_temp_old*U0_center;
                 }
             }
 
             //set the coefficients for U2 in the second equation, (mu*w_y)_z and (-2/3)*(mu*w_z)_y
             //traverse the four cells for w, i.e. w_c, w_3, w_4, and w_11
-            //consider LOWER, UPPER, EAST
-            if (!bNoBoundary[4] && !bNoBoundary[5] && !bNoBoundary[1]) // PERIODIC or INTERIOR
+            //consider LOWER, UPPER, NORTH
+            if (!bNoBoundary[4] && !bNoBoundary[5] && !bNoBoundary[3]) // PERIODIC or INTERIOR
             {
                 //w[3]
                 coeff_temp  = 1.0/2*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
@@ -4251,7 +4262,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
                 rhs += coeff_temp_old*U2_center;
             }
-            else if ((bNoBoundary[4] >= 2) && !bNoBoundary[1]) // LOWER FACE is on BC
+            else if ((bNoBoundary[4] >= 2) && !bNoBoundary[3]) // LOWER FACE is on BC
             {
                 // w[4] = 0 w[11] = 0
 
@@ -4271,7 +4282,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
                 rhs += coeff_temp_old*U2_nb[3];
             }
-            else if ((bNoBoundary[5] == 3) && !bNoBoundary[1]) // UPPER FACE is on BC
+            else if ((bNoBoundary[5] == 2) && !bNoBoundary[3]) // UPPER FACE is on BC
             {
                 // w[c] = 0 w[3] = 0
 
@@ -4292,14 +4303,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
                 rhs += coeff_temp_old*U2_nb[11];
+
+                //w[c]
+                coeff_temp  = -1.0/2*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                coeff_temp -= -1.0/3*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                solver.Add_A(I*3+1,I*3+2, -coeff_temp);
+                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                rhs += 0.0;
+
+                //w[3]
+                coeff_temp  = 1.0/2*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                coeff_temp -= 1.0/3*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                solver.Add_A(I*3+1,I_nb[3]*3+2, -coeff_temp);
+                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                rhs += 0.0;
             }
-            else if (bNoBoundary[1] == 3) // EAST FACE
+            else if (bNoBoundary[3] == 3) // NORTH FACE
             {
                 //hardwired for slip condition
                 double temp1= 1.0/3*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
                 temp1 -= 1.0/3*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
                 double temp2 = - temp1;
-                if (bNoBoundary[4] == 3) // LOWER added
+                if (bNoBoundary[4] == 2) // LOWER added
                 {
                     // w[c]
                     solver.Add_A(I*3+1,I*3+2, -temp2);
@@ -4307,13 +4334,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
                     rhs += coeff_temp_old*U2_center;
                 }
-                else if (bNoBoundary[5] == 3) // UPPER added
+                else if (bNoBoundary[5] == 2) // UPPER added
                 {
                     //w[4]
                     solver.Add_A(I*3+1,I_nb[4]*3+2, -temp1);
                     coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
                     coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
                     rhs += coeff_temp_old*U2_nb[4];
+
+                    // w[c]
+                    solver.Add_A(I*3+1,I*3+2, -temp2);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    rhs += 0.0;
                 }
                 else
                 {
@@ -4481,19 +4514,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
                            1.0/cell_center[index].m_state.m_rho_old);
 
-                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
-                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
+                mu_nb[12] = cell_center[index_nb[3]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[2]].m_state.m_mu;
                 mu_nb[16] = cell_center[index].m_state.m_mu;
-                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
-                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
-                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
+                mu_nb[17] = cell_center[index_nb[0]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[3]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[2]].m_state.m_mu_old;
                 mu_nb_old[16] = cell_center[index].m_state.m_mu_old;
-                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[0]].m_state.m_mu_old;
                 if (useSGSCellCenter) {
-                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[12] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
                     mu_t_nb[16] = cell_center[index].m_state.m_mu_turbulent[3];
-                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
                 }
                 else {
                     printf("codes needed for mu_turbulent on cell-faces.\n");
@@ -4505,18 +4538,18 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
                            1.0/cell_center[index].m_state.m_rho_old);
 
-                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
-                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
-                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
+                mu_nb[12] = cell_center[index_nb[3]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[2]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[1]].m_state.m_mu;
                 mu_nb[17] = cell_center[index].m_state.m_mu;
-                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
-                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
-                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
+                mu_nb_old[12] = cell_center[index_nb[3]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[2]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[1]].m_state.m_mu_old;
                 mu_nb_old[17] = cell_center[index].m_state.m_mu_old;
                 if (useSGSCellCenter) {
-                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[12] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
                     mu_t_nb[17] = cell_center[index].m_state.m_mu_turbulent[3];
                 }
                 else {
@@ -4530,18 +4563,18 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                            1.0/cell_center[index].m_state.m_rho_old);
 
                 mu_nb[12] = cell_center[index].m_state.m_mu;
-                mu_nb[13] = cell_center[index_nb[13]].m_state.m_mu;
-                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
-                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
+                mu_nb[13] = cell_center[index_nb[2]].m_state.m_mu;
+                mu_nb[16] = cell_center[index_nb[1]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[0]].m_state.m_mu;
                 mu_nb_old[12] = cell_center[index].m_state.m_mu_old;
-                mu_nb_old[13] = cell_center[index_nb[13]].m_state.m_mu_old;
-                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
-                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                mu_nb_old[13] = cell_center[index_nb[2]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[1]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[0]].m_state.m_mu_old;
                 if (useSGSCellCenter) {
                     mu_t_nb[12] = cell_center[index].m_state.m_mu_turbulent[3];
-                    mu_t_nb[13] = cell_center[index_nb[13]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[13] = cell_center[index_nb[2]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
                 }
                 else {
                     printf("codes needed for mu_turbulent on cell-faces.\n");
@@ -4553,19 +4586,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 rho = 2.0/(1.0/cell_center[index].m_state.m_rho +
                            1.0/cell_center[index].m_state.m_rho_old);
 
-                mu_nb[12] = cell_center[index_nb[12]].m_state.m_mu;
+                mu_nb[12] = cell_center[index_nb[3]].m_state.m_mu;
                 mu_nb[13] = cell_center[index].m_state.m_mu;
-                mu_nb[16] = cell_center[index_nb[16]].m_state.m_mu;
-                mu_nb[17] = cell_center[index_nb[17]].m_state.m_mu;
-                mu_nb_old[12] = cell_center[index_nb[12]].m_state.m_mu_old;
+                mu_nb[16] = cell_center[index_nb[1]].m_state.m_mu;
+                mu_nb[17] = cell_center[index_nb[0]].m_state.m_mu;
+                mu_nb_old[12] = cell_center[index_nb[3]].m_state.m_mu_old;
                 mu_nb_old[13] = cell_center[index].m_state.m_mu_old;
-                mu_nb_old[16] = cell_center[index_nb[16]].m_state.m_mu_old;
-                mu_nb_old[17] = cell_center[index_nb[17]].m_state.m_mu_old;
+                mu_nb_old[16] = cell_center[index_nb[1]].m_state.m_mu_old;
+                mu_nb_old[17] = cell_center[index_nb[0]].m_state.m_mu_old;
                 if (useSGSCellCenter) {
-                    mu_t_nb[12] = cell_center[index_nb[12]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[12] = cell_center[index_nb[3]].m_state.m_mu_turbulent[3];
                     mu_t_nb[13] = cell_center[index].m_state.m_mu_turbulent[3];
-                    mu_t_nb[16] = cell_center[index_nb[16]].m_state.m_mu_turbulent[3];
-                    mu_t_nb[17] = cell_center[index_nb[17]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[16] = cell_center[index_nb[1]].m_state.m_mu_turbulent[3];
+                    mu_t_nb[17] = cell_center[index_nb[0]].m_state.m_mu_turbulent[3];
                 }
                 else {
                     printf("codes needed for mu_turbulent on cell-faces.\n");
@@ -4879,11 +4912,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 }
                 else
                 {
-                    printf("NO SLIP CONDITION was implemented.\n");
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    solver.Add_A(I*3+2,I*3+2, 2.0*coeff2[0]);
+                    rhs += coeff2_old[0]*(U2_nb[0] - U2_center);
                 }
             }
-            else // PERIODIC or INTERIOR
+            else if (!bNoBoundary[0]) // PERIODIC or INTERIOR
             {
                 solver.Add_A(I*3+2,I*3+2, coeff2[0]);
                 solver.Add_A(I*3+2,I_nb[0]*3+2, -coeff2[0]);
@@ -4899,11 +4933,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 }
                 else
                 {
-                    printf("NO SLIP CONDITION was implemented.\n");
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    solver.Add_A(I*3+2,I*3+2, 2.0*coeff2[1]);
+                    rhs += coeff2_old[1]*(U2_nb[1] - U2_center);
                 }
             }
-            else // PERIODIC or INTERIOR
+            else if (!bNoBoundary[1]) // PERIODIC or INTERIOR
             {
                 solver.Add_A(I*3+2,I*3+2, coeff2[1]);
                 solver.Add_A(I*3+2,I_nb[1]*3+2, -coeff2[1]);
@@ -4919,13 +4954,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 }
                 else
                 {
-                    printf("NO SLIP CONDITION was implemented.\n");
-                    clean_up(ERROR);
+                    solver.Add_A(I*3+2,I*3+2, 2.0*coeff2[2]);
+                    rhs += coeff2_old[1]*(U2_nb[2] - U2_center);
                 }
             }
-            else // PERIODIC or INTERIOR
+            else if (!bNoBoundary[2]) // PERIODIC or INTERIOR
             {
-                solver.Add_A(I*3+2,I*3+2, coeff2[1]);
+                solver.Add_A(I*3+2,I*3+2, coeff2[2]);
                 solver.Add_A(I*3+2,I_nb[2]*3+2, -coeff2[2]);
                 rhs += coeff2_old[1]*(U2_nb[2] - U2_center);
             }
@@ -4939,40 +4974,40 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 }
                 else
                 {
-                    printf("NO SLIP CONDITION was implemented.\n");
-                    clean_up(ERROR);
+                    // NO SLIP CONDITION
+                    solver.Add_A(I*3+2,I*3+2, 2.0*coeff2[3]);
+                    rhs += coeff2_old[3]*(U2_nb[3] - U2_center);
                 }
             }
-            else // PERIODIC or INTERIOR
+            else if (!bNoBoundary[3]) // PERIODIC or INTERIOR
             {
                 solver.Add_A(I*3+2,I*3+2, coeff2[3]);
                 solver.Add_A(I*3+2,I_nb[3]*3+2, -coeff2[3]);
                 rhs += coeff2_old[3]*(U2_nb[3] - U2_center);
             }
-            if (bNoBoundary[4] == 3) // LOWER FACE is on REFLECT BC
+            if (!bNoBoundary[4] && !bNoBoundary[5]) // INTERIOR
+            {
+                solver.Add_A(I*3+2,I*3+2, coeff2[4]);
+                solver.Add_A(I*3+2,I_nb[4]*3+2, -coeff2[4]);
+                rhs += coeff2_old[4]*(U2_nb[4] - U2_center);
+
+                solver.Add_A(I*3+2,I*3+2, coeff2[5]);
+                solver.Add_A(I*3+2,I_nb[5]*3+2, -coeff2[5]);
+                rhs += coeff2_old[3]*(U2_nb[5] - U2_center);
+            }
+            else if (bNoBoundary[4] == 2) // LOWER FACE is on NEUMANN BC
             {
                 //w[4] = 0
                 solver.Add_A(I*3+2,I*3+2, coeff2[4]);
                 rhs += coeff2_old[4]*(U2_nb[4] - U2_center);
             }
-            else
-            {
-                solver.Add_A(I*3+2,I*3+2, coeff2[3]);
-                solver.Add_A(I*3+2,I_nb[3]*3+2, -coeff2[3]);
-                rhs += coeff2_old[3]*(U2_nb[3] - U2_center);
-            }
-            if (bNoBoundary[5] == 3) // UPPER FACE is on REFLECT BC
+            else if (bNoBoundary[5] == 2) // UPPER FACE is on NEUMANN BC
             {
                 //w[5] = -w[4]
                 //w[c] = 0
+                solver.Add_A(I*3+2,I*3+2, coeff2[5]);
                 solver.Add_A(I*3+2,I_nb[4]*3+2, coeff2[5]);
                 rhs += coeff2_old[5]*(U2_nb[5] - U2_center);
-            }
-            else
-            {
-                solver.Add_A(I*3+2,I*3+2, coeff2[5]);
-                solver.Add_A(I*3+2,I_nb[5]*3+2, -coeff2[5]);
-                rhs += coeff2_old[3]*(U2_nb[5] - U2_center);
             }
             //set the coefficients for U0 in the third equation, (mu*u_z)_x and (-2/3)*(mu*u_x)_z
             //traverse the four cells for u, i.e. u_c, u_0, u_5, and u_17
@@ -5055,74 +5090,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
                 rhs += coeff_temp_old*U0_nb[17];
 
-            }
-            else if (bNoBoundary[5] == 3) // UPPER FACE is on BC
-            {
-                //hardwired for slip condition
-                double temp1 = -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
-                temp1 += 1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
-                double temp2 = -temp1;
-                if (bNoBoundary[0] == 3) // WEST added
-                {
-                    //u[c]
-                    solver.Add_A(I*3+2,I*3, -temp1);
-                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
-                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
-                    rhs += coeff_temp_old*U0_center;
-                }
-                else if (bNoBoundary[1] == 3) // EAST added
-                {
-                    //u[0]
-                    solver.Add_A(I*3+2,I_nb[0]*3, -temp2);
-                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
-                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
-                    rhs += coeff_temp_old*U0_nb[0];
-                }
-                else
-                {
-                    //u[c]
-                    solver.Add_A(I*3+2,I*3, -temp1);
-                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
-                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
-                    rhs += coeff_temp_old*U0_center;
-
-                    //u[0]
-                    solver.Add_A(I*3+2,I_nb[0]*3, -temp2);
-                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
-                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
-                    rhs += coeff_temp_old*U0_nb[0];
-                }
-            }
-
-            if (bNoBoundary[5] == 2) //cells on UPPER bdry
-            {
-                //u[5]=-u[c] & u[17]=-u[0]
-
-                //u[0]
-                coeff_temp  = 1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
-                coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
-                solver.Add_A(I*3+2,I_nb[0]*3, -coeff_temp);
-                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
-                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
-                rhs += coeff_temp_old*U0_nb[0];
-
-                U0_nb[5] = -U0_center;
+                U0_nb[5] = cell_center[index_nb[5]].m_state.m_U[0];
                 //u[5]
                 coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
                 coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
-                solver.Add_A(I*3+2,I*3, coeff_temp);
+                solver.Add_A(I*3+2,I_nb[5]*3, -coeff_temp);
                 coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
-                rhs += coeff_temp_old*U0_nb[5];
-
-                U0_nb[17] = -U0_nb[0];
-                //u[17]
-                coeff_temp  = -1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
-                coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
-                solver.Add_A(I*3+2,I_nb[0]*3, coeff_temp);
-                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
-                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
-                rhs += coeff_temp_old*U0_nb[17];
+                rhs += 0.0;
 
                 //u[c]
                 coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
@@ -5130,7 +5105,107 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3+2,I*3, -coeff_temp);
                 coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
-                rhs += coeff_temp_old*U0_center;
+                rhs += 0.0;
+
+            }
+            else if (bNoBoundary[5] == 2) // UPPER FACE is on BC
+            {
+                //hardwired for slip condition
+                if (bNoBoundary[0] == 3) // WEST added
+                {
+                    U0_nb[5] = -U0_center;
+                    //u[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[5];
+
+                    //u[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_center;
+                }
+                else if (bNoBoundary[1] == 3) // EAST added
+                {
+                    //u[5]=-u[c] & u[17]=-u[0]
+
+                    //u[0]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[0];
+
+                    U0_nb[5] = -U0_center;
+                    //u[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[5];
+
+                    U0_nb[17] = -U0_nb[0];
+                    //u[17]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[17];
+
+                    //u[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_center;
+                }
+                else
+                {
+                    //u[5]=-u[c] & u[17]=-u[0]
+
+                    //u[0]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[0];
+
+                    U0_nb[5] = -U0_center;
+                    //u[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[5];
+
+                    U0_nb[17] = -U0_nb[0];
+                    //u[17]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[17];
+
+                    //u[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_center;
+                }
             }
 
             //set the coefficients for U1 in the third equation (mu*v_z)_y and (-2/3)*(mu*v_y)_z
@@ -5213,72 +5288,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
                 rhs += coeff_temp_old*U1_nb[2];
-            }
-            else if (bNoBoundary[5] == 3) // UPPER
-            {
-                double temp1 = -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
-                temp1 += 1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
-                double temp2 = -temp1;
-                if (bNoBoundary[2] == 3) // SOUTH added
-                {
-                    //v[c]
-                    solver.Add_A(I*3+2,I*3+1, -temp1);
-                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
-                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
-                    rhs += coeff_temp_old*U1_center;
-                }
-                else if (bNoBoundary[3] == 3) // NORTH added
-                {
-                    //v[2]
-                    solver.Add_A(I*3+2,I_nb[2]*3+1, -temp1);
-                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
-                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
-                    rhs += coeff_temp_old*U1_nb[2];
-                }
-                else
-                {
-                    //v[c]
-                    solver.Add_A(I*3+2,I*3+1, -temp1);
-                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
-                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
-                    rhs += coeff_temp_old*U1_center;
 
-                    //v[2]
-                    solver.Add_A(I*3+2,I_nb[2]*3+1, -temp1);
-                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
-                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
-                    rhs += coeff_temp_old*U1_nb[2];
-                }
-            }
-            if (bNoBoundary[5] == 2) //cells on UPPER bdry
-            {
-                //v[5]=-v[c] & v[13]=-v[2]
-
-                //v[2]
-                coeff_temp  = 1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
-                coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
-                solver.Add_A(I*3+2,I_nb[2]*3+1, -coeff_temp);
-                coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
-                coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
-                rhs += coeff_temp_old*U1_nb[2];
-
-                U1_nb[5] = -U1_center;
+                U1_nb[5] = cell_center[index_nb[5]].m_state.m_U[1];
                 //v[5]
                 coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
                 coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
-                solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                solver.Add_A(I*3+2,I_nb[5]*3+1, -coeff_temp);
                 coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
-                rhs += coeff_temp_old*U1_nb[5];
-
-                U1_nb[13] = -U1_nb[2];
-                //v[13]
-                coeff_temp  = -1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
-                coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
-                solver.Add_A(I*3+2,I_nb[2]*3+1, coeff_temp);
-                coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
-                coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
-                rhs += coeff_temp_old*U1_nb[13];
+                rhs += 0.0;
 
                 //v[c]
                 coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
@@ -5286,7 +5304,104 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3+2,I*3+1, -coeff_temp);
                 coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
-                rhs += coeff_temp_old*U1_center;
+                rhs += 0.0;
+            }
+            else if (bNoBoundary[5] == 2) // UPPER
+            {
+                if (bNoBoundary[2] == 3) // SOUTH added
+                {
+                    U1_nb[5] = -U1_center;
+                    //v[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[5];
+
+                    //v[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_center;
+                }
+                else if (bNoBoundary[3] == 3) // NORTH added
+                {
+                    //v[5]=-v[c] & v[13]=-v[2]
+                    //v[2]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[2];
+
+                    U1_nb[5] = -U1_center;
+                    //v[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[5];
+
+                    U1_nb[13] = -U1_nb[2];
+                    //v[13]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[13];
+
+                    //v[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_center;
+                }
+                else
+                {
+                    //v[5]=-v[c] & v[13]=-v[2]
+
+                    //v[2]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[2];
+
+                    U1_nb[5] = -U1_center;
+                    //v[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[5];
+
+                    U1_nb[13] = -U1_nb[2];
+                    //v[13]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[13];
+
+                    //v[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_center;
+                }
             }
 
             //add other terms to rhs
