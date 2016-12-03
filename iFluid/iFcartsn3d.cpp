@@ -23955,6 +23955,47 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
  *
  * */
 
+// NO SLIP CONDITION
+void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(
+        int dir,
+        int side,
+        double **solute)
+{
+    int i, j, k;
+    int InIndex, BIndex, InteriorIndex;
+    //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
+
+    // This is where the code takes care of Neumann Boundary Condition
+    // NO X, Y Neumann Boundary Condition were implemented Yet.
+    assert(dir==2);
+    if (side == 0)
+    {
+         k = kmin;// Z lower
+         for (i = 0; i <= imax+ubuf[0]; i++)
+         for (j = 0; j <= jmax+ubuf[1]; j++)
+         {
+            InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+            BIndex = d_index3d(i,j,k-1,top_gmax);//This is Boundary State index
+            solute[0][BIndex] = -solute[0][InIndex];
+            solute[1][BIndex] = -solute[1][InIndex];
+            solute[2][BIndex] = 0.0;
+         }
+    }
+    else
+    {
+         k = kmax;// Z upper
+         for (i = 0; i <= imax+ubuf[0]; i++)
+         for (j = 0; j <= jmax+ubuf[1]; j++)
+         {
+            InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+            BIndex = d_index3d(i,j,k+1,top_gmax);//This is Boundary State index
+            InteriorIndex = d_index3d(i,j,k-1,top_gmax); // Interior State index
+            solute[0][BIndex] = -solute[0][InIndex];
+            solute[1][BIndex] = -solute[1][InIndex];
+            solute[2][BIndex] = -solute[2][InteriorIndex];
+         }
+    }
+}
 
 //FUNC REFLECTION BOUNDARY CONDITION REVISED! Free-Slip Wall Condition
 void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
@@ -24078,31 +24119,28 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
     }
 }
 
-void Incompress_Solver_Smooth_3D_Cartesian::Solute_Reflect(
-        int dir,
-        double *solute)
-{
-     int side, i;
-     INTERFACE *intfc = front->grid_intfc;
-
-     for (side = 0; side < 2; side++)
-     {
-         if (rect_boundary_type(intfc,dir,side) == REFLECTION_BOUNDARY)
-         {
-              ReflectBC(dir, side, solute);
-         }
-     }
-}
 
 //Reflection Boundary Condition Treatment
 void Incompress_Solver_Smooth_3D_Cartesian::enforceReflectionState(double **vel)
 {
-     int    dir;
+     int       dir, side;
+     INTERFACE *intfc = front->interf;
 
      for (dir = 0; dir < dim; dir++)
+     for (side = 0; side < 2; side++)
      {
-         Solute_Reflect(dir,vel[dir]);
-    }
+         //if (rect_boundary_type(intfc,dir,side) == REFLECTION_BOUNDARY)
+         if (intfc->rect_bdry_type[dir][side] == REFLECTION_BOUNDARY)
+         {
+             printf("dir = %d side = %d is REFLECTION_BOUNDARY\n", dir, side);
+             ReflectBC(dir, side, vel[dir]);
+         }
+         else if (intfc->rect_bdry_type[dir][side] == NEUMANN_BOUNDARY)
+         {
+             printf("dir = %d side = %d is NEUMANN_BOUNDARY\n", dir, side);
+             NeumannBC(dir, side, vel);
+         }
+     }
 }
 
 // Convert GRID_DIRECTION into dir and side.

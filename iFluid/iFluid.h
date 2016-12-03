@@ -1082,9 +1082,8 @@ protected:
         void getRiemannSolution_MAC_EdgeVelocity_vd(EBM_COORD xyz1,EBM_COORD xyz2,L_STATE &u_left,L_STATE &u_right,L_STATE &u_LEFT,L_STATE &u_RIGHT,L_STATE &ans);
         void getRiemannSolution_MAC_Scalar_vd(L_STATE &u_left,L_STATE &u_right,L_STATE &ans, int *icoords, GRID_DIRECTION dir);
         //Reflection Boundary Condition
-        void Solute_Reflect(int, double*);
         void ReflectBC(int, int, double*);
-        void ReflectBC_DEBUG(int, int, int, double*){};
+        void NeumannBC(int, int, double**);
 };
 
 
