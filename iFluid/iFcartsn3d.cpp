@@ -12114,8 +12114,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     double dx, dy, dz;
     L_STATE U0, U1, U2;
     double crx_coords[MAXD];
-    double onWallvel; // if on wall. average interior and exterior
-
     int nb;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 
@@ -12173,18 +12171,21 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     if (xyz==COORD_X)
     {
         //u_x
-        if ((!bNoBoundary[0] && !bNoBoundary[1]) || bNoBoundary[0] == 3 || bNoBoundary[1] == 3) // PERIODIC, INTERIOR, REFLECT
+        if ((!bNoBoundary[0] && !bNoBoundary[1])) // PERIODIC, INTERIOR
         {
             U0 = cell_center[index_nb[0]].m_state;
             U2 = cell_center[index_nb[1]].m_state;
             slope[0] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dx, (U2.m_U[0]-U1.m_U[0])/dx);
-            //TODO && FIXME: check the velocity normal to the wall is zero
-            /*
-            if (bNoBoundary[0] == 3)
-                printf("U0.m_U[0] = %24.24f\n", U0.m_U[0]);
-            if (bNoBoundary[1] == 3)
-                printf("U1.m_U[0] = %24.24f\n", U1.m_U[0]);
-            */
+        }
+        else if (bNoBoundary[0] == 3) // WEST REFLECT
+        {
+            U2 = cell_center[index_nb[1]].m_state;
+            slope[0] = EBM_minmod((U1.m_U[0]-0.0)/dx, (U2.m_U[0]-U1.m_U[0])/dx);
+        }
+        else if (bNoBoundary[1] == 3) // EAST REFLECT
+        {
+            U0 = cell_center[index_nb[0]].m_state;
+            slope[0] = EBM_minmod((0.0-U0.m_U[0])/dx, (-U0.m_U[0]-0.0)/dx);
         }
         else assert(false);
 
@@ -12198,18 +12199,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         else if (bNoBoundary[2] == 3)
         {
             //printf("WEST REFLECTION\n");
-            U0 = cell_center[index_nb[2]].m_state;
             U2 = cell_center[index_nb[3]].m_state;
-            onWallvel = 0.5 * (U0.m_U[0] + U1.m_U[0]);
-            slope[1] = EBM_minmod(2.0*(U1.m_U[0]-onWallvel)/dy, (U2.m_U[0]-U1.m_U[0])/dy);
+            slope[1] = EBM_minmod(0.0, (U2.m_U[0]-U1.m_U[0])/dy);
         }
         else if (bNoBoundary[3] == 3)
         {
             //printf("EAST REFLECTION\n");
             U0 = cell_center[index_nb[2]].m_state;
-            U2 = cell_center[index_nb[3]].m_state;
-            onWallvel = 0.5 * (U2.m_U[0] + U1.m_U[0]);
-            slope[1] = EBM_minmod(2.0*(onWallvel-U1.m_U[0])/dy, (U1.m_U[0]-U0.m_U[0])/dy);
+            slope[1] = EBM_minmod(0.0, (U1.m_U[0]-U0.m_U[0])/dy);
         }
         else assert(false);
 
@@ -12230,20 +12227,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dz, (-2.0*U1.m_U[0])/dz);
         }
-        else if (bNoBoundary[4] == 3) // reflect
-        {
-            U0 = cell_center[index_nb[4]].m_state;
-            U2 = cell_center[index_nb[5]].m_state;
-            onWallvel = 0.5 * (U0.m_U[0] + U1.m_U[0]);
-            slope[2] = EBM_minmod(2.0*(U1.m_U[0]-onWallvel)/dz, (U2.m_U[0]-U1.m_U[0])/dz);
-        }
-        else if (bNoBoundary[5] == 3) // reflect
-        {
-            U0 = cell_center[index_nb[4]].m_state;
-            U2 = cell_center[index_nb[5]].m_state;
-            onWallvel = 0.5 * (U1.m_U[0] + U2.m_U[0]);
-            slope[2] = EBM_minmod(2.0*(onWallvel-U1.m_U[0])/dz, (U1.m_U[0]-U0.m_U[0])/dz);
-        }
         else assert(false);
     }
 
@@ -12251,41 +12234,41 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
     else if (xyz==COORD_Y)
     {
         //v_x
-        if (!bNoBoundary[2] && !bNoBoundary[3])
+        if (!bNoBoundary[0] && !bNoBoundary[1]) // PERIODIC or INTERIOR
         {
             U0 = cell_center[index_nb[0]].m_state;
             U2 = cell_center[index_nb[1]].m_state;
             slope[0] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dx, (U2.m_U[1]-U1.m_U[1])/dx);
         }
-        else if (bNoBoundary[2] == 3)
+        else if (bNoBoundary[0] == 3) // REFLECTION
         {
-            U0 = cell_center[index_nb[0]].m_state;
             U2 = cell_center[index_nb[1]].m_state;
-            onWallvel = 0.5 * (U0.m_U[1] + U1.m_U[1]);
-            slope[0] = EBM_minmod(2.0*(U1.m_U[1]-onWallvel)/dx, (U2.m_U[1]-U1.m_U[1])/dx);
+            slope[0] = EBM_minmod(0.0, (U2.m_U[1]-U1.m_U[1])/dx);
         }
-        else if (bNoBoundary[3] == 3)
+        else if (bNoBoundary[1] == 3) // REFLECTION
         {
             U0 = cell_center[index_nb[0]].m_state;
             U2 = cell_center[index_nb[1]].m_state;
-            onWallvel = 0.5 * (U1.m_U[1] + U2.m_U[1]);
-            slope[0] = EBM_minmod(2.0*(onWallvel-U1.m_U[1])/dx, (U1.m_U[1]-U0.m_U[1])/dx);
+            slope[0] = EBM_minmod(0.0, (U1.m_U[1]-U0.m_U[1])/dx);
         }
         else assert(false);
 
         //v_y
-        if ((!bNoBoundary[2] && !bNoBoundary[3]) || bNoBoundary[2] == 3 || bNoBoundary[3] == 3) // PERIODIC, INTERIOR, REFLECT
+        if ((!bNoBoundary[2] && !bNoBoundary[3])) // PERIODIC, INTERIOR, REFLECT
         {
             U0 = cell_center[index_nb[2]].m_state;
             U2 = cell_center[index_nb[3]].m_state;
             slope[1] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dy, (U2.m_U[1]-U1.m_U[1])/dy);
-            //TODO && FIXME: remove printout should be zero
-            /*
-            if (bNoBoundary[2] == 3)
-                printf("U0.m_U[1] = %24.24f\n", U0.m_U[1]);
-            if (bNoBoundary[3] == 3)
-                printf("U1.m_U[1] = %24.24f\n", U1.m_U[1]);
-            */
+        }
+        else if (bNoBoundary[2] == 3) // SOUTH REFLECTION
+        {
+            U2 = cell_center[index_nb[3]].m_state;
+            slope[1] = EBM_minmod((U1.m_U[1]-0.0)/dy, (U2.m_U[1]-U1.m_U[1])/dy);
+        }
+        else if (bNoBoundary[3] == 3) // NORTH REFLECTION
+        {
+            U0 = cell_center[index_nb[2]].m_state;
+            slope[1] = EBM_minmod((0.0-U0.m_U[1])/dy, (-U0.m_U[1]-0.0)/dy);
         }
         else assert(false);
 
@@ -12306,20 +12289,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dz, (-2.0*U1.m_U[1])/dz);
         }
-        else if (bNoBoundary[4] == 3)
-        {
-            U0 = cell_center[index_nb[4]].m_state;
-            U2 = cell_center[index_nb[5]].m_state;
-            onWallvel = 0.5 * (U0.m_U[1] + U1.m_U[1]);
-            slope[2] = EBM_minmod(2.0*(U1.m_U[1]-onWallvel)/dz, (U2.m_U[1]-U1.m_U[1])/dz);
-        }
-        else if (bNoBoundary[5] == 3)
-        {
-            U0 = cell_center[index_nb[4]].m_state;
-            U2 = cell_center[index_nb[5]].m_state;
-            onWallvel = 0.5 * (U1.m_U[1] + U2.m_U[1]);
-            slope[2] = EBM_minmod(2.0*(onWallvel-U1.m_U[1])/dz, (U1.m_U[1]-U0.m_U[1])/dz);
-        }
         else assert(false);
     }
 
@@ -12335,17 +12304,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         }
         else if (bNoBoundary[0]==3) // WEST REFLECT
         {
-            U0 = cell_center[index_nb[0]].m_state;
             U2 = cell_center[index_nb[1]].m_state;
-            onWallvel = 0.5 * (U0.m_U[2]+U1.m_U[2]);
-            slope[0] = EBM_minmod(2.0*(U1.m_U[2]-onWallvel)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
+            slope[0] = EBM_minmod(0.0, (U2.m_U[2]-U1.m_U[2])/dx);
         }
         else if (bNoBoundary[1]==3) // EAST REFLECT
         {
             U0 = cell_center[index_nb[0]].m_state;
-            U2 = cell_center[index_nb[1]].m_state;
-            onWallvel = 0.5 * (U1.m_U[2]+U2.m_U[2]);
-            slope[0] = EBM_minmod(2.0*(onWallvel-U1.m_U[2])/dz, (U1.m_U[2]-U0.m_U[2])/dz);
+            slope[0] = EBM_minmod(0.0, (U1.m_U[2]-U0.m_U[2])/dx);
         }
         else assert(false);
 
@@ -12358,39 +12323,29 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
         }
         else if (bNoBoundary[2]==3) // SOUTH REFLECT
         {
-            U0 = cell_center[index_nb[2]].m_state;
             U2 = cell_center[index_nb[3]].m_state;
-            onWallvel = 0.5 *(U0.m_U[2] + U1.m_U[2]);
-            slope[1] = EBM_minmod(2.0*(U1.m_U[2]-onWallvel)/dy, (U2.m_U[2]-U1.m_U[2])/dy);
+            slope[1] = EBM_minmod(0.0, (U2.m_U[2]-U1.m_U[2])/dy);
         }
         else if (bNoBoundary[3]==3) // NORTH REFLECT
         {
             U0 = cell_center[index_nb[2]].m_state;
-            U2 = cell_center[index_nb[3]].m_state;
-            onWallvel = 0.5 *(U1.m_U[2] + U2.m_U[2]);
-            slope[1] = EBM_minmod(2.0*(onWallvel-U1.m_U[2])/dy, (U1.m_U[2]-U0.m_U[2])/dy);
+            slope[1] = EBM_minmod(0.0, (U1.m_U[2]-U0.m_U[2])/dy);
         }
         else assert(false);
 
         //w_z
-        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
+        if ((!bNoBoundary[4] && !bNoBoundary[5])) // INTERIOR
         {
             U0 = cell_center[index_nb[4]].m_state;
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dz, (U2.m_U[2]-U1.m_U[2])/dz);
-            /*
-            if (bNoBoundary[4] == 3)
-                printf("U0.m_U[2] = %24.24f\n",U0.m_U[2]);
-            if (bNoBoundary[5] == 3)
-                printf("U1.m_U[2] = %24.24f\n",U1.m_U[2]);
-                */
         }
-        else if (bNoBoundary[4] == 2) //cells on LOWER boundary
+        else if (bNoBoundary[4] == 2) //cells on LOWER boundary, NO SLIP
         {
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
         }
-        else if (bNoBoundary[5] == 2) //cells on UPPER boundary
+        else if (bNoBoundary[5] == 2) //cells on UPPER boundary, NO SLIP
         {
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);
