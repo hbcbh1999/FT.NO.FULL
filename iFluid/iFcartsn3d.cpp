@@ -10069,7 +10069,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
         {
             //printf("if no-slip, need implement\n");
         }
-        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3) // reflect
+        if ((!bNoBoundary[4] && !bNoBoundary[5])) // reflect
         {
             U2_nb[15] = cell_center[index_nb[15]].m_state.m_U[2];
             mu_nb[15] = cell_center[index_nb[15]].m_state.m_mu;
@@ -10144,7 +10144,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
 
     //v-face
     case COORD_Y:
-        if ((!bNoBoundary[4] && !bNoBoundary[5]) || bNoBoundary[4] == 3 || bNoBoundary[5] == 3)
+        if ((!bNoBoundary[4] && !bNoBoundary[5]))
         {
             U2_nb[11] = cell_center[index_nb[11]].m_state.m_U[2];
             mu_nb[11] = cell_center[index_nb[11]].m_state.m_mu;
