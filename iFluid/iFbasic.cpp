@@ -91,6 +91,12 @@ boolean Incompress_Solver_Smooth_Basis::nearest_interface_point_tmp(double *coor
     return nearest_interface_point(coords,comp,intfc,NO_SUBDOMAIN,NULL,coords_on,t,hse,phs);
 }
 
+
+//-------------------------------------------------------------------------------
+//               Hacked Helper Function For Reflection Boundary Condition
+//               Commented out FT_ParallelExchCellIndex ONLY GOOD FOR PERIODIC
+//------------------------------------------------------------------------------
+void Hacked_ReflectionIndex(Front *front, int ***ijk_to_I); // HACKED FOR REFLECTION ONLY
 //---------------------------------------------------------------
 //	initMesh
 // include the following parts
@@ -320,6 +326,7 @@ void Incompress_Solver_Smooth_Basis::setIndexMap(void)
                 }
 	    }
 	    //FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
+        Hacked_ReflectionIndex(front, ijk_to_I); // HACKED FOR REFLECTION ONLY
 	    break;
 	}
 
@@ -5173,3 +5180,58 @@ void Incompress_Solver_Smooth_3D_Basis::getLengthScale(void)
 	}
 }
 */
+void Hacked_ReflectionIndex(Front *fr, int ***IJK_to_I) // HACKED FOR REFLECTION ONLY
+{
+    // TODO && FIXME: Hardwired numbers are O.K. in this case.
+    int i,j,k,imax,jmax,kmax,nb,l;
+	int *gmax = fr->rect_grid->gmax;
+    INTERFACE *intfc = fr->interf;
+    RECT_GRID *rgr = fr->rect_grid;
+    int dim = rgr->dim;
+    int lbuf[dim], ubuf[dim], top_gmax[dim];
+    lbuf[0] = ubuf[0] = 4; // REFLECTION BUFFER
+    lbuf[1] = ubuf[1] = 4; // REFLECTION BUFFER
+    lbuf[2] = ubuf[2] = 1; // NEUMANN BUFFER
+	imax = gmax[0];
+	jmax = gmax[1];
+	kmax = gmax[2];
+
+    for (l = 0; l < dim-1; l++)
+    for (nb = 0; nb < 2; nb++)
+        if (intfc->rect_bdry_type[l][nb] != REFLECTION_BOUNDARY)
+            return;
+
+    printf("imax = %d jmax = %d kmax = %d in func %s\n", imax,jmax,kmax,__func__);
+    // TODO && FIXME:
+    // This is Good for REFLECTION BOUNDARY CONDITION FOR BOTH X and Y directions
+    // If Only one direction (X or Y) is REFLECTION, this code need an improvement.
+    // Some Data Structure should be rewritten for better maintenance and performance purpose
+    // C Style, Not a C++ Standard
+    for (k = 1; k < kmax+1; ++k) // NEUMANN BC, SO NO CHANGE WAS MADE
+    {
+        // X LOWER
+        for (j = 4; j < jmax+4; ++j)//REFLECTION BC
+        for (i = 4; i < 8; ++i)
+        {
+            IJK_to_I[7-i][j][k] = IJK_to_I[i][j][k];
+        }
+        // X UPPER
+        for (j = 4; j < jmax+4; ++j)//REFLECTION BC
+        for (i = imax; i < imax+4; ++i)
+        {
+            IJK_to_I[2*i-3*(i+1-imax)][j][k] = IJK_to_I[i][j][k];
+        }
+        // Y LOWER
+        for (i = 0; i < imax+8; ++i)//REFLECTION BC
+        for (j = 4; j < 8; ++j)
+        {
+            IJK_to_I[i][7-j][k] = IJK_to_I[i][j][k];
+        }
+        // Y UPPER
+        for (i = 0; i < imax+8; ++i)//REFLECTION BC
+        for (j = jmax; j < jmax+4; ++j)
+        {
+            IJK_to_I[i][2*j-3*(j+1-jmax)][k] = IJK_to_I[i][j][k];
+        }
+    }
+}
