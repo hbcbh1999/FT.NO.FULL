@@ -16,6 +16,11 @@
 #define         LIQUID_COMP1		2
 #define         LIQUID_COMP2		3
 
+// This is a shortcut to mark FREE SLIP WALL and NO SLIP WALL
+// This feature comes with the introduction of REFLECTION BOUNDARY CONDITION
+#define SLIP    YES
+#define NOSLIP  YES
+
 #define		ifluid_comp(comp)   (((comp) == LIQUID_COMP1 || 	\
 		comp == LIQUID_COMP2) ? YES : NO)
 
@@ -855,7 +860,7 @@ public:
 	Incompress_Solver_Smooth_3D_Basis(front) {};
 	~Incompress_Solver_Smooth_3D_Cartesian() {};
     // enforce Reflection Boundary Condition
-    void enforceReflectionState(double**);
+    void enforceVecState(double**);
     void checkBoundaryCondition(GRID_DIRECTION,int*,int*,double,COMPONENT);
     bool FT_Reflect(int*,int,int);
 
@@ -1082,8 +1087,8 @@ protected:
         void getRiemannSolution_MAC_EdgeVelocity_vd(EBM_COORD xyz1,EBM_COORD xyz2,L_STATE &u_left,L_STATE &u_right,L_STATE &u_LEFT,L_STATE &u_RIGHT,L_STATE &ans);
         void getRiemannSolution_MAC_Scalar_vd(L_STATE &u_left,L_STATE &u_right,L_STATE &ans, int *icoords, GRID_DIRECTION dir);
         //Reflection Boundary Condition
-        void ReflectBC(int, int, double*);
-        void NeumannBC(int, int, double**);
+        void ReflectBC(double**);
+        void NeumannBC(double**);
 };
 
 

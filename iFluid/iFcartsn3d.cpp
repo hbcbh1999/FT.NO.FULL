@@ -3,7 +3,7 @@
  *******************************************************************/
 #include "iFluid.h"
 #include "solver.h"
-#define SLIP 1
+
 
 //--------------------------------------------------------------------------
 // 		   Incompress_Solver_Smooth_3D_Cartesian
@@ -2936,7 +2936,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
         // removal tag: HAOZ
-        enforceReflectionState(vel);//m_U
+        enforceVecState(vel);//m_U
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -5584,7 +5584,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         /*
          * removal tag: HAOZ
          * */
-        enforceReflectionState(vecarray); // on m_U_tmp
+        enforceVecState(vecarray); // on m_U_tmp
         for (l = 0; l < 3; l++)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -5624,7 +5624,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
         // removal tag: HAOZ
-        enforceReflectionState(vel);//m_U
+        enforceVecState(vel);//m_U
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -5960,7 +5960,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             vel[l][index] = cell_center[index].m_state.m_U[l];
         }
         //removal tag: HAOZ
-        enforceReflectionState(vel);//m_U
+        enforceVecState(vel);//m_U
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -6619,7 +6619,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
         }
         // removal tag: HAOZ
         // REFLECTION B.C.
-        enforceReflectionState(vecarray);//m_U_center_bar
+        enforceVecState(vecarray);//m_U_center_bar
         for (l = 0; l < 3; l++)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -6628,7 +6628,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             index  = d_index3d(i,j,k,top_gmax);
             cell_center[index].m_state.m_U_center_bar[l] = vecarray[l][index];
         }
-        enforceReflectionState(vel);//m_U_face_bar
+        enforceVecState(vel);//m_U_face_bar
         for (l = 0; l < 3; l++)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -6696,7 +6696,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             vel[l][index] = cell_center[index].m_state.m_U_face_bar[l];
         }
         //removal tag: HAOZ
-        enforceReflectionState(vel); // on m_U_face_bar
+        enforceVecState(vel); // on m_U_face_bar
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -6804,7 +6804,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
              *
              * So, adv term need REFLECTION TREATMENT.
              * */
-            enforceReflectionState(vel);// on m_adv terms
+            enforceVecState(vel);// on m_adv terms
             for (l = 0; l < 3; l++)
             for (k = 0; k <= top_gmax[2]; k++)
             for (j = 0; j <= top_gmax[1]; j++)
@@ -6997,7 +6997,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             vel[l][index] = cell_center[index].m_state.m_U_face_bar[l];
         }
         // removal tag: HAOZ
-        enforceReflectionState(vel); // on m_U_face_bar
+        enforceVecState(vel); // on m_U_face_bar
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -14260,7 +14260,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
          * concern: match field->vel and cell_center().m_state.m_U
          *
         */
-        enforceReflectionState(vel);// on m_U
+        enforceVecState(vel);// on m_U
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -14400,7 +14400,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         }
         // removal tag: HAOZ
         // REFLECTION installed
-        enforceReflectionState(vel);// on m_U
+        enforceVecState(vel);// on m_U
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -19061,7 +19061,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::copyMeshStates_vd()
         FT_ParallelExchGridArrayBuffer(vel[1],front);
         FT_ParallelExchGridArrayBuffer(vel[2],front);
         // removal tag: HAOZ
-        enforceReflectionState(vel);// on m_U
+        enforceVecState(vel);// on m_U
         for (l = 0; l < dim; ++l)
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
@@ -19645,7 +19645,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeGradientQ_MAC_vd(void)
         vecarray[l][index] = array[index];
 	    }
 	}
-    enforceReflectionState(vecarray);// on grad_q
+    enforceVecState(vecarray);// on grad_q
     for (l = 0; l < dim; l++)
     for (k = 0; k <= top_gmax[2]; k++)
     for (j = 0; j <= top_gmax[1]; j++)
@@ -23899,191 +23899,186 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
  * */
 
 // NO SLIP CONDITION
-void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(
-        int dir,
-        int side,
-        double **solute)
+void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
 {
     int i, j, k;
     int InIndex, BIndex, InteriorIndex;
-    //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
+    //printf("in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
 
     // This is where the code takes care of Neumann Boundary Condition
     // NO X, Y Neumann Boundary Condition were implemented Yet.
-    assert(dir==2);
-    if (side == 0)
+    // TODO && FIXME:
+    // This is NOT INDEPENDENT FUNCTION from the perspective of Logic
+    // This function is called After ReflectBC() The ONLY Scenario
+     k = kmin;// Z lower
+    for (i = 0; i <= imax+ubuf[0]; i++)
+    for (j = 0; j <= jmax+ubuf[1]; j++)
     {
-         k = kmin;// Z lower
-         for (i = 0; i <= imax+ubuf[0]; i++)
-         for (j = 0; j <= jmax+ubuf[1]; j++)
-         {
-            InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-            BIndex = d_index3d(i,j,k-1,top_gmax);//This is Boundary State index
-            solute[0][BIndex] = -solute[0][InIndex];
-            solute[1][BIndex] = -solute[1][InIndex];
-            solute[2][BIndex] = 0.0;
-         }
+       InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+       BIndex = d_index3d(i,j,k-1,top_gmax);//This is Boundary State index
+       if (NOSLIP)
+       {
+           solute[0][BIndex] = -solute[0][InIndex];
+           solute[1][BIndex] = -solute[1][InIndex];
+       }
+       solute[2][BIndex] = 0.0;
     }
-    else
+    k = kmax;// Z upper
+    for (i = 0; i <= imax+ubuf[0]; i++)
+    for (j = 0; j <= jmax+ubuf[1]; j++)
     {
-         k = kmax;// Z upper
-         for (i = 0; i <= imax+ubuf[0]; i++)
-         for (j = 0; j <= jmax+ubuf[1]; j++)
-         {
-            InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-            BIndex = d_index3d(i,j,k+1,top_gmax);//This is Boundary State index
-            InteriorIndex = d_index3d(i,j,k-1,top_gmax); // Interior State index
-            solute[0][BIndex] = -solute[0][InIndex];
-            solute[1][BIndex] = -solute[1][InIndex];
-            solute[2][BIndex] = -solute[2][InteriorIndex];
-         }
+       InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+       BIndex = d_index3d(i,j,k+1,top_gmax);//This is Boundary State index
+       InteriorIndex = d_index3d(i,j,k-1,top_gmax); // Interior State index
+       if (NOSLIP)
+       {
+           solute[0][BIndex] = -solute[0][InIndex];
+           solute[1][BIndex] = -solute[1][InIndex];
+       }
+       solute[2][BIndex] = -solute[2][InteriorIndex];
     }
 }
 
 //FUNC REFLECTION BOUNDARY CONDITION REVISED! Free-Slip Wall Condition
-void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(
-        int dir,
-        int side,
-        double *solute)
+// This is a revised version of Reflect BC.Partially Hacked
+void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
 {
     int i, j, k;
-    int InIndex, BIndex, OnIndex, BLast;
-    //printf("HZ in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
+    int InIndex, BIndex;
+    //printf("in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
 
     // This is where the code takes care of Reflecting Boundary Condition.
-    if (side == 0)
-    {
-        switch (dir)
-        {
-            case 0: // X Lower
-                 for (j = 0; j <= jmax+ubuf[1]; j++)
-                     for (k = 0; k <= kmax+ubuf[2]; k++)
-                     {
-                         for (i = imin; i < imin+lbuf[0]-1; i++)
-                         {
-                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                              BIndex = d_index3d(lbuf[0]-2-i+imin,j,k,top_gmax);//This is Boundary State index
-                              solute[BIndex] = -solute[InIndex];
-                         }
-                         OnIndex = d_index3d(imin-1,j,k,top_gmax);
-                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
-                     }
-                 break;
-            case 1: // Y Lower
-                 for (i = 0; i <= imax+ubuf[0]; i++)
-                     for (k = 0; k <= kmax+ubuf[2]; k++)
-                     {
-                         for (j = jmin; j < jmin+lbuf[1]-1; j++)
-                         {
-                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                              BIndex = d_index3d(i,lbuf[1]-2-j+jmin,k,top_gmax);//This is Boundary State index
-                              solute[BIndex] = -solute[InIndex];
-                         }
-                         OnIndex = d_index3d(i,jmin-1,k,top_gmax);
-                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
-                     }
-                 break;
-            case 2: // Z Lower
-                 for (i = 0; i <= imax+ubuf[0]; i++)
-                     for (j = 0; j <= jmax+ubuf[1]; j++)
-                     {
-                         for (k = kmin; k < kmin+lbuf[2]-1; k++)
-                         {
-                              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                              BIndex = d_index3d(i,j,lbuf[2]-2-k+kmin,top_gmax);//This is Boundary State index
-                              solute[BIndex] = -solute[InIndex];
-                         }
-                         OnIndex = d_index3d(i,j,kmin-1,top_gmax);
-                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
-                     }
-                 break;
-        }
-    }
-    else
-    {
-        switch (dir)
-        {
-            case 0: // X Upper
-                 for (j = 0; j <= jmax+ubuf[1]; j++)
-                     for (k = 0; k <= kmax+ubuf[2]; k++)
-                     {
-                         for (i = imax-ubuf[0]+1; i <= imax-1; i++)// X Upper
-                         {
-                             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                             BIndex = d_index3d(2*imax-i,j,k,top_gmax);//This is Boundary State index
-                             solute[BIndex] = -solute[InIndex];
-
-                         }
-                         OnIndex = d_index3d(imax,j,k,top_gmax);
-                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
-                         BLast = d_index3d(imax+ubuf[0],j,k,top_gmax);//This is Last Boundary State index
-                         BIndex = d_index3d(imax-ubuf[0],j,k,top_gmax);//This is right next to the Last Boundary State index from Inside
-                         //BIndex = d_index3d(imax+ubuf[0]-1,j,k,top_gmax);//This is right next to the Last Boundary State index from Inside
-                         solute[BLast] = -solute[BIndex];
-                     }
-                 break;
-            case 1: // Y Upper
-                 for(i = 0; i <= imax+ubuf[0]; i++)
-                     for (k = 0; k <= kmax+ubuf[2]; k++)
-                     {
-                         for (j = jmax-ubuf[1]+1; j <= jmax-1; j++)//Y Upper
-                         {
-                             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                             BIndex = d_index3d(i,2*jmax-j,k,top_gmax);//This is Boundary State index
-                             solute[BIndex] = -solute[InIndex];
-                         }
-                         OnIndex = d_index3d(i,jmax,k,top_gmax);
-                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
-                         BLast = d_index3d(i,jmax+ubuf[1],k,top_gmax);//This is Last Boundary State index
-                         BIndex = d_index3d(i,jmax-ubuf[1],k,top_gmax);//This is right next to the Last Boundary State index from Inside
-                         //BIndex = d_index3d(i,jmax+ubuf[1]-1,k,top_gmax);//This is right next to the Last Boundary State index from Inside
-                         solute[BLast] = -solute[BIndex];
-                     }
-                 break;
-            case 2: // Z Upper
-                 for (i = 0; i <= imax+ubuf[0]; i++)
-                     for (j = 0; j <= jmax+ubuf[1]; j++)
-                     {
-                         for (k = kmax-ubuf[2]+1; k <= kmax-1; k++)//Z Upper
-                         {
-                             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
-                             BIndex = d_index3d(i,j,2*kmax-k,top_gmax);//This is Boundary State index
-                             solute[BIndex] = -solute[InIndex];
-                         }
-                         OnIndex = d_index3d(i,j,kmax,top_gmax);
-                         solute[OnIndex] = 0.0; // On wall normal velocity component vanish
-                         BLast = d_index3d(i,j,kmax+ubuf[2],top_gmax);//This is Last Boundary State index
-                         BIndex = d_index3d(i,j,kmax-ubuf[2],top_gmax);//This is right next to the Last Boundary State index from Inside
-                         //BIndex = d_index3d(i,j,kmax+ubuf[2]-1,top_gmax);//This is right next to the Last Boundary State index from Inside
-                         solute[BLast] = -solute[BIndex];
-                     }
-                 break;
-        }
-    }
+     // X Lower
+     for (k = kmin; k <= kmax; k++)
+     for (j = jmin; j <= jmax; j++)
+     {
+         //normal velocities
+         for (i = imin; i < imin+lbuf[0]-1; i++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(lbuf[0]-2-i+imin,j,k,top_gmax);//This is Boundary State index
+              solute[0][BIndex] = -solute[0][InIndex];
+         }
+         BIndex = d_index3d(imin-1,j,k,top_gmax);
+         solute[0][BIndex] = 0.0; // On wall normal velocity component vanish
+         //tangential velocities
+         for (i = imin; i < imin+lbuf[0]; i++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(lbuf[0]-1-i+imin,j,k,top_gmax);//This is Boundary State index
+              if (SLIP)
+              {
+                  solute[1][BIndex] = solute[1][InIndex];
+                  solute[2][BIndex] = solute[2][InIndex];
+              }
+         }
+     }
+     // X Upper
+     for (k = kmin; k <= kmax; k++)
+     for (j = jmin; j <= jmax; j++)
+     {
+         //normal velocities
+         for (i = imax-ubuf[0]; i <= imax-1; i++)// X Upper
+         {
+             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+             BIndex = d_index3d(2*imax-i,j,k,top_gmax);//This is Boundary State index
+             solute[0][BIndex] = -solute[0][InIndex];
+         }
+         BIndex = d_index3d(imax,j,k,top_gmax);
+         solute[0][BIndex] = 0.0; // On wall normal velocity component vanish
+         //tangential velocities
+         for (i = imax-ubuf[0]+1; i <= imax; i++)// X Upper
+         {
+             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+             BIndex = d_index3d(2*imax+1-i,j,k,top_gmax);//This is Boundary State index
+             if (SLIP)
+             {
+                 solute[1][BIndex] = solute[1][InIndex];
+                 solute[2][BIndex] = solute[2][InIndex];
+             }
+         }
+     }
+     // Y Lower
+     for (k = kmin; k <= kmax; k++)
+     for (i = 0; i <= imax+ubuf[0]; i++)
+     {
+         //normal velocities
+         for (j = jmin; j < jmin+lbuf[1]-1; j++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(i,lbuf[1]-2-j+jmin,k,top_gmax);//This is Boundary State index
+              solute[1][BIndex] = -solute[1][InIndex];
+         }
+         BIndex = d_index3d(i,jmin-1,k,top_gmax);
+         solute[1][BIndex] = 0.0; // On wall normal velocity component vanish
+         //tangential velocities
+         for (j = jmin; j < jmin+lbuf[1]; j++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(i,lbuf[1]-1-j+jmin,k,top_gmax);//This is Boundary State index
+              if (SLIP)
+              {
+                  solute[0][BIndex] = solute[0][InIndex];
+                  solute[2][BIndex] = solute[2][InIndex];
+              }
+         }
+     }
+     // Y Upper
+     for (k = kmin; k <= kmax; k++)
+     for (i = 0; i <= imax+ubuf[0]; i++)
+     {
+         //normal velocities
+         for (j = jmax-ubuf[1]; j <= jmax-1; j++)//Y Upper
+         {
+             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+             BIndex = d_index3d(i,2*jmax-j,k,top_gmax);//This is Boundary State index
+             solute[1][BIndex] = -solute[1][InIndex];
+         }
+         BIndex = d_index3d(i,jmax,k,top_gmax);
+         solute[1][BIndex] = 0.0; // On wall normal velocity component vanish
+         //tangential velocities
+         for (j = jmax-ubuf[1]+1; j <= jmax; j++)//Y Upper
+         {
+             InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+             BIndex = d_index3d(i,2*jmax+1-j,k,top_gmax);//This is Boundary State index
+             if (SLIP)
+             {
+                  solute[0][BIndex] = solute[0][InIndex];
+                  solute[2][BIndex] = solute[2][InIndex];
+             }
+         }
+     }
 }
 
 
-//Reflection Boundary Condition Treatment
-void Incompress_Solver_Smooth_3D_Cartesian::enforceReflectionState(double **vel)
+//Reflection Boundary Condition Treatment for Vector
+//function name enforceReflectionState() => enforceVecState()
+void Incompress_Solver_Smooth_3D_Cartesian::enforceVecState(double **vel)
 {
      int       dir, side;
      INTERFACE *intfc = front->interf;
 
-     for (dir = 0; dir < dim; dir++)
+     // This revised version is HACKED HERE
+     // assumption is REFLECTIONS ON X and Y, NEUMANN on Z
+     for (dir = 0; dir < 2; dir++)
      for (side = 0; side < 2; side++)
      {
-         //if (rect_boundary_type(intfc,dir,side) == REFLECTION_BOUNDARY)
          if (intfc->rect_bdry_type[dir][side] == REFLECTION_BOUNDARY)
-         {
-             printf("dir = %d side = %d is REFLECTION_BOUNDARY\n", dir, side);
-             ReflectBC(dir, side, vel[dir]);
-         }
-         else if (intfc->rect_bdry_type[dir][side] == NEUMANN_BOUNDARY)
-         {
-             printf("dir = %d side = %d is NEUMANN_BOUNDARY\n", dir, side);
-             NeumannBC(dir, side, vel);
-         }
+             continue;
+         else
+            return;
      }
+     ReflectBC(vel);
+     printf("ReflectBC() was Called\n");
+     for (side = 0; side < 2; side++)
+     {
+         if (intfc->rect_bdry_type[2][side] == NEUMANN_BOUNDARY)
+             continue;
+         else
+             return;
+     }
+     NeumannBC(vel);
+     printf("NeumannBC() was Called\n");
 }
 
 // Convert GRID_DIRECTION into dir and side.
