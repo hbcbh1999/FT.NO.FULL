@@ -1,7 +1,7 @@
-Domain limit in 0-th dimension: 0 1
-Domain limit in 1-th dimension: 0 1
-Domain limit in 2-th dimension: 0 4
-Computational grid: 10 10 40
+Domain limit in 0-th dimension: 0 1.0
+Domain limit in 1-th dimension: 0 1.0
+Domain limit in 2-th dimension: 0 10.0
+Computational grid: 10 10 100
 Lower boundary in 0-th dimension: PERIODIC_BOUNDARY
 Upper boundary in 0-th dimension: PERIODIC_BOUNDARY
 Lower boundary in 1-th dimension: PERIODIC_BOUNDARY
@@ -10,7 +10,7 @@ Lower boundary in 2-th dimension: NEUMANN_BOUNDARY
 Upper boundary in 2-th dimension: NEUMANN_BOUNDARY
 
 Max time: 12000000
-Max step: 200
+Max step: 1000
 Print interval: 1.0
 Movie frame interval: 1.0
 CFL factor: 0.45
@@ -36,7 +36,7 @@ Projection type can be
         KIM_MOIN
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
-Enter mean position of fluid interface: 2.0
+Enter mean position of fluid interface: 5.0
 Enter the minimum mode numbers: 12
 Enter the maximum mode numbers: 24
 Enter the amplitude standard deviation: 5e-05
@@ -76,3 +76,4 @@ Type y to make vector velocity field movie: n
 Enter yes for debugging: yes
 Enter the debugging string: trace
 Enter the debugging string: step_size
+Enter the debugging string: PETSc

@@ -2017,52 +2017,6 @@ EXPORT double level_wave_func_cylindrical_init(
 
         dim = wave_params->dim;
         z = wave_params->z0;
-        av_phase = radians(av_phase);
-        P_sd = radians(P_sd);
-        num_modes = (max_n+2)*(max_n+1)/2 - min_n*(min_n+1)/2;
-        //xsubi_a[0] = 5123;      xsubi_a[1] = 234; xsubi_a[2] = 1979;
-        xsubi_a[0] = 82;      xsubi_a[1] = 1772; xsubi_a[2] = 813;
-        //xsubi_p[0] = 4857;      xsubi_p[1] = 123; xsubi_p[2] = 11001;
-        xsubi_p[0] = 6362;      xsubi_p[1] = 88; xsubi_p[2] = 183;
-
-        iii = 0;
-        for (n = min_n; n <= max_n; ++n)
-        {
-            for (m[0] = 0; m[0] <= n; ++m[0])
-            {
-                m[1] = (n - m[0]);
-                /*fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));*/
-                /*fprintf(stdout, "A%d %e\n", iii,A[iii]);*/
-                A[iii] = random_gaussian(0.0,A_sd,xsubi_a);
-                /*(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);*/
-                phase[iii] = random_gaussian(av_phase,P_sd,xsubi_p);
-                /*(void) printf("\tPhase for mode %d::%g\n",
-                              iii,degrees(phase[iii]));*/
-                for (jjj = 0; jjj < 2; ++jjj)
-                {
-                    nu = (double) m[jjj];
-                    /*(void) printf("\tfrequency for mode %d ",iii);
-                      (void) printf("direction %d::%g\n",jjj,nu);
-                      wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
-                      phase[i] += L[j]*wv_num[i][j];*/
-                    wv_num[iii][jjj] = 2.0*PI*nu/((U[iii]-L[jjj]));
-                    phase[iii] += L[0]*wv_num[iii][jjj];
-                }
-                ++iii;
-            }
-        }
-
-        t = 0.0;
-        sigma = 0.0;
-        for (iii = 0; iii < num_modes; iii++)
-        {
-            arg = 0.0;
-            for (jjj = 0; jjj < dim-1; jjj++)
-                arg += wv_num[iii][jjj]*coords[jjj];
-            arg -= phase[iii];
-            z += A[iii] * exp(sigma*t)*sin(arg);
-        }
-
         dist = coords[dim-1] - z;
         return dist;
 }

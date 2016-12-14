@@ -13510,13 +13510,6 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
         RECT_GRID *gr = front->rect_grid;
 
-	if (iFparams->width_idl != 0)
-	    initial_diff_layer = iFparams->width_idl;
-	else
-	    initial_diff_layer = top_h[MAXD-1];
-        printf("\nThe depth of initial diffusion layer for RSRV case is: %.16g\n", initial_diff_layer);
-        fprintf(stdout, "PRINT-HK z0 %e initial_diff_layer %e\n",pert->z0,initial_diff_layer);
-        fflush(NULL);
 
 
         FT_MakeGridIntfc(front);
@@ -13587,15 +13580,14 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 }
             }
 
-            z_intfc_pert = pert_interface_vd(pert,coords,0,dim); //TODO: should call "pert_height_vd"
+            //z_intfc_pert = pert_interface_vd(pert,coords,0,dim); //TODO: should call "pert_height_vd"
             //For SY
-            //double dist = level_wave_func_cylindrical_init(level_func_pack->func_params, coords);
-
-            cell_center[index].m_state.m_rho = 0.5*(m_rho[0]+m_rho[1]) + 0.5*(m_rho[0]-m_rho[1])*
-                                               erf((coords[dim-1]-z0 + z_intfc_pert-z0)/initial_diff_layer*2.0);
-//                                               erf((coords[dim-1]-z_intfc_pert)/initial_diff_layer*2.0)
+            double dist = level_wave_func_cylindrical_init(level_func_pack->func_params, coords);
+            if (dist>=0.0)
+                cell_center[index].m_state.m_rho = m_rho[0];
+            else
+                cell_center[index].m_state.m_rho = m_rho[1];
             //For SY
-            //cell_center[index].m_state.m_rho = 0.5*(m_rho[0]+m_rho[1]) + 0.5*(m_rho[0]-m_rho[1])*erf(dist/initial_diff_layer*4.0);
             cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
             //define dynamic mu = rho*(mu0+mu1)/(rho0+rho1) as eqn. (3.3) of Mueschke thesis
             mu = cell_center[index].m_state.m_rho*(m_mu[0]+m_mu[1])/(m_rho[0]+m_rho[1]);
@@ -13610,6 +13602,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
 
 
             //for MAC grid
+/*
             x_face = coords[0] + 0.5*top_h[0];
             if (pert->pert_bdry_type[0] == PERIODIC)
             {
@@ -13633,6 +13626,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 cell_center[index].m_state.m_U[dim-1] -= pert->vel_A[l]*sin(pert->nu[l][0]*coords[0]-pert->vel_phase[l])*
                                                          exp(-1.0*pert->nu[l][0]*fabs(z_face-z0));
             }
+ */
         }
 
         //scatter states
@@ -13816,7 +13810,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
         // ***************************************************************
         //     Add diffusion velocity due to the divergence constraint
         // ***************************************************************
-
+/*
         for (k = 0; k <= top_gmax[2]; k++)
         for (j = 0; j <= top_gmax[1]; j++)
         for (i = 0; i <= top_gmax[0]; i++)
@@ -13866,7 +13860,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSRV_vd(LEVEL_FU
                 max_speed = speed;
         }
         pp_global_max(&max_speed,1);
-
+*/
         if (debugging("step_size"))
             (void) printf("\nmax_speed of U_0 with diffusion velocity added is %.16g\n",max_speed);
 

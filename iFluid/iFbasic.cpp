@@ -264,6 +264,7 @@ void Incompress_Solver_Smooth_Basis::setIndexMap(void)
 	static boolean first = YES;
 	int i,j,k,ic,index;
 	int llbuf[MAXD],uubuf[MAXD];
+    INTERFACE *intfc = front->interf;
 
 	if (debugging("storage") && MAXD == 3)
 	    printf("top_max = (%d, %d, %d) in setIndexMap()\n", top_gmax[0],top_gmax[1],top_gmax[2]);
@@ -325,8 +326,16 @@ void Incompress_Solver_Smooth_Basis::setIndexMap(void)
                     index++;
                 }
 	    }
-	    //FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
-        Hacked_ReflectionIndex(front, ijk_to_I); // HACKED FOR REFLECTION ONLY
+        if (intfc->rect_bdry_type[0][0] == PERIODIC_BOUNDARY && intfc->rect_bdry_type[1][0] == PERIODIC_BOUNDARY)
+        {
+            FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
+            printf("PERIODIC_BOUNDARY, FT_ParallelExchCellIndex() is in used in %s\n", __func__);
+        }
+        if (intfc->rect_bdry_type[0][0] == REFLECTION_BOUNDARY && intfc->rect_bdry_type[1][0] == REFLECTION_BOUNDARY)
+        {
+            Hacked_ReflectionIndex(front, ijk_to_I); // HACKED FOR REFLECTION ONLY
+            printf("REFLECTION_BOUNDARY, Hacked_ReflectionIndex() is in used in %s\n", __func__);
+        }
 	    break;
 	}
 
@@ -5191,7 +5200,7 @@ void Hacked_ReflectionIndex(Front *fr, int ***IJK_to_I) // HACKED FOR REFLECTION
     int lbuf[dim], ubuf[dim], top_gmax[dim];
     lbuf[0] = ubuf[0] = 4; // REFLECTION BUFFER
     lbuf[1] = ubuf[1] = 4; // REFLECTION BUFFER
-    lbuf[2] = ubuf[2] = 1; // NEUMANN BUFFER
+    lbuf[2] = ubuf[2] = 0; // NEUMANN BUFFER
 	imax = gmax[0];
 	jmax = gmax[1];
 	kmax = gmax[2];
@@ -5219,7 +5228,7 @@ void Hacked_ReflectionIndex(Front *fr, int ***IJK_to_I) // HACKED FOR REFLECTION
         for (j = 4; j < jmax+4; ++j)//REFLECTION BC
         for (i = imax; i < imax+4; ++i)
         {
-            IJK_to_I[2*i-3*(i+1-imax)][j][k] = IJK_to_I[i][j][k];
+            IJK_to_I[2*imax+7-i][j][k] = IJK_to_I[i][j][k];
         }
         // Y LOWER
         for (i = 0; i < imax+8; ++i)//REFLECTION BC
@@ -5231,7 +5240,7 @@ void Hacked_ReflectionIndex(Front *fr, int ***IJK_to_I) // HACKED FOR REFLECTION
         for (i = 0; i < imax+8; ++i)//REFLECTION BC
         for (j = jmax; j < jmax+4; ++j)
         {
-            IJK_to_I[i][2*j-3*(j+1-jmax)][k] = IJK_to_I[i][j][k];
+            IJK_to_I[i][2*jmax+7-j][k] = IJK_to_I[i][j][k];
         }
     }
 }
