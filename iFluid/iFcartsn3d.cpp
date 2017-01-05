@@ -17792,7 +17792,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for estimated density explicitly
             start_clock("compNewDensity_vd(0)");
-            computeNewDensity_vd(0);
+            //computeNewDensity_vd(0);
             stop_clock("compNewDensity_vd(0)");
             if (debugging("step_size"))
             {
@@ -17809,7 +17809,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for accurate density explicitly, and calc dynamic viscosity
             start_clock("compNewDensity_vd(1)");
-            computeNewDensity_vd(1);
+            //computeNewDensity_vd(1);
             stop_clock("compNewDensity_vd(1)");
             if (debugging("step_size"))
             {
