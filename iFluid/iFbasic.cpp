@@ -4202,6 +4202,151 @@ void Incompress_Solver_Smooth_Basis::initSampleVelocity(char *in_name)
 
 void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 {
+    // A boundary condition capturing method for multiphase incomrpessible flow,
+    // M.Kang, R.P. Fedkiw, X-D, Liu, JSC, 2000
+    // formula (63) & (91)
+    if (m_sigma == 0.0)
+    {
+        printf("NO NEED for surface tension model\n");
+        return;
+    }
+	boolean status;
+	int i,j,k,l,index,sign;
+	COMPONENT comp;
+        double t[MAXD],*force;
+	double center[MAXD],point[MAXD],nor[MAXD],phi,H,D;
+	HYPER_SURF_ELEMENT *hse;
+        HYPER_SURF *hs;
+	double rho;
+    printf("HZ m_sigma = %f in func %s\n", m_sigma, __func__);
+
+	//Make sure the curvature and point normal are calculated
+	INTERFACE* intfc = front->interf;
+	double curv;
+	HYPER_SURF *hs_curv;
+	HYPER_SURF_ELEMENT *hse_curv;
+	POINT *p;
+	(void) next_point(intfc,NULL,NULL,NULL);
+	while (next_point(intfc,&p,&hse_curv,&hs_curv))
+	    GetFrontCurvature(p,hse_curv,hs_curv,&curv,front);
+	//////////////////////////////////////////////////
+
+/*
+	start_clock("SetRhoAndMu");
+	for (k = kmin; k <= kmax; k++)
+	for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+	{
+	    index  = d_index3d(i,j,k,top_gmax);
+	    comp  = cell_center[index].comp;
+	    D = 0.0;
+	    H = 0.0;
+
+	    if (!ifluid_comp(comp)) continue;
+
+	    getRectangleCenter(index, center);
+            status = FT_FindNearestIntfcPointInRange(front,comp,center,point,
+				t,&hse,&hs,(int)m_smoothing_radius);
+
+	    force = cell_center[index].m_state.f_surf;
+            for (l = 0; l < dim; ++l) force[l] = 0.0;
+
+	    if (status  == YES &&
+		ifluid_comp(positive_component(hs)) &&
+                ifluid_comp(negative_component(hs)))
+	    {
+		sign = (comp == m_comp[0]) ? -1 : 1;
+                D = smoothedDeltaFunction(center,point);
+                H = smoothedStepFunction(center,point,sign);
+                cell_center[index].m_state.m_mu = m_mu[0]  +
+                                        (m_mu[1]-m_mu[0])*H;
+                cell_center[index].m_state.m_rho = m_rho[0] +
+                                        (m_rho[1]-m_rho[0])*H;
+	    }
+	    else
+	    {
+		switch (comp)
+		{
+		case LIQUID_COMP1:
+		    cell_center[index].m_state.m_mu = m_mu[0];
+		    cell_center[index].m_state.m_rho = m_rho[0];
+		    break;
+		case LIQUID_COMP2:
+		    cell_center[index].m_state.m_mu = m_mu[1];
+		    cell_center[index].m_state.m_rho = m_rho[1];
+		    break;
+		}
+	    }
+	    rho = cell_center[index].m_state.m_rho;
+
+	    if (m_sigma != 0.0 && D != 0.0)
+	    {
+                surfaceTension_Fedkiw(D,hse,hs,force,m_sigma,rho,t);
+            }
+	}
+	stop_clock("SetRhoAndMu");
+*/
+	start_clock("SurfaceTension");
+	surfaceTension_Peskin();
+	stop_clock("SurfaceTension");
+
+	start_clock("ScatStates");
+
+	for (k = kmin; k <= kmax; k++)
+	for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+	{
+	    index  = d_index3d(i,j,k,top_gmax);
+	    array[index] = cell_center[index].m_state.m_mu;
+	}
+	scatMeshArray();
+	for (k = 0; k <= top_gmax[2]; k++)
+	for (j = 0; j <= top_gmax[1]; j++)
+	for (i = 0; i <= top_gmax[0]; i++)
+	{
+	    index  = d_index3d(i,j,k,top_gmax);
+	    cell_center[index].m_state.m_mu = array[index];
+	}
+	for (k = kmin; k <= kmax; k++)
+	for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+	{
+	    index  = d_index3d(i,j,k,top_gmax);
+	    array[index] = cell_center[index].m_state.m_rho;
+	}
+	scatMeshArray();
+	for (k = 0; k <= top_gmax[2]; k++)
+	for (j = 0; j <= top_gmax[1]; j++)
+	for (i = 0; i <= top_gmax[0]; i++)
+	{
+	    index  = d_index3d(i,j,k,top_gmax);
+	    cell_center[index].m_state.m_rho = array[index];
+	}
+    //TODO && FIXME Reflection Treatment Concern:
+	for (l = 0; l < dim; ++l)
+	{
+	    for (k = kmin; k <= kmax; k++)
+	    for (j = jmin; j <= jmax; j++)
+            for (i = imin; i <= imax; i++)
+	    {
+	    	index  = d_index3d(i,j,k,top_gmax);
+	    	array[index] = cell_center[index].m_state.f_surf[l];
+	    }
+	    scatMeshArray();
+	    for (k = 0; k <= top_gmax[2]; k++)
+	    for (j = 0; j <= top_gmax[1]; j++)
+	    for (i = 0; i <= top_gmax[0]; i++)
+	    {
+	    	index  = d_index3d(i,j,k,top_gmax);
+	    	cell_center[index].m_state.f_surf[l] = array[index];
+	    }
+	}
+	stop_clock("ScatStates");
+}
+
+/*
+void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
+{
 	boolean status;
 	int i,j,k,l,index,sign;
 	COMPONENT comp;
@@ -4308,7 +4453,9 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
 	    	cell_center[index].m_state.f_surf[l] = array[index];
 	    }
 	}
-}	/* end setSmoothedProperties in 3D */
+}
+*/
+/* end setSmoothedProperties in 3D */
 
 
 void Incompress_Solver_Smooth_3D_Basis::setSmoProOnePhase(void)

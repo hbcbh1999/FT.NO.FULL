@@ -962,8 +962,8 @@ protected:
         void getExactSolution_vd(double *coords,double t,L_STATE &state){};
 
 	void surfaceTension(double*, HYPER_SURF_ELEMENT*, HYPER_SURF*, double*, double);
-        void surfaceTension_Peskin(void) {};
-        //Not implemented
+        void surfaceTension_Peskin(void);// transformed Oak Ridge Version in Cylindrical3D
+        void compSurfaceTension_Tri(TRI*);
 
 	void computeSubgridModel(void) {};    // subgrid model
         void computeSubgridModel_vd(void);    // subgrid model

@@ -3715,7 +3715,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
             //add other terms to rhs
             rhs += m_dt*state.m_U[0];
-//            rhs += m_dt*cell_center[index].m_state.f_surf[0];
+            rhs += m_dt*cell_center[index].m_state.f_surf[0];
             rhs -= m_dt*cell_center[index].m_state.grad_q[0]/rho;
             rhs -= m_dt*cell_center[index].m_state.m_adv[0];
 
@@ -4366,7 +4366,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
             //add other terms to rhs
             rhs += m_dt*state.m_U[1];
-//            rhs += m_dt*cell_center[index].m_state.f_surf[1];
+            rhs += m_dt*cell_center[index].m_state.f_surf[1];
             rhs -= m_dt*cell_center[index].m_state.grad_q[1]/rho;
             rhs -= m_dt*cell_center[index].m_state.m_adv[1];
 
@@ -5406,7 +5406,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
             //add other terms to rhs
             rhs += m_dt*state.m_U[2];
-//            rhs += m_dt*cell_center[index].m_state.f_surf[2];
+            rhs += m_dt*cell_center[index].m_state.f_surf[2];
             rhs -= m_dt*cell_center[index].m_state.grad_q[2]/rho;
             rhs -= m_dt*cell_center[index].m_state.m_adv[2];
 
@@ -14136,6 +14136,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             }
 */
         }
+        setSmoothedProperties();
 
         /*
          * removal tag: HAOZ
@@ -14508,6 +14509,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         //    Initialize pressure field by laplace(p) = div(rho*g)
         //                                 dp/dn = rho*g on bdry
         // ***************************************************************
+        //TODO && FIXME: surface tension model taken into account. Pressure No Longer continuous across the INTERFACE
         double P_max,P_min;
         double gz = iFparams->gravity[dim-1];
         int    I;
@@ -14518,7 +14520,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         for (i = 0; i <= top_gmax[0]; i++)
         {
             index = d_index3d(i,j,k,top_gmax);
-            vel[l][index] = cell_center[index].m_state.m_rho*iFparams->gravity[l];
+            vel[l][index] = cell_center[index].m_state.m_rho*iFparams->gravity[l] + cell_center[index].m_state.f_surf[l];//surface tension introduced
             //nonhomogeneous Neumann BC for top/bottom bdry
             diff_coeff[index] = cell_center[index].m_state.m_rho*gz;
         }
@@ -14642,6 +14644,36 @@ void Incompress_Solver_Smooth_3D_Cartesian::printInteriorVelocity(char *out_name
                     vel_z = cell_center[index].m_state.grad_q[2];
                     fprintf(outfile, "%.16g %.16g %.16g\n",vel_x, vel_y, vel_z);
                 }
+            }
+            fprintf(outfile, "SCALARS surften1 double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                vel_x = cell_center[index].m_state.f_surf[0];
+                fprintf(outfile, "%.16g\n",vel_x);
+            }
+            fprintf(outfile, "SCALARS surften2 double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                vel_y = cell_center[index].m_state.f_surf[1];
+                fprintf(outfile, "%.16g\n",vel_y);
+            }
+            fprintf(outfile, "SCALARS surften3 double\n");
+            fprintf(outfile, "LOOKUP_TABLE default\n");
+            for(i = 0; i <= top_gmax[0]; ++i)
+            for(j = 0; j <= top_gmax[1]; ++j)
+            for(k = 0; k <= top_gmax[2]; ++k)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                vel_z = cell_center[index].m_state.f_surf[2];
+                fprintf(outfile, "%.16g\n",vel_z);
             }
             if(iFparams->movie_option->plot_velo)
             {
@@ -17779,6 +17811,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
         else //front->step>0, other time-steps
             tol_num = 1;
 
+        setSmoothedProperties();// Heaviside function and Peskin version of Surface Tension model
         ite_num = 0;
         while (ite_num < tol_num)
         {
@@ -17792,7 +17825,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for estimated density explicitly
             start_clock("compNewDensity_vd(0)");
-            //computeNewDensity_vd(0);
+            computeNewDensity_vd(0);
             stop_clock("compNewDensity_vd(0)");
             if (debugging("step_size"))
             {
@@ -17809,7 +17842,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for accurate density explicitly, and calc dynamic viscosity
             start_clock("compNewDensity_vd(1)");
-            //computeNewDensity_vd(1);
+            computeNewDensity_vd(1);
             stop_clock("compNewDensity_vd(1)");
             if (debugging("step_size"))
             {
@@ -24173,4 +24206,153 @@ bool Incompress_Solver_Smooth_3D_Cartesian::FT_Reflect(int *icoords, int dir, in
     if (icoords[dir] == wallIndex[dir][side])
         return true;
     return false;
+}
+
+// Oak Ridge Version Cylindrical3D
+void Incompress_Solver_Smooth_3D_Cartesian::surfaceTension_Peskin(void)
+{
+
+    printf("Calling Function %s\n",__func__);
+    INTERFACE* intfc = front->interf;
+
+    //Go through all the triangles
+    SURFACE **s;
+    TRI *tri;
+
+    for (s = intfc->surfaces; s && *s; ++s)
+    {
+	for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+	{
+	    compSurfaceTension_Tri(tri);
+	}
+    }
+}
+
+/* Reference:
+ *
+ * Development of a Front Tracking Method for Two-Phase Micromixing of Incompressible
+ * Viscous Fluids with Interfacial Tension in Solvent Extraction
+ * Equation(3.4) (3.5) (3.7) (3.8)
+ * */
+void Incompress_Solver_Smooth_3D_Cartesian::compSurfaceTension_Tri(TRI* triangle)
+{
+    POINT *point_tri;
+    int i,j,k;
+    int range = m_smoothing_radius;
+    //int range = 2;
+    int icoords[3];
+    double tri_center[3], tri_nor[3];
+    double grid_center[3];
+    double force_on_tri[3], *force_on_cell;
+
+    double tri_area = 0.0;
+    double tri_curvature = 0.0;
+    double point_curvature = 0.0;
+    double mag_nor = 0.0;
+
+    int cell_imin, cell_jmin, cell_kmin;
+    int cell_imax, cell_jmax, cell_kmax;
+
+    double prec[3][3];
+    double edge[3][3];
+
+    int index;
+
+    for (int m = 0; m < 3; m++)
+    {
+	tri_center[m] = tri_nor[m] = grid_center[m]
+	    = force_on_tri[m] = 0.0;
+    }
+
+    for (int p = 0; p < 3; p++)
+    {
+	point_tri = Point_of_tri(triangle)[p];
+
+    //TODO && FIXME: reformulate here from cylindrical3d to cartesian3d
+    // this is to transform cylindrical3d coordinate to cartesian3d.
+    /*
+	prec[p][0] = Coords(point_tri)[2]*cos(Coords(point_tri)[0]);
+	prec[p][1] = Coords(point_tri)[2]*sin(Coords(point_tri)[0]);
+	prec[p][2] = Coords(point_tri)[1];
+    */
+
+	prec[p][0] = Coords(point_tri)[0];
+	prec[p][1] = Coords(point_tri)[1];
+	prec[p][2] = Coords(point_tri)[2];
+
+
+	for (int l = 0; l < 3; l++)
+	{
+	    tri_center[l] += Coords(point_tri)[l];
+	}
+
+	point_curvature = point_tri->curvature;
+	tri_curvature += point_curvature;
+    }
+    tri_curvature /= 3.0;
+
+    for (int l = 0; l < 3; l++)
+    {
+	tri_center[l] /= 3.0;
+	tri_nor[l] = Tri_normal(triangle)[l];
+    }
+
+    mag_nor = mag_vector(tri_nor,3);
+
+    //tri_area might need to be revised
+
+    for (int m = 0; m < 3; m++)
+    {
+	edge[0][m] = prec[1][m] - prec[0][m];
+	edge[1][m] = prec[2][m] - prec[1][m];
+	edge[2][m] = prec[0][m] - prec[2][m];
+    }
+    double edge_len1 = mag_vector(edge[0], 3);
+    double edge_len2 = mag_vector(edge[1], 3);
+    double edge_len3 = mag_vector(edge[2], 3);
+    double hallen = (edge_len1 + edge_len2 + edge_len3) / 2.0;
+
+    tri_area = sqrt( hallen*(hallen - edge_len1)*(hallen - edge_len2)*(hallen - edge_len3) );
+
+    /////////////////////////////////
+
+    for (int l = 0; l < 3; l++)
+    {
+	tri_nor[l] /= mag_nor;
+	force_on_tri[l] = 2.0 * m_sigma * tri_curvature * tri_nor[l] * tri_area;
+
+        if(tri_area < 1e-16)
+            force_on_tri[l] = 0.0;
+    }
+
+
+
+    for (int l = 0; l < 3; l++)
+	icoords[l] = cell_index(tri_center[l],l,top_grid);
+
+    cell_imin = std::max(imin, icoords[0] - range);
+    cell_jmin = std::max(jmin, icoords[1] - range);
+    cell_kmin = std::max(kmin, icoords[2] - range);
+
+    cell_imax = std::min(imax, icoords[0] + range);
+    cell_jmax = std::min(jmax, icoords[1] + range);
+    cell_kmax = std::min(kmax, icoords[2] + range);
+
+    for (k = cell_kmin; k <= cell_kmax; k++)
+    for (j = cell_jmin; j <= cell_jmax; j++)
+    for (i = cell_imin; i <= cell_imax; i++)
+    {
+	index = d_index3d(i,j,k,top_gmax);
+	for (int m = 0; m < 3; m++)
+	    grid_center[m] = cell_center[index].m_coords[m];
+
+    //TODO && FIXME: Revising New Smoothing Function here
+	double D = getSmoothingFunctionD(tri_center, grid_center);
+
+	double rho = cell_center[index].m_state.m_rho;
+	//force_on_cell = cell_center[index].m_state.f_surf;
+
+	for (int m = 0; m < 3; m++)
+	    cell_center[index].m_state.f_surf[m] += (-force_on_tri[m]*D/rho);
+    }
 }
