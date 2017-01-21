@@ -40,7 +40,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // VERSIONTWO has more complicated geometry
 #define VERSIONONE NO
 #define VERSIONTWO NO
-#define VERSIONTHREE NO
+#define VERSIONTHREE YES
 #define DEBUG_STRING "i_make_curve"
 
 #include <intfc/int.h>
