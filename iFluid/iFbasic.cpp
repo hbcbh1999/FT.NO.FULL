@@ -42,6 +42,7 @@ void L_STATE::setZero()
             grad_q[i] = 0;
             m_mu_turbulent[i] = 0;
             m_Dcoef_turbulent[i] = 0;
+            f_surf[i] = 0;// introduced surface tension
         }
         m_mu_turbulent[MAXD] = 0;
         m_Dcoef_turbulent[MAXD] = 0;

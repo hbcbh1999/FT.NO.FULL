@@ -1909,7 +1909,12 @@ EXPORT double level_wave_func_Meniscus(
         }
         else if (dim == 3)
         {
-            if (VERSIONONE)
+            // This is the switch for Contact Angle and Meniscus
+            if (angle == 90 || meniscus == 0.0)
+            {
+                return dist;
+            }
+            else if (VERSIONONE)
             {
                 if (areaOne(x, y, meniscus))
                 {
@@ -1976,10 +1981,6 @@ EXPORT double level_wave_func_Meniscus(
                 {
                     return dist;
                 }
-            }
-            else
-            {
-                 return dist;
             }
         }
         else
