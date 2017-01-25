@@ -14520,9 +14520,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         for (i = 0; i <= top_gmax[0]; i++)
         {
             index = d_index3d(i,j,k,top_gmax);
-            vel[l][index] = cell_center[index].m_state.m_rho*iFparams->gravity[l] + cell_center[index].m_state.f_surf[l];//surface tension introduced
+            vel[l][index] = cell_center[index].m_state.m_rho*(iFparams->gravity[l] + cell_center[index].m_state.f_surf[l]);//surface tension introduced
             //nonhomogeneous Neumann BC for top/bottom bdry
-            diff_coeff[index] = cell_center[index].m_state.m_rho*gz;
+            diff_coeff[index] = cell_center[index].m_state.m_rho*(gz+cell_center[index].m_state.f_surf[2]);//surface
         }
 
         for (k = kmin; k <= kmax; k++)
