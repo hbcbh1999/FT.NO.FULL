@@ -1851,7 +1851,8 @@ EXPORT double level_wave_func_Meniscus(
         z = wave_params->z0;
         // FOCUS ON EDGE AND CORNER EFFECTS. NO FOURIER MODES. Smeeton Youngs' 105 Experiment.
 //Comment Start NO FOURIER MODE
-/*
+if (min_n != 0 && max_n != 0)
+{
         av_phase = radians(av_phase);
         P_sd = radians(P_sd);
         num_modes = (max_n+2)*(max_n+1)/2 - min_n*(min_n+1)/2;
@@ -1897,7 +1898,7 @@ EXPORT double level_wave_func_Meniscus(
             arg -= phase[iii];
             z += A[iii] * exp(sigma*t)*cos(arg);
         }
-*/
+}
 //Comment End NO FOURIER MODE
         dist = coords[dim-1] - z;
         // TODO && FIXME: copy 3D meniscus back here.
