@@ -765,7 +765,7 @@ static  void ifluid_driver(
 	    }
 	    if (debugging("trace"))
                 (void) printf("After print output()\n");
-            //if (FT_IsMovieFrameTime(front))
+            if (FT_IsMovieFrameTime(front))
 	    {
                 //print P-node/state files for making plot
                 l_cartesian->printInteriorVelocity(out_name);
