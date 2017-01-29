@@ -1,7 +1,7 @@
-Domain limit in 0-th dimension: 0 1.0
-Domain limit in 1-th dimension: 0 1.0
-Domain limit in 2-th dimension: 0 10.0
-Computational grid: 10 10 100
+Domain limit in 0-th dimension: 0 7.6
+Domain limit in 1-th dimension: 0 2.6
+Domain limit in 2-th dimension: 0 20.0
+Computational grid: 38 13 100
 Lower boundary in 0-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 0-th dimension: REFLECTION_BOUNDARY
 Lower boundary in 1-th dimension: REFLECTION_BOUNDARY
@@ -9,7 +9,7 @@ Upper boundary in 1-th dimension: REFLECTION_BOUNDARY
 Lower boundary in 2-th dimension: NEUMANN_BOUNDARY
 Upper boundary in 2-th dimension: NEUMANN_BOUNDARY
 
-Max time: 12000
+Max time: 80
 Max step: 1000
 Print interval: 1.0
 Movie frame interval: 1.0
@@ -36,9 +36,9 @@ Projection type can be
         KIM_MOIN
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
-Enter mean position of fluid interface: 5.0
-Enter the minimum mode numbers: 1
-Enter the maximum mode numbers: 1
+Enter mean position of fluid interface: 7.5
+Enter the minimum mode numbers: 12
+Enter the maximum mode numbers: 24
 Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
