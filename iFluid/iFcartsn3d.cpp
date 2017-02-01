@@ -18001,7 +18001,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
         double usum_vf1,usum_vf2,usum_vf1vf2,umean_vf1,umean_vf2,umean_vf1vf2;
         double vf1,vf2,vf1vf2,uvf1,uvf2,uvf1vf2;
 
-	z0 = (GL[dim-1] + GU[dim-1])/2.0;
+	//z0 = (GL[dim-1] + GU[dim-1])/2.0;
+        printf("HZ z0 = %f\n", z0);
         A = fabs(m_rho[1]-m_rho[0])/(m_rho[1]+m_rho[0]);
         g = fabs(iFparams->gravity[dim-1]);
         t2 = front->time*front->time;
