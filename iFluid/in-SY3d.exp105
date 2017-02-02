@@ -37,13 +37,13 @@ Projection type can be
         PEROT_BOTELLA
 Enter projection type: BELL_COLELLA
 Enter mean position of fluid interface: 7.5
-Enter the minimum mode numbers: 12
-Enter the maximum mode numbers: 24
+Enter the minimum mode numbers: 0
+Enter the maximum mode numbers: 0
 Enter the amplitude standard deviation: 1e-04
 Enter the average phase: 0
 Enter the phase standard deviation: 90
 Enter the degree of Contact Angle: 90
-Enter the starting point of Meniscus: 0.0
+Enter the starting point of Meniscus: 0
 
 Choices for the perturbation boundary type are
         PERIODIC
@@ -51,8 +51,8 @@ Choices for the perturbation boundary type are
         UNMODIFIED
 Enter the boundary type of perturbation in direction 0: SYMMETRIC
 Enter the boundary type of perturbation in direction 1: SYMMETRIC
-Enter density and viscosity of fluid 1: 0.0739 0.000161
-Enter density and viscosity of fluid 2: 0.626 0.00363
+Enter density and viscosity of fluid 1: 0.0739 0.000000161
+Enter density and viscosity of fluid 2: 0.626 0.00000363
 Enter concentration and binary diffusivity of fluid 1: 0 0
 Enter concentration and binary diffusivity of fluid 2: 0 0
 Enter gravity: 0 0 0.014715
