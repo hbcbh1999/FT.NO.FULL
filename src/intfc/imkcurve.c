@@ -1849,6 +1849,35 @@ EXPORT double level_wave_func_Meniscus(
 
         dim = wave_params->dim;
         z = wave_params->z0;
+
+        // if introduced here, perturbed boundary condition which makes adjustment of coordinates will produce errors on interface.
+/*
+        for (i=0; i<dim-1; ++i)
+        {
+            if (wave_params->pert_bdry_type[i] == PERIODIC)
+            {
+
+                while (coords[i] < L[i])
+                    coords[i] += (U[i] - L[i]);
+                while (coords[i] > U[i])
+                    coords[i] -= (U[i] - L[i]);
+            }
+            else if (wave_params->pert_bdry_type[i] == SYMMETRIC)
+            {
+                if (coords[i] < L[i])
+                    coords[i] = 2.0*L[i] - coords[i];
+                if (coords[i] > U[i])
+                    coords[i] = 2.0*U[i] - coords[i];
+            }
+            else
+            {
+                (void) printf("pert->pert_bdry_type[%d] == UNMODIFIED\n",i);
+                fflush(stdout);
+                clean_up(ERROR);
+            }
+        }
+*/
+
         // FOCUS ON EDGE AND CORNER EFFECTS. NO FOURIER MODES. Smeeton Youngs' 105 Experiment.
 //Comment Start NO FOURIER MODE
 if (min_n != 0 && max_n != 0)
