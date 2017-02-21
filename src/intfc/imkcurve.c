@@ -39,8 +39,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // Another way to clean up this section is to simply delete the rest versions and keep VERSIONTWO.
 // VERSIONTWO has more complicated geometry
 #define VERSIONONE NO
-#define VERSIONTWO NO
-#define VERSIONTHREE YES
+#define VERSIONTWO YES
+#define VERSIONTHREE NO
 #define DEBUG_STRING "i_make_curve"
 
 #include <intfc/int.h>
