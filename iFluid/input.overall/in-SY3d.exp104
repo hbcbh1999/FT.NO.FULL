@@ -51,8 +51,8 @@ Choices for the perturbation boundary type are
         UNMODIFIED
 Enter the boundary type of perturbation in direction 0: SYMMETRIC
 Enter the boundary type of perturbation in direction 1: SYMMETRIC
-Enter density and viscosity of fluid 1: 0.034 0.000161
-Enter density and viscosity of fluid 2: 0.626 0.00363
+Enter density and viscosity of fluid 1: 0.034 0.00000218
+Enter density and viscosity of fluid 2: 0.626 0.00000363
 Enter concentration and binary diffusivity of fluid 1: 0 0
 Enter concentration and binary diffusivity of fluid 2: 0 0
 Enter gravity: 0 0 0.015696
