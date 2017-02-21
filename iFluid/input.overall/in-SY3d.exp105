@@ -1,7 +1,7 @@
 Domain limit in 0-th dimension: 0 7.5
 Domain limit in 1-th dimension: 0 2.5
 Domain limit in 2-th dimension: 0 20.0
-Computational grid: $((168*$4)) $((56*$4)) $((448*$4))
+Computational grid: $((42*$4)) $((14*$4)) $((112*$4))
 Lower boundary in 0-th dimension: REFLECTION_BOUNDARY
 Upper boundary in 0-th dimension: REFLECTION_BOUNDARY
 Lower boundary in 1-th dimension: REFLECTION_BOUNDARY
