@@ -1843,9 +1843,15 @@ EXPORT double level_wave_func_Meniscus(
         double nu;
         double angle = wave_params->contact_angle; // Contact Angle
         double meniscus = wave_params->Meniscus; // position of Meniscus
-        int iii, jjj, n, m[2], k[3];
+        int iii, jjj, n, m;
         unsigned short int xsubi_a[3], xsubi_p[3];
         double height1 = meniscus * 1.0 / tan(angle*1.0/180.0*PI);
+        double wv_len = wave_params->wv_len; // This is the most unstable wavelength.
+        double k_m, k_min, k_max, k_x, k_y;
+        int    min_m, max_m;
+        double x = coords[0];
+        double y = coords[1];
+        //printf("wv_len = %f in function %s\n", wv_len, __func__);
 
         dim = wave_params->dim;
         z = wave_params->z0;
@@ -1880,11 +1886,27 @@ EXPORT double level_wave_func_Meniscus(
 
         // FOCUS ON EDGE AND CORNER EFFECTS. NO FOURIER MODES. Smeeton Youngs' 105 Experiment.
 //Comment Start NO FOURIER MODE
-if (min_n != 0 && max_n != 0)
-{
-        av_phase = radians(av_phase);
+//if (min_n != 0 && max_n != 0)
+//{
+        // This is a new perturbation theory for SY105, 99, 103, 104 and114:
+        // Since we're using reflective boundary condition on X and Y direction, which makes level set function inherits its symmetry property, aka symmetry boundary condition
+        // Fourier Series is cosine based only. = \sum_{m,n>0} A_{mn} cos(m k_x x) cos(n k_y y)
+        // wavelength goes from 0.5*lambda_m to 1.5*lambda_m, where lambda_m is the most unstable wavelength from previous context.
+        // lambda_{min} = 0.5*lambda_m; lambda_{max} = 1.5*lambda_{m}.
+        // Using relationship k = 2*PI/lambda, where k is wavenumber and lambda is wavelength, we could define corresponding term k_m = 2*PI/lambda_m.
+        // So, are k_{min} = k_m*lambda_m/lambda_{max} = 2/3*k_m; k_{max} = k_m*lambda_m/lambda_{min} = 2*k_m.
+        // k_{x,y} = 2*PI/L_{x,y}, where L_{x,y} are the width of the tank. this is the smallest wavenumber
+        // no phase information here. phase = 0
+        k_m = 2.0*PI/wv_len;
+        k_min = 2.0/3*k_m;
+        k_max = 2.0*k_m;
+        k_x = 2.0*PI/(U[0]-L[0]); // along X direction
+        k_y = 2.0*PI/(U[1]-L[1]); // along Y direction
+        min_n = (int) k_m/k_y; // amplitude of long wavelength in Y direction is 0
+        max_n = (int) k_max/k_y;
+        min_m = (int) k_min/k_x;
+        max_m = (int) k_max/k_x;
         P_sd = radians(P_sd);
-        num_modes = (max_n+2)*(max_n+1)/2 - min_n*(min_n+1)/2;
         //xsubi_a[0] = 5123;      xsubi_a[1] = 234; xsubi_a[2] = 1979;
         xsubi_a[0] = 82;      xsubi_a[1] = 1772; xsubi_a[2] = 813;
         //xsubi_p[0] = 4857;      xsubi_p[1] = 123; xsubi_p[2] = 11001;
@@ -1893,46 +1915,26 @@ if (min_n != 0 && max_n != 0)
         iii = 0;
         for (n = min_n; n <= max_n; ++n)
         {
-            for (m[0] = 0; m[0] <= n; ++m[0])
+            for (m = min_m; m <= max_m; ++m)
             {
-                m[1] = (n - m[0]);
                 //fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));
                 //fprintf(stdout, "A%d %e\n", iii,A[iii]);
                 A[iii] = random_gaussian(0.0,A_sd,xsubi_a);
                 //(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);
-                phase[iii] = random_gaussian(av_phase,P_sd,xsubi_p);
                 //(void) printf("\tPhase for mode %d::%g\n",
                     //          iii,degrees(phase[iii]));
-                for (jjj = 0; jjj < 2; ++jjj)
-                {
-                    nu = (double) m[jjj];
-                    //(void) printf("\tfrequency for mode %d ",iii);
-                    //  (void) printf("direction %d::%g\n",jjj,nu);
-                    //  wv_num[i][j] = 2.0*PI*nu/((U[j]-L[j]));
-                    //  phase[i] += L[j]*wv_num[i][j];
-                    wv_num[iii][jjj] = 2.0*PI*nu/((U[jjj]-L[jjj]));
-                    phase[iii] += L[0]*wv_num[iii][jjj];
-                }
-                ++iii;
+
+                wv_num[iii][0] = m*k_x;
+                wv_num[iii][1] = n*k_y;
+                z += A[iii]*cos(wv_num[iii][0]*x)*cos(wv_num[iii][1]*y);
             }
         }
+        //printf("num_modes = %d\n", num_modes);
 
-        t = 0.0;
-        sigma = 0.0;
-        for (iii = 0; iii < num_modes; iii++)
-        {
-            arg = 0.0;
-            for (jjj = 0; jjj < dim-1; jjj++)
-                arg += wv_num[iii][jjj]*coords[jjj];
-            arg -= phase[iii];
-            z += A[iii] * exp(sigma*t)*cos(arg);
-        }
-}
+//}
 //Comment End NO FOURIER MODE
         dist = coords[dim-1] - z;
         // TODO && FIXME: copy 3D meniscus back here.
-        double x = coords[0];
-        double y = coords[1];
         if (dim == 2)
         {
             return dist;

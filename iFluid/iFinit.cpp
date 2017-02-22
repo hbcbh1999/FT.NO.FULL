@@ -172,6 +172,12 @@ static void initRSSYIntfc(
         FILE *infile = fopen(inname,"r");
         int i,j,dim,num_modes;
         char mesg[100],s[Gets_BUF_SIZE],sbdry[200];
+        double surfacetension, wv_len,grav,rhop1,rhop2;//for the calculation of wavelength
+        //variable naming rule and reference here:
+        //surfacetension is surface tension
+        //wv_len is most unstable wavelength from Smeeton Youngs' paper
+        //grav is experimental gravity, thanks to very specific experiment, it's a scalar(only exists on Z direction)
+        //rhop1, rhop2 are densities of 1 and 2
 
         if (debugging("trace"))
             (void) printf("Enter initRSSYIntfc()!\n");
@@ -227,6 +233,10 @@ static void initRSSYIntfc(
             fscanf(infile,"%lf",&iFparams->gravity[i]);
             (void) printf("%12.8g ",iFparams->gravity[i]);
         }
+        rhop1 = iFparams->rho1;
+        rhop2 = iFparams->rho2;
+        grav = iFparams->gravity[2];
+        //printf("Density 1 is %f; Density 2 is %f; Gravity is %f in function %s\n",rhop1, rhop2, grav,__func__);
         (void) printf("\n");
         CursorAfterString(infile,"Enter surface tension:");
         fscanf(infile,"%lf",&iFparams->surf_tension);
@@ -234,6 +244,7 @@ static void initRSSYIntfc(
         CursorAfterString(infile,"Enter factor of smoothing radius:");
         fscanf(infile,"%lf",&iFparams->smoothing_radius);
         (void) printf("%12.8g\n",iFparams->smoothing_radius);
+        surfacetension = iFparams->surf_tension;
 
         // Add Contact Angle for Smeeton Youngs Experiment 105
         // level_func_params->contact_angle == 0 => NO Mensicus
@@ -280,6 +291,18 @@ static void initRSSYIntfc(
                 level_func_params.pert_bdry_type[i] = UNMODIFIED;
                 break;
             }
+        }
+        // Introduce critical wavelength because of the existence of surface tension.
+        if (surfacetension > 0.0)
+        {
+             wv_len = 2*PI*sqrt(3*surfacetension/(grav*fabs(rhop1-rhop2)));
+            level_func_params.wv_len = wv_len;
+            //printf("most unstable wavelength is %f in func %s\n", wv_len,__func__);
+        }
+        else
+        {
+            printf("ERROR! NO surface tension was considered! More Implementation/Consideration Needed.\n");
+             clean_up(ERROR);
         }
 
         level_func_pack->func_params = (POINTER)&level_func_params;

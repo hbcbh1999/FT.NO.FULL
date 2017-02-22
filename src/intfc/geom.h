@@ -340,6 +340,7 @@ typedef struct {
     double contact_angle;
     double Meniscus;
         PERT_BDRY_TYPE  pert_bdry_type[3];
+    double wv_len;//most unstable wavelength in Smeeton Youngs' Experiment III
 } FOURIER_POLY;
 
 struct _RANDOM_PARAMS_VD
