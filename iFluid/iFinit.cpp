@@ -204,6 +204,13 @@ static void initRSSYIntfc(
         CursorAfterString(infile,"Enter the maximum mode numbers:");
         fscanf(infile,"%d",&level_func_params.max_n);
         (void) printf("%d\n",level_func_params.max_n);
+        // This is for single mode ONLY
+        // Otherwise the amplitude data will just be dumped and useless
+        // For single model, as mentioned in level_wave_func_Meniscus(), amplitude goes from 1 mesh block up to 3 mesh block.
+        FT_VectorMemoryAlloc((POINTER*)&level_func_params.A,1,sizeof(double));
+        CursorAfterString(infile,"Enter the amplitude for single mode:");
+        fscanf(infile,"%lf",&level_func_params.A[0]);
+        (void) printf("%12.8g\n",level_func_params.A[0]);
         CursorAfterString(infile,"Enter the amplitude standard deviation:");
         fscanf(infile,"%lf",&level_func_params.A_sd);
         (void) printf("%12.8g\n",level_func_params.A_sd);

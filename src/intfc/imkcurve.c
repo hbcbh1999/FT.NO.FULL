@@ -1847,6 +1847,7 @@ EXPORT double level_wave_func_Meniscus(
         unsigned short int xsubi_a[3], xsubi_p[3];
         double height1 = meniscus * 1.0 / tan(angle*1.0/180.0*PI);
         double wv_len = wave_params->wv_len; // This is the most unstable wavelength.
+        double wave_len[2];// single mode wave_len for X and Y direction
         double k_m, k_min, k_max, k_x, k_y;
         int    min_m, max_m;
         double x = coords[0];
@@ -1897,6 +1898,17 @@ if (min_n != 0 && max_n != 0)
         // So, are k_{min} = k_m*lambda_m/lambda_{max} = 2/3*k_m; k_{max} = k_m*lambda_m/lambda_{min} = 2*k_m.
         // k_{x,y} = 2*PI/L_{x,y}, where L_{x,y} are the width of the tank. this is the smallest wavenumber
         // no phase information here. phase = 0
+        if (max_n == 1 && min_n == 1)
+        {
+            wave_len[0] = 2.0 * (U[0]-L[0]);
+            wave_len[1] = 2.0 * (U[1]-L[1]);
+            wv_num[0][0] = 2.0*PI/wave_len[0];
+            wv_num[0][1] = 2.0*PI/wave_len[1];
+            A[0] = wave_params->A[0];// single mode: amplitude of the wave is a multiple of mesh block, like 1, 2 or 3. Currently, it took a dummy value.
+            z += A[0]*cos(wv_num[0][0]*(x-L[0]))*cos(wv_num[0][1]*(y-L[1]));
+        }
+        else
+        {
         k_m = 2.0*PI/wv_len;
         k_min = 2.0/3*k_m;
         k_max = 2.0*k_m;
@@ -1929,7 +1941,7 @@ if (min_n != 0 && max_n != 0)
                 z += A[iii]*cos(wv_num[iii][0]*x)*cos(wv_num[iii][1]*y);
             }
         }
-        //printf("num_modes = %d\n", num_modes);
+        }
 
 }
 //Comment End NO FOURIER MODE
