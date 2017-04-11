@@ -1405,7 +1405,7 @@ EXPORT 	void scatter_cell_index(
 		}
 
 	    }
-	    pp_gsync();
+        pp_gsync(); // for REFLECTION_BOUNDARY and PERIODIC_BOUNDARY
 	    for (j = 0; j < 2; ++j)
 	    {
 		for (k = 0; k < dim; ++k)
@@ -1694,6 +1694,7 @@ LOCAL 	void reflect_index_in_dir3d(
 				IJK_to_I[gmax[0]+lbuf[0]-i-1][j][k];
 		}
 	    }
+        break; // missing!
 	case 1:
 	    if (nb == 0)
 	    {
@@ -1714,6 +1715,7 @@ LOCAL 	void reflect_index_in_dir3d(
 				IJK_to_I[i][gmax[1]+lbuf[1]-j-1][k];
 		}
 	    }
+        break; // missing!
 	case 2:
 	    if (nb == 0)
 	    {
@@ -1734,6 +1736,7 @@ LOCAL 	void reflect_index_in_dir3d(
 				IJK_to_I[i][j][gmax[2]+lbuf[2]-k-1];
 		}
 	    }
+        break; // missing!
 	}
 }	/* end reflect_index_in_dir3d */
 

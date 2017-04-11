@@ -23932,13 +23932,36 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
     int i, j, k;
     int InIndex, BIndex, InteriorIndex;
     //printf("in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
+    int index, machine_index[MAXD];// machine_index is partition icoords corresponding to pp_mynode() in function find_Cartesian_coordinates()
+    PP_GRID *pp_grid = front->pp_grid;
+    int *G; // partition info along each direction
+    int imin, imax, jmin, jmax, kmin, kmax;
+    RECT_GRID *rgr = &topological_grid(front->grid_intfc);
+    int *top_gmax = rgr->gmax;
+    int *lbuf = front->rect_grid->lbuf;
+    int *ubuf = front->rect_grid->ubuf;
+
+    G = pp_grid->gmax;
+    find_Cartesian_coordinates(pp_mynode(),pp_grid,machine_index);
+    imin = (lbuf[0] == 0) ? 1 : lbuf[0];
+    jmin = (lbuf[1] == 0) ? 1 : lbuf[1];
+    kmin = (lbuf[2] == 0) ? 1 : lbuf[2];
+    imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0];
+    jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1];
+    kmax = (ubuf[2] == 0) ? top_gmax[2] - 1 : top_gmax[2] - ubuf[2];
+
+
+    int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+    int GP[3][2] = {{0,G[0]-1},{0,G[1]-1},{0,G[2]-1}};
 
     // This is where the code takes care of Neumann Boundary Condition
     // NO X, Y Neumann Boundary Condition were implemented Yet.
     // TODO && FIXME:
     // This is NOT INDEPENDENT FUNCTION from the perspective of Logic
     // This function is called After ReflectBC() The ONLY Scenario
-     k = kmin;// Z lower
+    if (machine_index[2] == GP[2][0])//Z Lower
+    {
+        k = kmin;
     for (i = 0; i <= imax+ubuf[0]; i++)
     for (j = 0; j <= jmax+ubuf[1]; j++)
     {
@@ -23950,8 +23973,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
            solute[1][BIndex] = -solute[1][InIndex];
        }
        solute[2][BIndex] = 0.0;
+        }
     }
-    k = kmax;// Z upper
+    if (machine_index[2] == GP[2][1])//Z Upper
+    {
+        k = kmax;
     for (i = 0; i <= imax+ubuf[0]; i++)
     for (j = 0; j <= jmax+ubuf[1]; j++)
     {
@@ -23966,6 +23992,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
        solute[2][BIndex] = -solute[2][InteriorIndex];
     }
 }
+}
 
 //FUNC REFLECTION BOUNDARY CONDITION REVISED! Free-Slip Wall Condition
 // This is a revised version of Reflect BC.Partially Hacked
@@ -23974,9 +24001,33 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
     int i, j, k;
     int InIndex, BIndex;
     //printf("in func %s lbuf = [%d %d %d] ubuf = [%d %d %d]\n", __func__,lbuf[0], lbuf[1], lbuf[2], ubuf[0],ubuf[1], ubuf[2]);
+    int index, machine_index[MAXD];// machine_index is partition icoords corresponding to pp_mynode() in function find_Cartesian_coordinates()
+    PP_GRID *pp_grid = front->pp_grid;
+    int *G; // partition info along each direction
+    int imin, imax, jmin, jmax, kmin, kmax;
+    RECT_GRID *rgr = &topological_grid(front->grid_intfc);
+    int *top_gmax = rgr->gmax;
+    int *lbuf = front->rect_grid->lbuf;
+    int *ubuf = front->rect_grid->ubuf;
+
+    G = pp_grid->gmax;
+    find_Cartesian_coordinates(pp_mynode(),pp_grid,machine_index);
+    imin = (lbuf[0] == 0) ? 1 : lbuf[0];
+    jmin = (lbuf[1] == 0) ? 1 : lbuf[1];
+    kmin = (lbuf[2] == 0) ? 1 : lbuf[2];
+    imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0];
+    jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1];
+    kmax = (ubuf[2] == 0) ? top_gmax[2] - 1 : top_gmax[2] - ubuf[2];
+
+
+    int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+    int GP[3][2] = {{0,G[0]-1},{0,G[1]-1},{0,G[2]-1}};
+
 
     // This is where the code takes care of Reflecting Boundary Condition.
      // X Lower
+    if (machine_index[0] == GP[0][0])
+    {
      for (k = kmin; k <= kmax; k++)
      for (j = jmin; j <= jmax; j++)
      {
@@ -23998,10 +24049,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
               {
                   solute[1][BIndex] = solute[1][InIndex];
                   solute[2][BIndex] = solute[2][InIndex];
+    }
               }
          }
      }
      // X Upper
+    if (machine_index[0] == GP[0][1])
+    {
      for (k = kmin; k <= kmax; k++)
      for (j = jmin; j <= jmax; j++)
      {
@@ -24023,10 +24077,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
              {
                  solute[1][BIndex] = solute[1][InIndex];
                  solute[2][BIndex] = solute[2][InIndex];
+                 }
              }
          }
      }
      // Y Lower
+    if (machine_index[1] == GP[1][0])
+    {
      for (k = kmin; k <= kmax; k++)
      for (i = 0; i <= imax+ubuf[0]; i++)
      {
@@ -24048,10 +24105,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
               {
                   solute[0][BIndex] = solute[0][InIndex];
                   solute[2][BIndex] = solute[2][InIndex];
+    }
               }
          }
      }
      // Y Upper
+    if (machine_index[1] == GP[1][1])
+    {
      for (k = kmin; k <= kmax; k++)
      for (i = 0; i <= imax+ubuf[0]; i++)
      {
@@ -24073,6 +24133,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
              {
                   solute[0][BIndex] = solute[0][InIndex];
                   solute[2][BIndex] = solute[2][InIndex];
+}
              }
          }
      }
@@ -24202,8 +24263,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::checkBoundaryCondition(GRID_DIRECTIO
 // REFLECTION BOUNDARY CONDITION check if icoords is on the WALL.
 bool Incompress_Solver_Smooth_3D_Cartesian::FT_Reflect(int *icoords, int dir, int side)
 {
-    int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+    // This is a full-fledged, even though there is no Z direction.
+    int index, machine_index[MAXD];// machine_index is partition icoords corresponding to pp_mynode() in function find_Cartesian_coordinates()
+    PP_GRID *pp_grid = front->pp_grid;
+    int *G; // partition info along each direction
+    int imin, imax, jmin, jmax, kmin, kmax;
+    RECT_GRID *rgr = &topological_grid(front->grid_intfc);
+    int *top_gmax = rgr->gmax;
+    int *lbuf = front->rect_grid->lbuf;
+    int *ubuf = front->rect_grid->ubuf;
 
+    G = pp_grid->gmax;
+    find_Cartesian_coordinates(pp_mynode(),pp_grid,machine_index);
+    imin = (lbuf[0] == 0) ? 1 : lbuf[0];
+    jmin = (lbuf[1] == 0) ? 1 : lbuf[1];
+    kmin = (lbuf[2] == 0) ? 1 : lbuf[2];
+    imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0];
+    jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1];
+    kmax = (ubuf[2] == 0) ? top_gmax[2] - 1 : top_gmax[2] - ubuf[2];
+
+
+    int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+    int GP[3][2] = {{0,G[0]-1},{0,G[1]-1},{0,G[2]-1}};
+
+    if (machine_index[dir] == GP[dir][side])
     if (icoords[dir] == wallIndex[dir][side])
         return true;
     return false;

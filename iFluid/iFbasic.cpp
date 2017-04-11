@@ -327,16 +327,7 @@ void Incompress_Solver_Smooth_Basis::setIndexMap(void)
                     index++;
                 }
 	    }
-        if (intfc->rect_bdry_type[0][0] == PERIODIC_BOUNDARY && intfc->rect_bdry_type[1][0] == PERIODIC_BOUNDARY)
-        {
-            FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
-            printf("PERIODIC_BOUNDARY, FT_ParallelExchCellIndex() is in used in %s\n", __func__);
-        }
-        if (intfc->rect_bdry_type[0][0] == REFLECTION_BOUNDARY && intfc->rect_bdry_type[1][0] == REFLECTION_BOUNDARY)
-        {
-            Hacked_ReflectionIndex(front, ijk_to_I); // HACKED FOR REFLECTION ONLY
-            printf("REFLECTION_BOUNDARY, Hacked_ReflectionIndex() is in used in %s\n", __func__);
-        }
+        FT_ParallelExchCellIndex(front,llbuf,uubuf,(POINTER)ijk_to_I);
 	    break;
 	}
 

@@ -1617,20 +1617,32 @@ void poisson_solver3d_Expand_vd(
 // duplicate function in iFcarstn3d.cpp
 bool    FT_ReflectHelp(int *icoords, int dir, int side, Front *front)
 {
+    // This is a full-fledged, even though there is no Z direction.
+    int index, machine_index[MAXD];// machine_index is partition icoords corresponding to pp_mynode() in function find_Cartesian_coordinates()
+    PP_GRID *pp_grid = front->pp_grid;
+    int *G; // partition info along each direction
     int imin, imax, jmin, jmax, kmin, kmax;
-    imin = front->rect_grid->lbuf[0];
-    imax = front->rect_grid->gmax[0]+front->rect_grid->ubuf[0] - 1;
+    RECT_GRID *rgr = &topological_grid(front->grid_intfc);
+    int *top_gmax = rgr->gmax;
+    int *lbuf = front->rect_grid->lbuf;
+    int *ubuf = front->rect_grid->ubuf;
 
-    jmin = front->rect_grid->lbuf[1];
-    jmax = front->rect_grid->gmax[1]+front->rect_grid->ubuf[1] - 1;
+    G = pp_grid->gmax;
+    find_Cartesian_coordinates(pp_mynode(),pp_grid,machine_index);
+    imin = (lbuf[0] == 0) ? 1 : lbuf[0];
+    jmin = (lbuf[1] == 0) ? 1 : lbuf[1];
+    kmin = (lbuf[2] == 0) ? 1 : lbuf[2];
+    imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0];
+    jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1];
+    kmax = (ubuf[2] == 0) ? top_gmax[2] - 1 : top_gmax[2] - ubuf[2];
 
-    kmin = front->rect_grid->lbuf[2];
-    kmax = front->rect_grid->gmax[2]+front->rect_grid->ubuf[2] - 1;
 
     int wallIndex[3][2] = {{imin,imax},{jmin,jmax},{kmin,kmax}};
+    int GP[3][2] = {{0,G[0]-1},{0,G[1]-1},{0,G[2]-1}};
 
-    if (icoords[dir] == wallIndex[dir][side])
-        return true;
+    if (machine_index[dir] == GP[dir][side])
+        if (icoords[dir] == wallIndex[dir][side])
+            return true;
     return false;
 }
 // duplicate function in iFcarstn3d.cpp
