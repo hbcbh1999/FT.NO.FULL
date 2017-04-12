@@ -170,6 +170,7 @@ public:
 
         //for vd
         double m_c;
+        double m_c_old;      // concentration at last time step
         double m_rho_old;
         double m_Dcoef;                 // smoothed
         double m_rho_adv;               // for continuity eqn
@@ -941,6 +942,9 @@ protected:
         void computeNewVelocity_fullMAC_zeroW_vd(void);
         void computeNewVelocity_fullMAC_zeroV_vd(void);
         void computeNewDensity_vd(int);
+        void computeImmiscibleConcentration_vd(int);
+        void updateImmiscibleDensity_vd();
+        void computeNewDensityByConcentration_vd();
         void computeNewDensity_MAC_constRho_vd();
         void computeNewConcentration_vd(void);
 

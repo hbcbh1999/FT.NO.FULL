@@ -22,6 +22,7 @@ extern void setInitialIntfc(
 	iFparams->m_comp2 = LIQUID_COMP2;
         level_func_pack->is_RS_RV = NO;
         level_func_pack->is_RS_SY = NO;
+        iFparams->ifluid_type = prob_type; // one way to distinguish immiscible with miscible fluids
         switch (prob_type)
         {
 	case TWO_FLUID_BUBBLE:
@@ -45,8 +46,6 @@ extern void setInitialIntfc(
         case TWO_FLUID_RS_SY:
             level_func_pack->is_RS_SY = YES;
             initRSSYIntfc(front,level_func_pack,inname);
-            // TODO && FIXME: computeSourceTerm
-            iFparams->ifluid_type = TWO_FLUID_RS_SY;
             break;
         case CHANNEL_FLOW:
             initChannelFlow(front,level_func_pack,inname);

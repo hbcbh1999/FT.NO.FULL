@@ -3,12 +3,355 @@
  *******************************************************************/
 #include "iFluid.h"
 #include "solver.h"
+#include "ifluid_basic.h"
 
 
 //--------------------------------------------------------------------------
 // 		   Incompress_Solver_Smooth_3D_Cartesian
 //--------------------------------------------------------------------------
 
+// best candidate for immiscible fluids calculation
+void Incompress_Solver_Smooth_3D_Cartesian::updateImmiscibleDensity_vd()
+{
+    printf("%s func\n",__func__);
+    int i, j, k, index;
+    COMPONENT comp;
+    double density, max_tmp, min_tmp, nu, max_rho, min_rho;
+    int indmax[3],indmin[3];
+
+    max_density = -1;
+    min_density = HUGE;
+    max_rho = (m_rho[0] > m_rho[1]) ? m_rho[0] : m_rho[1];
+    min_rho = (m_rho[0] + m_rho[1]) - max_rho;
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        comp = top_comp[index];
+
+        cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_mu;
+        cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
+
+        if (comp == 2)
+        {
+            cell_center[index].m_state.m_mu = m_mu[1];
+            cell_center[index].m_state.m_rho = m_rho[1];
+        }
+        else if (comp == 3)
+        {
+            cell_center[index].m_state.m_mu = m_mu[0];
+            cell_center[index].m_state.m_rho = m_rho[0];
+        }
+    }
+
+    //scatter states
+    // old time step
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_rho_old;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_rho_old = array[index];
+    }
+
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_mu_old;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_mu_old = array[index];
+    }
+
+    // new time step
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_rho;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_rho = array[index];
+    }
+
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_mu;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_mu = array[index];
+    }
+} /* end computeNewDensity_vd */
+
+
+// Immiscible Case Update Density Part I.
+void Incompress_Solver_Smooth_3D_Cartesian::computeImmiscibleConcentration_vd(int flag)
+{
+    printf("%s\n",__func__);
+    COMPONENT comp;
+    int i,j,k,index,sign;
+    double concentration,max_tmp,min_tmp, cc;
+    int indmax[MAXD], indmin[MAXD];
+    double center[MAXD], point[MAXD],t[MAXD], H, D;
+    HYPER_SURF_ELEMENT *hse;
+    HYPER_SURF *hs;
+    boolean status;
+
+    max_concentration = -1;
+    min_concentration = HUGE;
+
+    // same pattern to update density predictor/corrector scheme
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        comp = top_comp[index];
+
+        if (!ifluid_comp(comp))
+        {
+            continue;
+        }
+
+        cc = fabs(cell_center[index].m_state.m_c);
+        if (cc > max_concentration)
+        {
+            max_concentration = cc;
+            indmax[0] = i;
+            indmax[1] = j;
+            indmax[2] = k;
+        }
+        if (cc < min_concentration)
+        {
+            min_concentration = cc;
+            indmin[0] = i;
+            indmin[1] = j;
+            indmin[2] = k;
+        }
+
+        getRectangleCenter(index, center);
+        status = FT_FindNearestIntfcPointInRange(front,comp,center,point,t,&hse,&hs,(int)m_smoothing_radius);
+
+	    if (status  == YES && ifluid_comp(positive_component(hs)) && ifluid_comp(negative_component(hs)))
+	    {
+            if (!flag) //flag==0
+            {
+                cell_center[index].m_state.m_c_old = cell_center[index].m_state.m_c;
+                cell_center[index].m_state.m_c -= m_dt*cell_center[index].m_state.m_c_adv;
+                if (cell_center[index].m_state.m_c > max_concentration)	cell_center[index].m_state.m_c = max_concentration;
+                if (cell_center[index].m_state.m_c < min_concentration) cell_center[index].m_state.m_c = min_concentration;
+            }
+            else //flag==1
+            {
+                cell_center[index].m_state.m_c = cell_center[index].m_state.m_c_old -
+                                                   m_dt*cell_center[index].m_state.m_c_adv;
+                if (cell_center[index].m_state.m_c > max_concentration) cell_center[index].m_state.m_c = max_concentration;
+                if (cell_center[index].m_state.m_c < min_concentration) cell_center[index].m_state.m_c = min_concentration;
+            }
+	    }
+        /*
+	    else
+	    {
+            switch (comp)
+            {
+            case LIQUID_COMP1:
+                cell_center[index].m_state.m_c = m_c[0];
+                break;
+            case LIQUID_COMP2:
+                cell_center[index].m_state.m_c = m_c[1];
+                break;
+		    }
+	    }
+        */
+    }
+
+    max_tmp = max_concentration;
+    min_tmp = min_concentration;
+    pp_global_max(&max_concentration,1);
+    pp_global_min(&min_concentration,1);
+
+	if (debugging("step_size"))
+	{
+            printf("local max_concentration after computeImmiscibleConcentration_vd(%d) "
+                   "in cell(%d, %d, %d) of node #%d is: %lf\n", flag,indmax[0],indmax[1],indmax[2],pp_mynode(),max_tmp);
+            printf("local min_concentration after computeImmiscibleConcentration_vd(%d) "
+                   "in cell(%d, %d, %d) of node #%d is: %lf\n", flag,indmin[0],indmin[1],indmin[2],pp_mynode(),min_tmp);
+            if (max_tmp == max_concentration)
+                printf("max_concentration (locates in node #%d) is: %lf\n", pp_mynode(),max_concentration);
+            if (min_tmp == min_concentration)
+        	printf("min_concentration (locates in node #%d) is: %lf\n", pp_mynode(),min_concentration);
+	}
+
+    // scatter old and new concentration
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_c_old;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_c_old = array[index];
+    }
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_c;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_c= array[index];
+    }
+}
+
+// Immiscible Case Update Density Part II.
+void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensityByConcentration_vd()
+{
+
+    printf("%s\n",__func__);
+    int i, j, k, index;
+    COMPONENT comp;
+    double partial;
+
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        comp = top_comp[index];
+        if (!ifluid_comp(comp))
+        {
+            cell_center[index].m_state.m_rho = 0;
+            cell_center[index].m_state.m_rho_old = 0;
+            cell_center[index].m_state.m_mu = 0;
+            cell_center[index].m_state.m_mu_old = 0;
+            continue;
+        }
+
+        // old time step density and viscosity
+        cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
+        cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_mu;
+        partial = cell_center[index].m_state.m_c; // concentration at new time step
+        // new time step density and viscosity
+        cell_center[index].m_state.m_rho = partial*m_rho[0] + (1.0-partial)*m_rho[1];
+        cell_center[index].m_state.m_mu = partial*m_mu[0] + (1.0-partial)*m_mu[1];
+    }
+
+    // scatter old and new density and viscosity
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_rho_old;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_rho_old = array[index];
+    }
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_rho;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_rho = array[index];
+    }
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_mu_old;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_mu_old = array[index];
+    }
+
+    for (k = kmin; k <= kmax; k++)
+    for (j = jmin; j <= jmax; j++)
+    for (i = imin; i <= imax; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        array[index] = cell_center[index].m_state.m_mu;
+    }
+    scatMeshArray();
+    for (k = 0; k <= top_gmax[2]; k++)
+    for (j = 0; j <= top_gmax[1]; j++)
+    for (i = 0; i <= top_gmax[0]; i++)
+    {
+        index = d_index3d(i,j,k,top_gmax);
+        cell_center[index].m_state.m_mu = array[index];
+    }
+}
+
+
+// No matter Fluid properties(immiscible or miscible), density update should be unified.
+// Miscible Fluids Density Update Function
 void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
 {
         int i, j, k, index;
@@ -17825,7 +18168,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for estimated density explicitly
             start_clock("compNewDensity_vd(0)");
-            computeNewDensity_vd(0);
+            if (iFparams->ifluid_type != TWO_FLUID_RS_SY)
+                computeNewDensity_vd(0);
+            else
+            {
+                //printf("computeImmiscibleConcentration_vd(0)\n");
+                //computeImmiscibleConcentration_vd(0);
+            }
             stop_clock("compNewDensity_vd(0)");
             if (debugging("step_size"))
             {
@@ -17842,7 +18191,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for accurate density explicitly, and calc dynamic viscosity
             start_clock("compNewDensity_vd(1)");
-            computeNewDensity_vd(1);
+            if (iFparams->ifluid_type != TWO_FLUID_RS_SY)
+                computeNewDensity_vd(1);
+            else
+            {
+                //printf("computeImmiscibleConcentration_vd(1)\n");
+                //computeImmiscibleConcentration_vd(1);
+                //printf("computeNewDensityByConcentration_vd()\n");
+                //computeNewDensityByConcentration_vd();
+                updateImmiscibleDensity_vd();
+            }
             stop_clock("compNewDensity_vd(1)");
             if (debugging("step_size"))
             {
