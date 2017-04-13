@@ -14463,7 +14463,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
 
             //conservation of volume
             rho = cell_center[index].m_state.m_rho;
-            cell_center[index].m_state.m_c = rho0*(rho1-rho)/rho/(rho1-rho0);
+            cell_center[index].m_state.m_c = 0.0;//rho0*(rho1-rho)/rho/(rho1-rho0);
 
 /* ??????????????????????????????????????????
             for(l = 0; l < 25; ++l)
@@ -24507,23 +24507,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::enforceVecState(double **vel)
 
      // This revised version is HACKED HERE
      // assumption is REFLECTIONS ON X and Y, NEUMANN on Z
-     for (dir = 0; dir < 2; dir++)
-     for (side = 0; side < 2; side++)
-     {
-         if (intfc->rect_bdry_type[dir][side] == REFLECTION_BOUNDARY)
-             continue;
-         else
-            return;
-     }
      ReflectBC(vel);
      printf("ReflectBC() was Called\n");
-     for (side = 0; side < 2; side++)
-     {
-         if (intfc->rect_bdry_type[2][side] == NEUMANN_BOUNDARY)
-             continue;
-         else
-             return;
-     }
      NeumannBC(vel);
      printf("NeumannBC() was Called\n");
 }
