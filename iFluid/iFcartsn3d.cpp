@@ -3775,6 +3775,26 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3,I*3, 2.0*coeff0[5]);
                 rhs += coeff0_old[5]*(U0_nb[5] - U0_center);
             }
+            else if (bNoBoundary[4] == 3) // LOWER REFLECT
+            {
+                if (SLIP)
+                    rhs += 0.0;
+                else
+                {
+                    printf("NO SLIP CONDITION was not implemented in func %s line @%d\n",__func__,__LINE__);
+                    clean_up(ERROR);
+                }
+            }
+            else if (bNoBoundary[5] == 3) // UPPER REFLECT
+            {
+                if (SLIP)
+                    rhs += 0.0;
+                else
+                {
+                    printf("NO SLIP CONDITION was not implemented in func %s line @%d\n",__func__,__LINE__);
+                    clean_up(ERROR);
+                }
+            }
 
             //set the coefficients for U1 in the first equation, (mu*v_x)_y and (-2/3)*(mu*v_y)_x
             //traverse the four cells for v, i.e. v_c, v_1, v_2, and v_7
@@ -3955,7 +3975,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
                 rhs += coeff_temp_old*U2_center;
             }
-            else if ((bNoBoundary[4] == 2) && !bNoBoundary[1]) // ONLY LOWER is on BC
+            else if ((bNoBoundary[4] >= 2) && !bNoBoundary[1]) // ONLY LOWER is on NEUMANN/REFLECT BC, revised
             {
                 //w[4] = 0 w[15] = 0
                 //w[c]
@@ -3974,7 +3994,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
                 rhs += coeff_temp_old*U2_nb[1];
             }
-            else if ((bNoBoundary[5] == 2) && !bNoBoundary[1]) // ONLY UPPER is on BC
+            else if ((bNoBoundary[5] >= 2) && !bNoBoundary[1]) // ONLY UPPER is on NEUMANN/REFLECT BC, revised
             {
                 //w[c] 0 w[1] = 0
 
@@ -4018,7 +4038,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 double temp1 = -1.0/3*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
                 temp1 += 1.0/3*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
                 double temp2 = -temp1;
-                if (bNoBoundary[4] == 2) // LOWER added
+                if (bNoBoundary[4] >= 2) // LOWER added NEUMANN/REFLECT BC revised
                 {
                     //w[c]
                     solver.Add_A(I*3,I*3+2, -temp1);
@@ -4026,7 +4046,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
                     rhs += coeff_temp_old*U2_center;
                 }
-                else if (bNoBoundary[5] == 2) // UPPER added
+                else if (bNoBoundary[5] >= 2) // UPPER added NEUMANN/REFLECT BC revised
                 {
                     //w[4]
                     solver.Add_A(I*3,I_nb[4]*3+2, -temp2);
@@ -4410,15 +4430,25 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3+1,I_nb[5]*3+1, -coeff1[5]);
                 rhs += coeff1_old[5]*(U1_nb[5] - U1_center);
             }
-            else if (bNoBoundary[4] == 2) // LOWER FACE is on REFLECT/NEUMANN BC
+            else if (bNoBoundary[4] == 2) // LOWER FACE is on NEUMANN BC
             {
                 solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[4]);
                 rhs += coeff1_old[4]*(U1_nb[4] - U1_center);
             }
-            else if (bNoBoundary[5] == 2) // UPPER FACE is on REFLECT/NEUMANN BC
+            else if (bNoBoundary[5] == 2) // UPPER FACE is on NEUMANN BC
             {
                 solver.Add_A(I*3+1,I*3+1, 2.0*coeff1[5]);
                 rhs += coeff1_old[5]*(U1_nb[5] - U1_center);
+            }
+            else if (bNoBoundary[4] == 3) // LOWER FACE is on REFLECT BC
+            {
+                if (SLIP)
+                    rhs += 0.0;
+            }
+            else if (bNoBoundary[5] == 3) // UPPER FACE is on REFLECT BC
+            {
+                if (SLIP)
+                    rhs += 0.0;
             }
             else
             {
@@ -4605,7 +4635,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
                 rhs += coeff_temp_old*U2_center;
             }
-            else if ((bNoBoundary[4] >= 2) && !bNoBoundary[3]) // LOWER FACE is on BC
+            else if ((bNoBoundary[4] >= 2) && !bNoBoundary[3]) // LOWER FACE is on NEUMANN/REFLECT BC, revised
             {
                 // w[4] = 0 w[11] = 0
 
@@ -4625,7 +4655,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
                 rhs += coeff_temp_old*U2_nb[3];
             }
-            else if ((bNoBoundary[5] == 2) && !bNoBoundary[3]) // UPPER FACE is on BC
+            else if ((bNoBoundary[5] >= 2) && !bNoBoundary[3]) // UPPER FACE is on NEUMANN/REFLECT BC, revised
             {
                 // w[c] = 0 w[3] = 0
 
@@ -4669,7 +4699,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 double temp1= 1.0/3*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
                 temp1 -= 1.0/3*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
                 double temp2 = - temp1;
-                if (bNoBoundary[4] == 2) // LOWER added
+                if (bNoBoundary[4] >= 2) // LOWER added
                 {
                     // w[c]
                     solver.Add_A(I*3+1,I*3+2, -temp2);
@@ -4677,7 +4707,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
                     rhs += coeff_temp_old*U2_center;
                 }
-                else if (bNoBoundary[5] == 2) // UPPER added
+                else if (bNoBoundary[5] >= 2) // UPPER added
                 {
                     //w[4]
                     solver.Add_A(I*3+1,I_nb[4]*3+2, -temp1);
@@ -5338,13 +5368,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 solver.Add_A(I*3+2,I_nb[5]*3+2, -coeff2[5]);
                 rhs += coeff2_old[3]*(U2_nb[5] - U2_center);
             }
-            else if (bNoBoundary[4] == 2) // LOWER FACE is on NEUMANN BC
+            else if (bNoBoundary[4] >= 2) // LOWER FACE is on NEUMANN/REFLECT BC, revised
             {
                 //w[4] = 0
                 solver.Add_A(I*3+2,I*3+2, coeff2[4]);
                 rhs += coeff2_old[4]*(U2_nb[4] - U2_center);
             }
-            else if (bNoBoundary[5] == 2) // UPPER FACE is on NEUMANN BC
+            else if (bNoBoundary[5] >= 2) // UPPER FACE is on NEUMANN/REFLECT BC, revised
             {
                 //w[5] = -w[4]
                 //w[c] = 0
@@ -5451,9 +5481,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 rhs += 0.0;
 
             }
-            else if (bNoBoundary[5] == 2) // UPPER FACE is on BC
+            else if (bNoBoundary[5] == 2) // UPPER FACE is on NEUMANN BC
             {
-                //hardwired for slip condition
+                //hardwired for NO slip condition
                 if (bNoBoundary[0] == 3) // WEST added
                 {
                     U0_nb[5] = -U0_center;
@@ -5475,7 +5505,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 }
                 else if (bNoBoundary[1] == 3) // EAST added
                 {
-                    //u[5]=-u[c] & u[17]=-u[0]
+                    //u[5]=-u[c] & u[17]=-u[0], // NO SLIP CONDITION
 
                     //u[0]
                     coeff_temp  = 1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
@@ -5533,6 +5563,106 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     rhs += coeff_temp_old*U0_nb[5];
 
                     U0_nb[17] = -U0_nb[0];
+                    //u[17]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[17];
+
+                    //u[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_center;
+                }
+            }
+            else if (bNoBoundary[5] == 3) // UPPER FACE is on REFLECT BC
+            {
+                //u[5]=u[c] & u[17]=u[0],// REFLECT BC Free Slip Condition
+                //hardwired for slip condition
+                if (bNoBoundary[0] == 3) // WEST added
+                {
+                    U0_nb[5] = U0_center;
+                    //u[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[5];
+
+                    //u[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_center;
+                }
+                else if (bNoBoundary[1] == 3) // EAST added
+                {
+                    //u[5]=u[c] & u[17]=u[0],// REFLECT BC Free Slip Condition
+
+                    //u[0]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[0];
+
+                    U0_nb[5] = U0_center;
+                    //u[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[5];
+
+                    U0_nb[17] = U0_nb[0];
+                    //u[17]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[17];
+
+                    //u[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_center;
+                }
+                else
+                {
+                    //u[5]=u[c] & u[17]=u[0]
+
+                    //u[0]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[0]*3, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[0]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[0];
+
+                    U0_nb[5] = U0_center;
+                    //u[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[1]/(top_h[0]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[1]/(top_h[0]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[0]*top_h[2]);
+                    rhs += coeff_temp_old*U0_nb[5];
+
+                    U0_nb[17] = U0_nb[0];
                     //u[17]
                     coeff_temp  = -1.0/2*m_dt/rho*mu[0]/(top_h[0]*top_h[2]);
                     coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[0]*top_h[2]);
@@ -5649,7 +5779,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                 coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
                 rhs += 0.0;
             }
-            else if (bNoBoundary[5] == 2) // UPPER
+            else if (bNoBoundary[5] == 2) // UPPER NEUMANN BC
             {
                 if (bNoBoundary[2] == 3) // SOUTH added
                 {
@@ -5729,6 +5859,104 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
                     rhs += coeff_temp_old*U1_nb[5];
 
                     U1_nb[13] = -U1_nb[2];
+                    //v[13]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[13];
+
+                    //v[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_center;
+                }
+            }
+            else if (bNoBoundary[5] == 3) // UPPER REFLECT BC
+            {
+                if (bNoBoundary[2] == 3) // SOUTH added
+                {
+                    //v[2] = v[13] = 0.0
+                    U1_nb[5] = U1_center;
+                    //v[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[5];
+
+                    //v[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_center;
+                }
+                else if (bNoBoundary[3] == 3) // NORTH added
+                {
+                    //v[5]=v[c] & v[13]=v[2] // REFLECT BC FREE SLIP CONDITION
+                    //v[2]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[2];
+
+                    U1_nb[5] = U1_center;
+                    //v[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[5];
+
+                    U1_nb[13] = U1_nb[2];
+                    //v[13]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[13];
+
+                    //v[c]
+                    coeff_temp  = -1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= -1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, -coeff_temp);
+                    coeff_temp_old  = -1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= -1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_center;
+                }
+                else
+                {
+                    //v[5]=v[c] & v[13]=v[2]//REFLECT BC FREE SLIP CONDITION
+
+                    //v[2]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[4]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I_nb[2]*3+1, -coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[2]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[4]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[2];
+
+                    U1_nb[5] = U1_center;
+                    //v[5]
+                    coeff_temp  = 1.0/2*m_dt/rho*mu[3]/(top_h[1]*top_h[2]);
+                    coeff_temp -= 1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
+                    solver.Add_A(I*3+2,I*3+1, coeff_temp);
+                    coeff_temp_old  = 1.0/2*m_dt/rho*mu_old[3]/(top_h[1]*top_h[2]);
+                    coeff_temp_old -= 1.0/3*m_dt/rho*mu_old[5]/(top_h[1]*top_h[2]);
+                    rhs += coeff_temp_old*U1_nb[5];
+
+                    U1_nb[13] = U1_nb[2];
                     //v[13]
                     coeff_temp  = -1.0/2*m_dt/rho*mu[2]/(top_h[1]*top_h[2]);
                     coeff_temp -= -1.0/3*m_dt/rho*mu[5]/(top_h[1]*top_h[2]);
@@ -7761,7 +7989,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,LOWER,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_Z,sl,sr,state_center_bar,icoords);
     }
-    else if (bNoBoundary[4] == 2) //cells on LOWER NEUMANN bdry no slip
+    else if (bNoBoundary[4] >= 2) //cells on LOWER REFLECT or NEUMANN bdry no/free slip, reviewed
     {
         //w_hat
         getCenterVelocity_MAC_middleStep_hat_vd(icoords,LOWER,state_center_hat_r);
@@ -7772,7 +8000,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getCellCenterVelocityBar_MAC_decoupl
         getVelocity_MAC_middleStep_bar_decoupled_vd(icoords,COORD_Z,LOWER,sr,state_center_hat_r);
         getRiemannSolution_MAC_CenterVelocity_vd(COORD_Z,sl,sr,state_center_bar,icoords);
     }
-    else if (bNoBoundary[5] == 2) //cells on UPPER NEUMANN bdry no slip
+    else if (bNoBoundary[5] >= 2) //cells on UPPER REFLECT or NEUMANN bdry no/free slip, reviewed
     {
         //w_hat
         getCenterVelocity_MAC_middleStep_hat_vd(ICoords,UPPER,state_center_hat_l);
@@ -12570,6 +12798,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((U1.m_U[0]-U0.m_U[0])/dz, (-2.0*U1.m_U[0])/dz);
         }
+        else if (bNoBoundary[4] == 3) //cells on LOWER REFLECT boundary
+        {
+            U2 = cell_center[index_nb[5]].m_state;
+            slope[2] = EBM_minmod(0.0, (U2.m_U[0]-U1.m_U[0])/dz);
+        }
+        else if (bNoBoundary[5] == 3) //cells on UPPER REFLECT boundary
+        {
+            U0 = cell_center[index_nb[4]].m_state;
+            slope[2] = EBM_minmod(0.0, (U1.m_U[0]-U0.m_U[0])/dy);
+        }
         else assert(false);
     }
 
@@ -12632,6 +12870,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dz, (-2.0*U1.m_U[1])/dz);
         }
+        else if (bNoBoundary[4] == 3) //cells on LOWER REFLECT boundary
+        {
+            U2 = cell_center[index_nb[5]].m_state;
+            slope[2] = EBM_minmod(0.0, (U2.m_U[1]-U1.m_U[1])/dz);
+        }
+        else if (bNoBoundary[5] == 3) //cells on UPPER REFLECT boundary
+        {
+            U0 = cell_center[index_nb[4]].m_state;
+            slope[2] = EBM_minmod((U1.m_U[1]-U0.m_U[1])/dz, 0.0);
+        }
         else assert(false);
     }
 
@@ -12683,12 +12931,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::getLimitedSlope_Velocity_MAC_vd(
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-U0.m_U[2])/dz, (U2.m_U[2]-U1.m_U[2])/dz);
         }
-        else if (bNoBoundary[4] == 2) //cells on LOWER boundary, NO SLIP
+        else if (bNoBoundary[4] >= 2) //cells on LOWER boundary, NO SLIP
         {
             U2 = cell_center[index_nb[5]].m_state;
             slope[2] = EBM_minmod((U1.m_U[2]-0.0)/dz, (U2.m_U[2]-U1.m_U[2])/dz);
         }
-        else if (bNoBoundary[5] == 2) //cells on UPPER boundary, NO SLIP
+        else if (bNoBoundary[5] >= 2) //cells on UPPER boundary, NO SLIP
         {
             U0 = cell_center[index_nb[4]].m_state;
             slope[2] = EBM_minmod((0.0-U0.m_U[2])/dz, (-U0.m_U[2]-0.0)/dz);
@@ -23800,12 +24048,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
     {
         index = d_index3d(i,j,k,top_gmax);
 
-        //LOWER bdry
+        //LOWER bdry REFLECTION/NEUMANN BC, free slip, SLIP flag is enabled
         if (ppz==0 && k==kmin-1)
         {
             index_nbb = d_index3d(i,j,kmin,top_gmax);
-            u[index] = -cell_center[index_nbb].m_state.m_U[0];
-            v[index] = -cell_center[index_nbb].m_state.m_U[1];
+            if (SLIP)
+            {
+            u[index] = cell_center[index_nbb].m_state.m_U[0];
+            v[index] = cell_center[index_nbb].m_state.m_U[1];
+            }
             //w[4] = 0
             w[index] = 0;
             rho[index] = cell_center[index_nbb].m_state.m_rho;
@@ -23813,12 +24064,15 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
             continue;
         }
 
-        //UPPER bdry
+        //UPPER bdry REFLECT/NEUMANN BC, free slip, SLIP flag is enabled
         if (ppz==ppgmax[2]-1 && k==kmax+1)
         {
             index_nbb = d_index3d(i,j,kmax,top_gmax);
-            u[index] = -cell_center[index_nbb].m_state.m_U[0];
-            v[index] = -cell_center[index_nbb].m_state.m_U[1];
+            if (SLIP)
+            {
+            u[index] = cell_center[index_nbb].m_state.m_U[0];
+            v[index] = cell_center[index_nbb].m_state.m_U[1];
+            }
             rho[index] = cell_center[index_nbb].m_state.m_rho;
             c[index] = cell_center[index_nbb].m_state.m_c;
             //w[5] = -w[4]
@@ -24495,6 +24749,62 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
              }
          }
      }
+     // Z Lower
+    if (machine_index[2] == GP[2][0])
+    {
+     for (i = 0; i <= top_gmax[0]; i++)// replace imax+ubuf[0] with top_gmax[0]
+     for (j = 0; j <= top_gmax[1]; j++)// replace jmax+ubuf[1] with top_gmax[1]
+     {
+         //normal velocities
+         for (k = kmin; k < kmin+lbuf[2]-1; k++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(i,j,lbuf[2]-2-k+kmin,top_gmax);//This is Boundary State index
+              solute[2][BIndex] = -solute[2][InIndex];
+         }
+         BIndex = d_index3d(i,j,kmin-1,top_gmax);
+         solute[2][BIndex] = 0.0; // On wall normal velocity component vanish
+         //tangential velocities
+         for (k = kmin; k < kmin+lbuf[2]; k++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(i,j,lbuf[2]-1-k+kmin,top_gmax);//This is Boundary State index
+              if (SLIP)
+              {
+                  solute[0][BIndex] = solute[0][InIndex];
+                  solute[1][BIndex] = solute[1][InIndex];
+              }
+         }
+     }
+     }
+     // Z Upper
+    if (machine_index[2] == GP[2][1])
+    {
+     for (i = 0; i <= top_gmax[0]; i++)// replace imax+ubuf[0] with top_gmax[0]
+     for (j = 0; j <= top_gmax[1]; j++)// replace jmax+ubuf[1] with top_gmax[1]
+     {
+         //normal velocities
+         for (k = kmax-ubuf[2]; k <= kmax-1; k++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(i,j,2*kmax-k,top_gmax);//This is Boundary State index
+              solute[2][BIndex] = -solute[2][InIndex];
+         }
+         BIndex = d_index3d(i,j,kmax,top_gmax);
+         solute[2][BIndex] = 0.0; // On wall normal velocity component vanish
+         //tangential velocities
+         for (k = kmax-ubuf[2]+1; k <= kmax; k++)
+         {
+              InIndex = d_index3d(i,j,k,top_gmax);//This is Interior State index
+              BIndex = d_index3d(i,j,2*kmax+1-k,top_gmax);//This is Boundary State index
+              if (SLIP)
+              {
+                  solute[0][BIndex] = solute[0][InIndex];
+                  solute[1][BIndex] = solute[1][InIndex];
+              }
+         }
+     }
+     }
 }
 
 
@@ -24509,8 +24819,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::enforceVecState(double **vel)
      // assumption is REFLECTIONS ON X and Y, NEUMANN on Z
      ReflectBC(vel);
      printf("ReflectBC() was Called\n");
-     NeumannBC(vel);
-     printf("NeumannBC() was Called\n");
+     //NeumannBC(vel);
+     //printf("NeumannBC() was Called\n");
 }
 
 // Convert GRID_DIRECTION into dir and side.
