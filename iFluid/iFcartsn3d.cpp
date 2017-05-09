@@ -10654,7 +10654,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (bNoBoundary[4] == 2) //cells on LOWER bdry
+        else if (bNoBoundary[4] >= 2) //cells on LOWER bdry
         {
             U2_nb[15] = 0;
             mu_nb[15] = mu_nb[1];
@@ -10668,7 +10668,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (bNoBoundary[5] == 2) //cells on UPPER bdry
+        else if (bNoBoundary[5] >= 2) //cells on UPPER bdry
         {
             U2_nb[15] = cell_center[index_nb[15]].m_state.m_U[2];
             mu_nb[15] = cell_center[index_nb[15]].m_state.m_mu;
@@ -10729,7 +10729,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (bNoBoundary[4] == 2) //cells on LOWER bdry
+        else if (bNoBoundary[4] >= 2) //cells on LOWER bdry
         {
             U2_nb[11] = 0;
             mu_nb[11] = mu_nb[3];
@@ -10743,7 +10743,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
                 assert(false);
             }
         }
-        else if (bNoBoundary[5] == 2) //cells on UPPER bdry
+        else if (bNoBoundary[5] >= 2) //cells on UPPER bdry
         {
             U2_nb[11] = cell_center[index_nb[11]].m_state.m_U[2];
             mu_nb[11] = cell_center[index_nb[11]].m_state.m_mu;
@@ -10794,6 +10794,25 @@ void Incompress_Solver_Smooth_3D_Cartesian::getViscousTerm_MAC_decoupled_vd(
         {
             U0_nb[17] = -U0_nb[0];
             U1_nb[13] = -U1_nb[2];
+            mu_nb[12] = mu_nb[3];
+            mu_nb[13] = mu_nb[2];
+            mu_nb[16] = mu_nb[1];
+            mu_nb[17] = mu_nb[0];
+            if (useSGSCellCenter) {
+                mu_t_nb[12] = mu_t_nb[3];
+                mu_t_nb[13] = mu_t_nb[2];
+                mu_t_nb[16] = mu_t_nb[1];
+                mu_t_nb[17] = mu_t_nb[0];
+            }
+            else {
+                printf("codes needed for mu_turbulent on cell-faces.\n");
+                assert(false);
+            }
+        }
+        else if (bNoBoundary[5] == 3) //cells on UPPER bdry
+        {
+            U0_nb[17] = U0_nb[0];
+            U1_nb[13] = U1_nb[2];
             mu_nb[12] = mu_nb[3];
             mu_nb[13] = mu_nb[2];
             mu_nb[16] = mu_nb[1];
