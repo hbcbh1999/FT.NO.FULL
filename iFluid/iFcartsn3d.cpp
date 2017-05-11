@@ -5980,6 +5980,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             rhs += m_dt*cell_center[index].m_state.f_surf[2];
             rhs -= m_dt*cell_center[index].m_state.grad_q[2]/rho;
             rhs -= m_dt*cell_center[index].m_state.m_adv[2];
+            if (bNoBoundary[5] >= 2) // NEUMANN or REFLECT BC
+                rhs = 0.0;
 
             solver.Add_b(I*3+2, rhs);
         } //loop for (i,j,k) ends
