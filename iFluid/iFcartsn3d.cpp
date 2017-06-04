@@ -14831,6 +14831,30 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             cell_center[index].m_state.m_q = array[index];
         }
 
+        // Compare with RS-RV initial setup. This loop was implicit
+        for (l = 0; l < dim; ++l)
+        {
+            for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+            for (i = 0; i <= top_gmax[0]; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_U_velo_var[l] = 0; // Remark: Since initial velocity is 0. This treatment for velocity is kind of O.K. here.
+            }
+        }
+
+        for (l = 0; l < dim+1; ++l)
+        {
+            for (k = 0; k <= top_gmax[2]; k++)
+            for (j = 0; j <= top_gmax[1]; j++)
+            for (i = 0; i <= top_gmax[0]; i++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                cell_center[index].m_state.m_mu_turbulent[l] = 0;
+                cell_center[index].m_state.m_Dcoef_turbulent[l] = 0;
+            }
+        }
+
         for (l = 0; l < dim; l++)
         {
             for (k = kmin; k <= kmax; k++)
