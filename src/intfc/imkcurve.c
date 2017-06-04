@@ -1977,28 +1977,16 @@ if (min_n != 0 && max_n != 0)
             {
                 if (areaSquare(x, y, meniscus))
                 {
-                    if (x + y <= meniscus)
-                    {
-                        double ac = meniscus * sqrt(2) * 0.5;
-                        double theta = atan(y/x);
-                        double ab = ac / cos(PI/4.0 - theta);
-                        double ad = sqrt(x*x + y*y);
-                        double bd = ab - ad;
-                        double deltah = bd / ab * height1;
-                        return dist = dist - deltah - height1;
-
-                    }
-                    else
-                    {
-                        double ab = meniscus - y;
-                        double ad = meniscus - x;
-                        double theta = atan(ad/ab);
-                        double bd = sqrt(ab*ab + ad*ad);
-                        double alpha = fabs(PI/4.0 - theta);
-                        double be = 0.5 * sqrt(2) * meniscus / cos(alpha);
-                        double deltah = height1 * bd / be;
-                        return dist = dist -deltah;
-                    }
+                    // replace this area with a plane function, a much more stable and efficient version
+                    // a * x + b * y + c * z + d = 0
+                    // Proof for the existing plane is trivial
+                    // Here annotation: m is the measure of meniscus and h1 is height1
+                    // coordinates: A(m, 0, h1), B(0, m, h1), C(m, m, 0), D(0, 0, 2*h1)
+                    // Picked 3 points out of 4: A, B and D
+                    // choose coefficients: a = 1, b = 1, c = m/h1, d = -2m
+                    // With all information the coordinate of z direction gives 2*h1 - h1/m * x - h1/m * y
+                    double deltah = 2 * height1 - height1/meniscus * (x + y);
+                    return dist = dist - deltah;
                 }
                 else if (areaLeft(x, y, meniscus))
                 {
