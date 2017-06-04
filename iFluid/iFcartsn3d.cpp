@@ -18437,13 +18437,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for estimated density explicitly
             start_clock("compNewDensity_vd(0)");
-            if (iFparams->ifluid_type != TWO_FLUID_RS_SY)
-                computeNewDensity_vd(0);
-            else
-            {
-                //printf("computeImmiscibleConcentration_vd(0)\n");
-                //computeImmiscibleConcentration_vd(0);
-            }
+            computeNewDensity_vd(0);
             stop_clock("compNewDensity_vd(0)");
             if (debugging("step_size"))
             {
@@ -18460,16 +18454,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
 
             //solve for accurate density explicitly, and calc dynamic viscosity
             start_clock("compNewDensity_vd(1)");
-            if (iFparams->ifluid_type != TWO_FLUID_RS_SY)
-                computeNewDensity_vd(1);
-            else
-            {
-                //printf("computeImmiscibleConcentration_vd(1)\n");
-                //computeImmiscibleConcentration_vd(1);
-                //printf("computeNewDensityByConcentration_vd()\n");
-                //computeNewDensityByConcentration_vd();
-                updateImmiscibleDensity_vd();
-            }
+            computeNewDensity_vd(1);
             stop_clock("compNewDensity_vd(1)");
             if (debugging("step_size"))
             {
