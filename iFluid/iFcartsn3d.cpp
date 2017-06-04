@@ -24579,6 +24579,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
     // This function is called After ReflectBC() The ONLY Scenario
     if (machine_index[2] == GP[2][0])//Z Lower
     {
+        printf("Z Lower Direction is NEUMANN_BOUNDARY. Checked\n");
         k = kmin;
     for (i = 0; i <= imax+ubuf[0]; i++)
     for (j = 0; j <= jmax+ubuf[1]; j++)
@@ -24595,6 +24596,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
     }
     if (machine_index[2] == GP[2][1])//Z Upper
     {
+        printf("Z Upper Direction is NEUMANN_BOUNDARY. Checked\n");
         k = kmax;
     for (i = 0; i <= imax+ubuf[0]; i++)
     for (j = 0; j <= jmax+ubuf[1]; j++)
@@ -24627,6 +24629,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
     int *top_gmax = rgr->gmax;
     int *lbuf = front->rect_grid->lbuf;
     int *ubuf = front->rect_grid->ubuf;
+    INTERFACE *intfc = front->interf;
 
     G = pp_grid->gmax;
     find_Cartesian_coordinates(pp_mynode(),pp_grid,machine_index);
@@ -24644,8 +24647,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
 
     // This is where the code takes care of Reflecting Boundary Condition.
      // X Lower
-    if (machine_index[0] == GP[0][0])
+    if (machine_index[0] == GP[0][0] && rect_boundary_type(intfc,0,0) == REFLECTION_BOUNDARY)
     {
+        printf("X Lower Direction is REFLECTION_BOUNDARY. Checked\n");
      for (k = kmin; k <= kmax; k++)
      for (j = jmin; j <= jmax; j++)
      {
@@ -24672,8 +24676,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
          }
      }
      // X Upper
-    if (machine_index[0] == GP[0][1])
+    if (machine_index[0] == GP[0][1] && rect_boundary_type(intfc,0,1) == REFLECTION_BOUNDARY)
     {
+        printf("X Upper Direction is REFLECTION_BOUNDARY. Checked\n");
      for (k = kmin; k <= kmax; k++)
      for (j = jmin; j <= jmax; j++)
      {
@@ -24700,8 +24705,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
          }
      }
      // Y Lower
-    if (machine_index[1] == GP[1][0])
+    if (machine_index[1] == GP[1][0] && rect_boundary_type(intfc,1,0) == REFLECTION_BOUNDARY)
     {
+        printf("Y Lower Direction is REFLECTION_BOUNDARY. Checked\n");
      for (k = kmin; k <= kmax; k++)
      for (i = 0; i <= imax+ubuf[0]; i++)
      {
@@ -24728,8 +24734,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
          }
      }
      // Y Upper
-    if (machine_index[1] == GP[1][1])
+    if (machine_index[1] == GP[1][1] && rect_boundary_type(intfc,1,1) == REFLECTION_BOUNDARY)
     {
+        printf("Y Upper Direction is REFLECTION_BOUNDARY. Checked\n");
      for (k = kmin; k <= kmax; k++)
      for (i = 0; i <= imax+ubuf[0]; i++)
      {
@@ -24756,8 +24763,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
          }
      }
      // Z Lower
-    if (machine_index[2] == GP[2][0])
+    if (machine_index[2] == GP[2][0] && rect_boundary_type(intfc,2,0) == REFLECTION_BOUNDARY)
     {
+        printf("Z Lower Direction is REFLECTION_BOUNDARY. Checked\n");
      for (i = 0; i <= top_gmax[0]; i++)// replace imax+ubuf[0] with top_gmax[0]
      for (j = 0; j <= top_gmax[1]; j++)// replace jmax+ubuf[1] with top_gmax[1]
      {
@@ -24784,8 +24792,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
      }
      }
      // Z Upper
-    if (machine_index[2] == GP[2][1])
+    if (machine_index[2] == GP[2][1] && rect_boundary_type(intfc,2,1) == REFLECTION_BOUNDARY)
     {
+        printf("Z Upper Direction is REFLECTION_BOUNDARY. Checked\n");
      for (i = 0; i <= top_gmax[0]; i++)// replace imax+ubuf[0] with top_gmax[0]
      for (j = 0; j <= top_gmax[1]; j++)// replace jmax+ubuf[1] with top_gmax[1]
      {
@@ -24823,10 +24832,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::enforceVecState(double **vel)
 
      // This revised version is HACKED HERE
      // assumption is REFLECTIONS ON X and Y, NEUMANN on Z
+     // Periodic BC will have zero adjustment here. ONLY Reflect/Neumann Will Be adjusted accordingly.
      ReflectBC(vel);
-     printf("ReflectBC() was Called\n");
+     printf("If NEUMANN_BOUNDARY is used, NeumannBC() need if control flow!\n");
      //NeumannBC(vel);
-     //printf("NeumannBC() was Called\n");
 }
 
 // Convert GRID_DIRECTION into dir and side.
