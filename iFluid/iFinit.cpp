@@ -307,8 +307,8 @@ static void initRSSYIntfc(
         }
         else
         {
-            printf("ERROR! NO surface tension was considered! More Implementation/Consideration Needed.\n");
-             clean_up(ERROR);
+            printf("NO harm done Warning! NO surface tension was considered! More Implementation/Consideration Needed.\n");
+            // clean_up(ERROR); // Too aggressive for non surface tension simulation
         }
 
         level_func_pack->func_params = (POINTER)&level_func_params;
