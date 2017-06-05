@@ -24438,7 +24438,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeSubgridModel_vd(void)
                 cell_center[index].m_state.m_mu_turbulent[coord] = rho_face*cs*delta2*s[index];
                 //(nu_t/Sc_t)
                 if (cc*s[index] < 0)	cc = 0;
-                cell_center[index].m_state.m_Dcoef_turbulent[coord] = cc*delta2*s[index];
+                if (iFparams->ifluid_type == TWO_FLUID_RS_SY)
+                    cell_center[index].m_state.m_Dcoef_turbulent[coord] = 0.0; // No Mass Diffusion for RS-SY simulation
+                else
+                    cell_center[index].m_state.m_Dcoef_turbulent[coord] = cc*delta2*s[index];
 
                 if (cs*delta2*s[index] > max_turbulent_kinematic_viscosity[coord])
                     max_turbulent_kinematic_viscosity[coord] = cs*delta2*s[index];
