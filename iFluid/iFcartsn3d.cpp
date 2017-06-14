@@ -24677,8 +24677,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
     if (machine_index[0] == GP[0][0] && rect_boundary_type(intfc,0,0) == REFLECTION_BOUNDARY)
     {
         printf("X Lower Direction is REFLECTION_BOUNDARY. Checked\n");
-     for (k = kmin; k <= kmax; k++)
-     for (j = jmin; j <= jmax; j++)
+     for (k = 0; k <= top_gmax[2]; k++)
+     for (j = 0; j <= top_gmax[1]; j++)
      {
          //normal velocities
          for (i = imin; i < imin+lbuf[0]-1; i++)
@@ -24706,8 +24706,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
     if (machine_index[0] == GP[0][1] && rect_boundary_type(intfc,0,1) == REFLECTION_BOUNDARY)
     {
         printf("X Upper Direction is REFLECTION_BOUNDARY. Checked\n");
-     for (k = kmin; k <= kmax; k++)
-     for (j = jmin; j <= jmax; j++)
+     for (k = 0; k <= top_gmax[2]; k++)
+     for (j = 0; j <= top_gmax[1]; j++)
      {
          //normal velocities
          for (i = imax-ubuf[0]; i <= imax-1; i++)// X Upper
@@ -24735,8 +24735,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
     if (machine_index[1] == GP[1][0] && rect_boundary_type(intfc,1,0) == REFLECTION_BOUNDARY)
     {
         printf("Y Lower Direction is REFLECTION_BOUNDARY. Checked\n");
-     for (k = kmin; k <= kmax; k++)
-     for (i = 0; i <= imax+ubuf[0]; i++)
+     for (k = 0; k <= top_gmax[2]; k++)
+     for (i = 0; i <= top_gmax[0]; i++)
      {
          //normal velocities
          for (j = jmin; j < jmin+lbuf[1]-1; j++)
@@ -24764,8 +24764,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::ReflectBC(double **solute)
     if (machine_index[1] == GP[1][1] && rect_boundary_type(intfc,1,1) == REFLECTION_BOUNDARY)
     {
         printf("Y Upper Direction is REFLECTION_BOUNDARY. Checked\n");
-     for (k = kmin; k <= kmax; k++)
-     for (i = 0; i <= imax+ubuf[0]; i++)
+     for (k = 0; k <= top_gmax[2]; k++)
+     for (i = 0; i <= top_gmax[0]; i++)
      {
          //normal velocities
          for (j = jmax-ubuf[1]; j <= jmax-1; j++)//Y Upper
