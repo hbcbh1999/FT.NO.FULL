@@ -99,7 +99,7 @@ void poisson_solver3d_P0_vd(
 
             rhs = source[index];
 
-            aII = 0;
+            aII = 0.0;
             for (l = 0; l < 6; ++l)
             {
                 if (num_nb < 2) break;
