@@ -52,8 +52,14 @@ void PETSc::Create(
 	iUpper 	= iupper;	
 	
         // A
-	MatCreateMPIAIJ(PETSC_COMM_WORLD,n,n,PETSC_DETERMINE,PETSC_DETERMINE,
-				d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);
+
+        //petsc version < 3.3
+        //MatCreateMPIAIJ(PETSC_COMM_WORLD,n,n,PETSC_DETERMINE,PETSC_DETERMINE,
+        //                      d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);
+
+        //petsc version >= 3.3
+        MatCreateAIJ(PETSC_COMM_WORLD,n,n,PETSC_DETERMINE,PETSC_DETERMINE,
+                                d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);
 	ierr = PetscObjectSetName((PetscObject) A, "A");
 	ierr = MatSetFromOptions(A);
 	
@@ -72,6 +78,8 @@ void PETSc::Create(
 
 PETSc::~PETSc()
 {
+
+/*
         //for petsc-3.1
 	if(x!=NULL)
 	{
@@ -98,15 +106,16 @@ PETSc::~PETSc()
 		MatNullSpaceDestroy(nullsp);
 		nullsp = NULL;
 	}
+*/
 
-/*
-        //for petsc-3.2
+
+        //for petsc version >= 3.2
         VecDestroy(&x);
         VecDestroy(&b);
         MatDestroy(&A);
         KSPDestroy(&ksp);
         MatNullSpaceDestroy(&nullsp);
-*/
+
 }
 
 void PETSc::Reset_A()	// Reset all entries to zero ;
@@ -235,7 +244,9 @@ void PETSc::Solve_GMRES(void)
 	stop_clock("After Assembly matrix and vector");
 
 
-        KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+        // KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+        KSPSetOperators(ksp,A,A); // petsc-3.5
+
 	KSPSetType(ksp,KSPGMRES);
 
         KSPSetComputeSingularValues(ksp, PETSC_TRUE);
@@ -271,7 +282,9 @@ void PETSc::Solve(void)
 	stop_clock("After Assembly matrix and vector");
 
 
-        KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+        // KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+        KSPSetOperators(ksp,A,A); // for petsc-3.5
+
         KSPSetType(ksp,KSPBCGSL);
 	KSPBCGSLSetEll(ksp,2);
 
@@ -301,10 +314,12 @@ void PETSc::Solve_withPureNeumann_GMRES(void)
 	
 	ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp);
         ierr = KSPSetNullSpace(ksp,nullsp);
-	ierr = MatNullSpaceRemove(nullsp,b,PETSC_NULL);
-
+	// ierr = MatNullSpaceRemove(nullsp,b,PETSC_NULL);
+        ierr = MatNullSpaceRemove(nullsp,b); // for petsc-3.5
 	
-        KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+        //KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+	KSPSetOperators(ksp,A,A); // petsc-3.5
+
 	KSPSetType(ksp,KSPGMRES);
 
         KSPSetComputeSingularValues(ksp, PETSC_TRUE);
@@ -332,8 +347,9 @@ void PETSc::Solve_withPureNeumann(void)
 	ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp);
         ierr = KSPSetNullSpace(ksp,nullsp);
 	
-        KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
-        
+        // KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+        KSPSetOperators(ksp,A,A); // petsc-3.5
+
 	//KSPSetType(ksp,KSPMINRES);
 	//KSPSetType(ksp,KSPGMRES);
 	//KSPSetType(ksp,KSPBCGS);
