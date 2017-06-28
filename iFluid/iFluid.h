@@ -1342,4 +1342,23 @@ extern void read_iF_dirichlet_bdry_data(char*,Front*,F_BASIC_DATA);
 extern boolean isDirichletPresetBdry(Front*,int*,GRID_DIRECTION,COMPONENT);
 extern void convertGridDirectionToDirSide(GRID_DIRECTION, int*, int*);
 
+// This is the NEW HOME for function definition
+void	poisson_solver2d(Front*,int,int,int**,double*,double*,double*,
+				double*,double*);
+
+// for vd
+void    poisson_solver2d_vd(Front*,int,int,int**,double*,double*,double*,
+                               double*,double*,double*);
+void    poisson_solver2d_MacPhi_vd(Front*,int,int,int**,double*,double*,
+                               double*,double*,double*);
+void    poisson_solver3d_vd(Front*,int,int,int***,double*,double*,double*,
+                               double*,double*,double*);
+void    poisson_solver3d_MacPhi_vd(Front*,int,int,int***,double*,double*,
+                               double*,double*,double*);
+void    poisson_solver3d_Expand_vd(Front*,int,int,int***,double*,double*,double*,
+                               double*,double*,double*);
+void    poisson_solver3d_P0_vd(Front*,int,int,int***,double*,double*,
+                               double*,double*,double*);
+void    checkBoundaryConditionHelp(GRID_DIRECTION, int*, int*,Front*);
+bool    FT_ReflectHelp(int*, int, int, Front*);
 #endif
