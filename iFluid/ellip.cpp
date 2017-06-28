@@ -23,7 +23,7 @@ void poisson_solver3d_P0_vd(
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         boolean use_neumann_solver = YES;
         PetscInt num_iter = 0;
-        double rel_residual = 0;
+        PetscScalar rel_residual = 0; // PETSc standard from double to PetscScalar
         RECT_GRID *rgr = &topological_grid(front->grid_intfc);
         struct Table *T = table_of_interface(front->grid_intfc);
         COMPONENT *top_comp = T->components;
@@ -183,7 +183,7 @@ void poisson_solver3d_P0_vd(
 
                 if (debugging("PETSc"))
                 {
-                    double max, min;
+                    PetscScalar max, min;//PETSc standard
                     solver.GetExtremeSingularValues(&max, &min);
                     (void) printf("The max singular value of A = %lf in poisson_solver3d_P0_vd\n", max);
                     (void) printf("The min singular value of A = %lf in poisson_solver3d_P0_vd\n", min);
@@ -216,8 +216,8 @@ void poisson_solver3d_P0_vd(
         }
         stop_clock("After Petsc Solver");
 
-        double *x;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        PetscScalar *x;//PETSc standard
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar)); // PETSc Standard
         solver.Get_x(x);
 
         if (debugging("PETSc"))
@@ -272,7 +272,7 @@ void poisson_solver2d(
 	GRID_DIRECTION dir[4] = {WEST,EAST,SOUTH,NORTH};
 	boolean use_neumann_solver = YES;
 	PetscInt num_iter = 0;
-	double rel_residual = 0.0;
+	PetscScalar rel_residual = 0.0; // PETSc Standard
 	RECT_GRID *rgr = &topological_grid(front->grid_intfc);
 	struct Table *T = table_of_interface(front->grid_intfc);
 	COMPONENT *top_comp = T->components;
@@ -414,8 +414,8 @@ void poisson_solver2d(
 	}
 	stop_clock("After Petsc Solver");
 
-	double *x;
-	FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+	PetscScalar *x;
+	FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
 	solver.Get_x(x);
 
 	if (debugging("PETSc"))
@@ -470,7 +470,7 @@ void poisson_solver2d_vd(
         GRID_DIRECTION dir[4] = {WEST,EAST,SOUTH,NORTH};
         boolean use_neumann_solver = YES;
         PetscInt num_iter = 0;
-        double rel_residual = 0.0;
+        PetscScalar rel_residual = 0.0; // PETSc Standard
         RECT_GRID *rgr = &topological_grid(front->grid_intfc);
         struct Table *T = table_of_interface(front->grid_intfc);
         COMPONENT *top_comp = T->components;
@@ -613,8 +613,8 @@ void poisson_solver2d_vd(
         }
         stop_clock("After Petsc Solver");
 
-        double *x;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        PetscScalar*x;
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
         solver.Get_x(x);
 
         if (debugging("PETSc"))
@@ -668,7 +668,7 @@ void poisson_solver2d_MacPhi_vd(
         GRID_DIRECTION dir[4] = {WEST,EAST,SOUTH,NORTH};
         boolean use_neumann_solver = YES;
         PetscInt num_iter = 0;
-        double rel_residual = 0.0;
+        PetscScalar rel_residual = 0.0;
         RECT_GRID *rgr = &topological_grid(front->grid_intfc);
         struct Table *T = table_of_interface(front->grid_intfc);
         COMPONENT *top_comp = T->components;
@@ -809,8 +809,8 @@ void poisson_solver2d_MacPhi_vd(
         }
         stop_clock("After Petsc Solver");
 
-        double *x;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        PetscScalar *x;
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
         solver.Get_x(x);
 
         if (debugging("PETSc"))
@@ -865,7 +865,7 @@ void poisson_solver3d_vd(
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         boolean use_neumann_solver = YES;
         PetscInt num_iter = 0;
-        double rel_residual = 0.0;
+        PetscScalar rel_residual = 0.0;
         RECT_GRID *rgr = &topological_grid(front->grid_intfc);
         struct Table *T = table_of_interface(front->grid_intfc);
         COMPONENT *top_comp = T->components;
@@ -1017,7 +1017,7 @@ void poisson_solver3d_vd(
 
                 if (debugging("PETSc"))
                 {
-                    double max, min;
+                    PetscScalar max, min;
                     solver.GetExtremeSingularValues(&max, &min);
                     (void) printf("The max singular value of A = %lf in poisson_solver3d_vd\n", max);
                     (void) printf("The min singular value of A = %lf in poisson_solver3d_vd\n", min);
@@ -1050,8 +1050,8 @@ void poisson_solver3d_vd(
         }
         stop_clock("After Petsc Solver");
 
-        double *x;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        PetscScalar *x;
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
         solver.Get_x(x);
 
         if (debugging("PETSc"))
@@ -1106,7 +1106,7 @@ void poisson_solver3d_MacPhi_vd(
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         boolean use_neumann_solver = YES;
         PetscInt num_iter = 0;
-        double rel_residual = 0;
+        PetscScalar rel_residual = 0;
         RECT_GRID *rgr = &topological_grid(front->grid_intfc);
         struct Table *T = table_of_interface(front->grid_intfc);
         COMPONENT *top_comp = T->components;
@@ -1292,7 +1292,7 @@ void poisson_solver3d_MacPhi_vd(
 
                 if (debugging("PETSc"))
                 {
-                    double max, min;
+                    PetscScalar max, min;
                     solver.GetExtremeSingularValues(&max, &min);
                     (void) printf("The max singular value of A = %lf in poisson_solver3d_MacPhi_vd\n", max);
                     (void) printf("The min singular value of A = %lf in poisson_solver3d_MacPhi_vd\n", min);
@@ -1325,8 +1325,8 @@ void poisson_solver3d_MacPhi_vd(
         }
         stop_clock("After Petsc Solver");
 
-        double *x;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        PetscScalar *x;
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
         solver.Get_x(x);
 
         if (debugging("PETSc")) {
@@ -1390,7 +1390,7 @@ void poisson_solver3d_Expand_vd(
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         boolean use_neumann_solver = YES;
         PetscInt num_iter = 0;
-        double rel_residual = 0.0;
+        PetscScalar rel_residual = 0.0;
         RECT_GRID *rgr = &topological_grid(front->grid_intfc);
         struct Table *T = table_of_interface(front->grid_intfc);
         COMPONENT *top_comp = T->components;
@@ -1548,7 +1548,7 @@ void poisson_solver3d_Expand_vd(
 
                 if (debugging("PETSc"))
                 {
-                    double max, min;
+                    PetscScalar max, min;
                     solver.GetExtremeSingularValues(&max, &min);
                     (void) printf("The max singular value of A = %lf in poisson_solver3d_Expand_vd\n", max);
                     (void) printf("The min singular value of A = %lf in poisson_solver3d_Expand_vd\n", min);
@@ -1581,8 +1581,8 @@ void poisson_solver3d_Expand_vd(
         }
         stop_clock("After Petsc Solver");
 
-        double *x;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        PetscScalar *x;
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
         solver.Get_x(x);
 
         if (debugging("PETSc"))

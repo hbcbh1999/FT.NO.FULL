@@ -542,12 +542,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewConcentration_vd(void)
         int i,j,k,nb,icoords[MAXD];
         INTERFACE *intfc = front->interf;
         double concentration,max_tmp,min_tmp;
-        double *x;
+        PetscScalar *x;
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         POINTER intfc_state;
         HYPER_SURF *hs;
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         boolean use_neumann_solver = YES;
 
         max_concentration = -1;
@@ -555,7 +555,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewConcentration_vd(void)
         setIndexMap();
 
         size = iupper - ilower;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
 
         PETSc solver;
         solver.Create(ilower, iupper-1, 7, 7);
@@ -671,7 +671,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewConcentration_vd(void)
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in computeNewConcentration_vd\n", max);
             (void) printf("The min singular value of A = %lf in computeNewConcentration_vd\n", min);
@@ -803,13 +803,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         int i,j,k,l,nb,icoords[MAXD];
         INTERFACE *intfc = front->interf;
         double speed,u,v,w,max_u,max_v,max_w,max_tmp,sum_div,value;
-        double *x;
+        PetscScalar *x;
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
         POINTER intfc_state;
         HYPER_SURF *hs;
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         double **vel = iFparams->field->vel;
 
         max_speed = 0.0;
@@ -819,7 +819,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         setIndexMap();
 
         size = iupper - ilower;
-        FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+        FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
         PETSc solver;
         solver.Create(3*ilower, 3*iupper-1, 30, 30);
@@ -1479,7 +1479,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in compDiffWithSmoothProperty_velocity_vd\n", max);
             (void) printf("The min singular value of A = %lf in compDiffWithSmoothProperty_velocity_vd\n", min);
@@ -1713,13 +1713,13 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         int i,j,k,l,nb,icoords[MAXD];
         INTERFACE *intfc = front->interf;
         double speed,u,v,w,max_u,max_v,max_w,max_tmp,sum_div,value;
-        double *x;
+        PetscScalar *x;
         GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
         double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
         POINTER intfc_state;
         HYPER_SURF *hs;
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         double **vel = iFparams->field->vel;
 
         max_speed = 0.0;
@@ -1729,7 +1729,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         setIndexMap();
 
         size = iupper - ilower;
-        FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+        FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
     for (l = 0; l < dim; ++l)
     {
@@ -1869,7 +1869,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in compDiffWithSmoothProperty_velocity_decoupled_vd\n", max);
             (void) printf("The min singular value of A = %lf in compDiffWithSmoothProperty_velocity_decoupled_vd\n", min);
@@ -1878,7 +1878,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         }
 
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         solver.GetNumIterations(&num_iter);
         solver.GetFinalRelativeResidualNorm(&rel_residual);
 
@@ -2035,12 +2035,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     int i,j,k,l,nb,icoords[MAXD];
     INTERFACE *intfc = front->interf;
     double speed,u,v,w,max_u,max_v,max_w,max_tmp,sum_div,value;
-    double *x;
+    PetscScalar *x;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
     POINTER intfc_state;
     HYPER_SURF *hs;
     PetscInt num_iter;
-    double rel_residual;
+    PetscScalar rel_residual;
     double **vel = iFparams->field->vel;
 
     max_speed = 0.0;
@@ -2050,7 +2050,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     setIndexMap();
 
     size = iupper - ilower;
-    FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
     //solve for u, v, and w separately
     for (l = 0; l < dim; ++l)
@@ -2251,7 +2251,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in "
                           "compDiffWithSmoothProperty_velocity_MAC_decoupled_vd for U[%d]\n", max,l);
@@ -2263,7 +2263,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         }
 
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         solver.GetNumIterations(&num_iter);
         solver.GetFinalRelativeResidualNorm(&rel_residual);
 
@@ -2421,12 +2421,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     int i,j,k,l,nb,icoords[MAXD];
     INTERFACE *intfc = front->interf;
     double speed,u,v,w,max_u,max_v,max_w,max_tmp,sum_div,value;
-    double *x;
+    PetscScalar *x;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
     POINTER intfc_state;
     HYPER_SURF *hs;
     PetscInt num_iter;
-    double rel_residual;
+    PetscScalar rel_residual;
     double **vel = iFparams->field->vel;
 
     max_speed = 0.0;
@@ -2436,7 +2436,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     setIndexMap();
 
     size = iupper - ilower;
-    FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
     //solve for u and v separately, set w = 0
     for (l = 0; l < (dim-1); ++l)
@@ -2639,7 +2639,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in "
                           "compDiffWithSmoothProperty_velocity_MAC_decoupled_vd for U[%d]\n", max,l);
@@ -2651,7 +2651,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         }
 
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         solver.GetNumIterations(&num_iter);
         solver.GetFinalRelativeResidualNorm(&rel_residual);
 
@@ -2819,12 +2819,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     int i,j,k,l,nb,icoords[MAXD];
     INTERFACE *intfc = front->interf;
     double speed,u,v,w,max_u,max_v,max_w,max_tmp,sum_div,value;
-    double *x;
+    PetscScalar *x;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
     POINTER intfc_state;
     HYPER_SURF *hs;
     PetscInt num_iter;
-    double rel_residual;
+    PetscScalar rel_residual;
     double **vel = iFparams->field->vel;
 
     max_speed = 0.0;
@@ -2834,7 +2834,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
     setIndexMap();
 
     size = iupper - ilower;
-    FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
     //solve for u and w separately, set v = 0
     for (l = 0; l < dim; ++l)
@@ -3038,7 +3038,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in "
                           "compDiffWithSmoothProperty_velocity_MAC_decoupled_vd for U[%d]\n", max,l);
@@ -3050,7 +3050,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         }
 
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         solver.GetNumIterations(&num_iter);
         solver.GetFinalRelativeResidualNorm(&rel_residual);
 
@@ -3223,9 +3223,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         L_STATE state;
         int i,j,k,l,nb,icoords[MAXD];
         double speed,u,v,w,max_u,max_v,max_w,max_tmp,sum_div,value;
-        double *x;
+        PetscScalar *x;
         PetscInt num_iter;
-        double rel_residual;
+        PetscScalar rel_residual;
         double **vel = iFparams->field->vel;
         boolean useSGSCellCenter = YES; //use mu_t on the cell center. o.w. use mu_t on 3 cell-faces
         int bNoBoundary[6];//type change
@@ -3236,7 +3236,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
         setIndexMap();
 
         size = iupper - ilower;
-        FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+        FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
         PETSc solver;
         solver.Create(3*ilower, 3*iupper-1, 20, 20);
@@ -5995,7 +5995,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
 
         if (debugging("PETSc"))
         {
-            double max, min;
+            PetscScalar max, min;
             solver.GetExtremeSingularValues(&max, &min);
             (void) printf("The max singular value of A = %lf in "
                           "compDiffWithSmoothProperty_velocity_MAC_coupled_vd\n", max);
@@ -16116,19 +16116,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::
         int i,j,k,l,nb,icoords[MAXD];
         INTERFACE *intfc = front->interf;
         double speed;
-	double *x;
+	PetscScalar *x;
 	GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 	double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
 	POINTER intfc_state;
 	HYPER_SURF *hs;
 	PetscInt num_iter;
-	double rel_residual;
+	PetscScalar rel_residual;
 
 	max_speed = 0.0;
 	setIndexMap();
 
 	size = iupper - ilower;
-	FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
         PETSc solver;
         solver.Create(3*ilower, 3*iupper-1, 15, 15);
@@ -16673,19 +16673,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_coupl
         int i,j,k,l,nb,icoords[MAXD];
         INTERFACE *intfc = front->interf;
         double speed;
-	double *x;
+	PetscScalar *x;
 	GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 	double (*getStateVel[3])(POINTER) = {getStateXvel,getStateYvel,getStateZvel};
 	POINTER intfc_state;
 	HYPER_SURF *hs;
 	PetscInt num_iter;
-	double rel_residual;
+	PetscScalar rel_residual;
 
 	max_speed = 0.0;
 	setIndexMap();
 
 	size = iupper - ilower;
-	FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&x,3*size,sizeof(PetscScalar));
 
         PETSc solver;
         solver.Create(3*ilower, 3*iupper-1, 30, 30);
@@ -17998,7 +17998,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection(void)
 	sum_div = 0.0;
 	sum_phi = 0.0;
 	PetscInt num_iter = 0;
-	double rel_residual = 0.0;
+	PetscScalar rel_residual = 0.0;
 
 	PETSc solver;
 	solver.Create(ilower, iupper-1, 7, 7);
@@ -18171,8 +18171,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection(void)
 	}
 	stop_clock("After Petsc Solver in Projection step");
 
-	double *x;
-	FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+	PetscScalar *x;
+	FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
 	solver.Get_x(x);
 
 	if (debugging("PETSc"))
@@ -19810,21 +19810,21 @@ void Incompress_Solver_Smooth_3D_Cartesian::
 	double coords[MAXD], crx_coords[MAXD];
 	double coeff[6],mu[6],mu0,rho,corner[6],rhs,U_nb[6];
         double speed;
-        double *x;
+        PetscScalar *x;
 	GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
 	double (*getStateVel[3])(POINTER) =
 			{getStateXvel,getStateYvel,getStateZvel};
 	POINTER intfc_state;
 	HYPER_SURF *hs;
 	PetscInt num_iter;
-	double rel_residual;
+	PetscScalar rel_residual;
 
         setIndexMap();
 
 	max_speed = 0.0;
 
         size = iupper - ilower;
-        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+        FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
 
 	for (l = 0; l < dim; ++l)
 	{
@@ -21260,7 +21260,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_decou
     double U_nb[6], U_nb_new[6], U_center;
 
     double speed;
-    double *x;
+    PetscScalar *x;
     GRID_DIRECTION dir[6] = {WEST,EAST,SOUTH,NORTH,LOWER,UPPER};
     double (*getStateVel[3])(POINTER) =
     {getStateXvel,getStateYvel,getStateZvel};
@@ -21273,7 +21273,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_decou
     max_speed = 0.0;
 
     size = iupper - ilower;
-    FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&x,size,sizeof(PetscScalar));
 
     for (l = 0; l < dim; ++l)
     {
@@ -21414,7 +21414,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_2nd_decou
 	solver.Get_x(x);
 
 	PetscInt num_iter;
-	double rel_residual;
+	PetscScalar rel_residual;
 	solver.GetNumIterations(&num_iter);
 	solver.GetFinalRelativeResidualNorm(&rel_residual);
 
