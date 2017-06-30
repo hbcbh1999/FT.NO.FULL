@@ -14659,6 +14659,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         double dist=0;
         double **vel = iFparams->field->vel;
         FOURIER_POLY *pert = (FOURIER_POLY*)level_func_pack->func_params;
+        boolean status;
+        double point[MAXD],H,D, t[MAXD];
+        HYPER_SURF_ELEMENT *hse;
+        HYPER_SURF *hs;
 
 
         FT_MakeGridIntfc(front);
@@ -14720,14 +14724,51 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             cell_center[index].m_state.m_Dcoef = m_Dcoef[0];
 
             getRectangleCenter(index, coords);
-            dist = level_wave_func_Meniscus(level_func_pack->func_params, coords);
+            //dist = level_wave_func_Meniscus(level_func_pack->func_params, coords);
 
             rho0 = std::min(m_rho[0], m_rho[1]);
             rho1 = std::max(m_rho[0], m_rho[1]);
+            // High Density Ratio leads to higher condition number in poisson matrix solver
+            // Introduce heaviside function to smooth the gradient
+            // Remove Level Set Function level_wave_func_Meniscus at the same time.
+            /*
             if (dist >= 0.0)
                 cell_center[index].m_state.m_rho = rho0;
             else
                 cell_center[index].m_state.m_rho = rho1;
+            */
+            // this block could be modularized since the very same function re-appear in function setSmoothedProperties()
+            status = FT_FindNearestIntfcPointInRange(front,comp,coords,point,
+				t,&hse,&hs,(int)m_smoothing_radius);
+
+
+            if (status  == YES &&
+            ifluid_comp(positive_component(hs)) &&
+                    ifluid_comp(negative_component(hs)))
+            {
+            sign = (comp == m_comp[0]) ? -1 : 1;
+                    D = smoothedDeltaFunction(coords,point);
+                    H = smoothedStepFunction(coords,point,sign);
+                    cell_center[index].m_state.m_mu = m_mu[0]  +
+                                            (m_mu[1]-m_mu[0])*H;
+                    cell_center[index].m_state.m_rho = m_rho[0] +
+                                            (m_rho[1]-m_rho[0])*H;
+            }
+            else
+            {
+            switch (comp)
+            {
+            case LIQUID_COMP1:
+                cell_center[index].m_state.m_mu = m_mu[0];
+                cell_center[index].m_state.m_rho = m_rho[0];
+                break;
+            case LIQUID_COMP2:
+                cell_center[index].m_state.m_mu = m_mu[1];
+                cell_center[index].m_state.m_rho = m_rho[1];
+                break;
+            }
+            }
+
             cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
 
             //conservation of volume
