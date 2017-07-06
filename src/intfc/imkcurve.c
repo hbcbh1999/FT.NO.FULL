@@ -39,8 +39,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // Another way to clean up this section is to simply delete the rest versions and keep VERSIONTWO.
 // VERSIONTWO has more complicated geometry
 #define VERSIONONE NO
-#define VERSIONTWO YES
-#define VERSIONTHREE NO
+#define VERSIONTWO NO
+#define VERSIONTHREE YES
 #define DEBUG_STRING "i_make_curve"
 
 #include <intfc/int.h>
@@ -1905,7 +1905,7 @@ if (min_n != 0 && max_n != 0)
             wv_num[0][0] = 2.0*PI/wave_len[0];
             wv_num[0][1] = 2.0*PI/wave_len[1];
             A[0] = wave_params->A[0];// single mode: amplitude of the wave is a multiple of mesh block, like 1, 2 or 3. Currently, it took a dummy value.
-            z += A[0]*cos(wv_num[0][0]*(x-L[0]))*cos(wv_num[0][1]*(y-L[1]));
+            z += A[0]*cos(wv_num[0][0]*(x-L[0]));
         }
         else
         {
@@ -1937,8 +1937,7 @@ if (min_n != 0 && max_n != 0)
                     //          iii,degrees(phase[iii]));
 
                 wv_num[iii][0] = m*k_x;
-                wv_num[iii][1] = n*k_y;
-                z += A[iii]*cos(wv_num[iii][0]*x)*cos(wv_num[iii][1]*y);
+                z += A[iii]*cos(wv_num[iii][0]*x);
             }
         }
         }
