@@ -24628,6 +24628,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
     int *top_gmax = rgr->gmax;
     int *lbuf = front->rect_grid->lbuf;
     int *ubuf = front->rect_grid->ubuf;
+    INTERFACE *intfc = front->interf;
 
     G = pp_grid->gmax;
     find_Cartesian_coordinates(pp_mynode(),pp_grid,machine_index);
@@ -24647,7 +24648,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
     // TODO && FIXME:
     // This is NOT INDEPENDENT FUNCTION from the perspective of Logic
     // This function is called After ReflectBC() The ONLY Scenario
-    if (machine_index[2] == GP[2][0])//Z Lower
+    if (machine_index[2] == GP[2][0] && rect_boundary_type(intfc,2,0) == NEUMANN_BOUNDARY)//Z Lower
     {
         printf("Z Lower Direction is NEUMANN_BOUNDARY. Checked\n");
         k = kmin;
@@ -24664,7 +24665,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::NeumannBC(double **solute)
        solute[2][BIndex] = 0.0;
         }
     }
-    if (machine_index[2] == GP[2][1])//Z Upper
+    if (machine_index[2] == GP[2][1] && rect_boundary_type(intfc,2,1) == NEUMANN_BOUNDARY)//Z Upper
     {
         printf("Z Upper Direction is NEUMANN_BOUNDARY. Checked\n");
         k = kmax;
@@ -24904,8 +24905,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::enforceVecState(double **vel)
      // assumption is REFLECTIONS ON X and Y, NEUMANN on Z
      // Periodic BC will have zero adjustment here. ONLY Reflect/Neumann Will Be adjusted accordingly.
      ReflectBC(vel);
-     printf("If NEUMANN_BOUNDARY is used, NeumannBC() need if control flow!\n");
-     //NeumannBC(vel);
+     NeumannBC(vel);
 }
 
 // Convert GRID_DIRECTION into dir and side.
