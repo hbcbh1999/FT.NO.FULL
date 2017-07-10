@@ -6468,7 +6468,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
                 bNoBoundary = YES;
             */
 
-            if (bNoBoundary[5] == 2) //cells on UPPER bdry
+            if (bNoBoundary[5] >= 2) //cells on UPPER bdry
             {
                 for (l = 0; l < 2; ++l)
                 {
@@ -12266,7 +12266,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::getDivU_MAC_vd(
 
         //TODO: implement Dcoef_face[] for Dcoef_t on 3 cell-faces
         //Dcoef_t at m_t_old, which is a first-order approx. in time
-        if (bNoBoundary[nb]>=2) {
+        if (bNoBoundary[nb]==2 || bNoBoundary[nb]==1) {
             rho_face[nb] = rho_nb[nb];
             if (useSGSCellCenter) {
                 Dcoef_face[nb] = statenb.m_Dcoef + statenb.m_Dcoef_turbulent[3];
