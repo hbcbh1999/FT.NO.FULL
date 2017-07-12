@@ -190,8 +190,8 @@ static void initRSSYIntfc(
             level_func_params.U[i] = front->rect_grid->U[i];
         }
 
-        level_func_pack->neg_component = LIQUID_COMP1;
-        level_func_pack->pos_component = LIQUID_COMP2;
+        level_func_pack->neg_component = LIQUID_COMP2;
+        level_func_pack->pos_component = LIQUID_COMP1;
         // TODO && FIXME: REFLECTION BOUNDARY CONDITION
         level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
         CursorAfterString(infile,"Enter mean position of fluid interface:");
