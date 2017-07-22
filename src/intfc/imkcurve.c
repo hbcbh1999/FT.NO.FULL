@@ -1914,10 +1914,8 @@ if (min_n != 0 && max_n != 0)
         k_max = 2.0*k_m;
         k_x = 2.0*PI/(U[0]-L[0]); // along X direction
         k_y = 2.0*PI/(U[1]-L[1]); // along Y direction
-        min_n = (int) k_m/k_y; // amplitude of long wavelength in Y direction is 0
-        max_n = (int) k_max/k_y;
-        min_m = (int) k_min/k_x;
-        max_m = (int) k_max/k_x;
+        //min_m = (int) k_min/k_x;
+        //max_m = (int) k_max/k_x;
         P_sd = radians(P_sd);
         //xsubi_a[0] = 5123;      xsubi_a[1] = 234; xsubi_a[2] = 1979;
         xsubi_a[0] = 82;      xsubi_a[1] = 1772; xsubi_a[2] = 813;
@@ -1925,21 +1923,20 @@ if (min_n != 0 && max_n != 0)
         xsubi_p[0] = 6362;      xsubi_p[1] = 88; xsubi_p[2] = 183;
 
         iii = 0;
-        for (n = min_n; n <= max_n; ++n)
-        {
-            for (m = min_m; m <= max_m; ++m)
-            {
-                //fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));
-                //fprintf(stdout, "A%d %e\n", iii,A[iii]);
-                A[iii] = random_gaussian(0.0,A_sd,xsubi_a);
-                //(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);
-                //(void) printf("\tPhase for mode %d::%g\n",
-                    //          iii,degrees(phase[iii]));
 
-                wv_num[iii][0] = m*k_x;
-                z += A[iii]*cos(wv_num[iii][0]*x);
-            }
+        for (m = min_m; m <= max_m; ++m)
+        {
+            //fprintf(stdout, "random_gaussian %e\n", random_gaussian(0.0,A_sd,xsubi_a));
+            //fprintf(stdout, "A%d %e\n", iii,A[iii]);
+            A[iii] = random_gaussian(0.0,A_sd,xsubi_a);
+            //(void) printf("\tAmplitude for mode %d::%g\n",iii,A[iii]);
+            //(void) printf("\tPhase for mode %d::%g\n",
+                //          iii,degrees(phase[iii]));
+
+            wv_num[iii][0] = m*k_x;
+            z += A[iii]*cos(wv_num[iii][0]*x);
         }
+
         }
 
 }
