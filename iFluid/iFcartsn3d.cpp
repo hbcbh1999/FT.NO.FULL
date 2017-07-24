@@ -18774,8 +18774,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
             printf("\n\tzmin_vf = %lf\n", zmin);
             printf("\tzmax_vf = %lf\n", zmax);
         }
-        h_bubble_vf = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
-        h_spike_vf = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
+        //h_bubble_vf = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
+        //h_spike_vf = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
+        h_bubble_vf = fabs(zmin-z0);
+        h_spike_vf = fabs(zmax-z0);
 
 
         //3. get molecular mixing parameter theta
