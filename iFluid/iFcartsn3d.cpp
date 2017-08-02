@@ -18765,6 +18765,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
         zmin = new_height_at_fraction_vd(GL[dim-1]+0.5*top_h[dim-1],+1,tol);
         //search for zmax from highest cell centers in z-direction
         zmax = new_height_at_fraction_vd(GU[dim-1]-0.5*top_h[dim-1],-1,1.0-tol);
+        // TEST FOR EACH PROCESSOR
+        int        myid = pp_mynode();
+        printf("local zmin = %lf zmax = %lf for processor %d\n",zmin,zmax,myid);
+        pp_global_max(&zmax,1);
+        pp_global_min(&zmin,1);
         // store zmax and zmin
         zmax_vf = zmax;
         zmin_vf = zmin;
@@ -18774,10 +18779,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
             printf("\n\tzmin_vf = %lf\n", zmin);
             printf("\tzmax_vf = %lf\n", zmax);
         }
-        //h_bubble_vf = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
-        //h_spike_vf = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
-        h_bubble_vf = fabs(zmin-z0);
-        h_spike_vf = fabs(zmax-z0);
+        h_bubble_vf = (m_rho[0]<m_rho[1]) ? fabs(zmin-z0):fabs(zmax-z0);
+        h_spike_vf = (m_rho[0]<m_rho[1]) ? fabs(zmax-z0):fabs(zmin-z0);
 
 
         //3. get molecular mixing parameter theta
@@ -19579,6 +19582,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::new_accumulate_fractions_in_layer_vd
             {
                 pp_global_isum(&count,1);
                 pp_global_sum(&upper_fluid_volume, 1);
+                pp_gsync();
             }
             if (debugging("glayer"))
             {
