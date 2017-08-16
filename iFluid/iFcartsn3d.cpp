@@ -14677,8 +14677,8 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
         m_rho[1] = m_rho_old[1] = iFparams->rho2;
         m_c[0] = iFparams->c1;
         m_c[1] = iFparams->c2;
-        m_mu[0] = iFparams->mu1;
-        m_mu[1] = iFparams->mu2;
+        m_mu[0] = m_mu_old[0] = iFparams->mu1;
+        m_mu[1] = m_mu_old[1] = iFparams->mu2;
         m_Dcoef[0] = iFparams->Dcoef1;
         m_Dcoef[1] = iFparams->Dcoef2;
         m_comp[0] = iFparams->m_comp1;
@@ -14770,6 +14770,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             }
 
             cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
+            cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_rho; // viscosity is constant for each constant fluid
 
             //conservation of volume
             rho = cell_center[index].m_state.m_rho;
@@ -14837,6 +14838,23 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             index = d_index3d(i,j,k,top_gmax);
             cell_center[index].m_state.m_rho = array[index];
             cell_center[index].m_state.m_rho_old = array[index];
+        }
+
+        for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            array[index] = cell_center[index].m_state.m_mu;
+        }
+        scatMeshArray();
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_mu = array[index];
+            cell_center[index].m_state.m_mu_old = array[index];
         }
 
         for (k = kmin; k <= kmax; k++)

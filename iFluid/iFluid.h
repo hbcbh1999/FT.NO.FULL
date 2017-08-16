@@ -363,6 +363,7 @@ protected:
         // for vd, member data
         double m_c[2];
         double m_rho_old[2];
+        double m_mu_old[2];
         double m_Dcoef[2];
         double c_min, c_max;
         double Dcoef_min,Dcoef_max,rho_max,mu_max;
