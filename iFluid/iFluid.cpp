@@ -768,7 +768,7 @@ static  void ifluid_driver(
             if (FT_IsMovieFrameTime(front))
 	    {
                 //print P-node/state files for making plot
-//                l_cartesian->printInteriorVelocity(out_name);
+                l_cartesian->printInteriorVelocity(out_name);
 
 	    	if (debugging("trace"))
 		    (void) printf("Calling initMovieVariables()\n");
