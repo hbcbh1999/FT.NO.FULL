@@ -19505,7 +19505,6 @@ double Incompress_Solver_Smooth_3D_Cartesian::new_height_at_fraction_vd(
 	//zmin <-> dir=+1
         //zmax <-> dir=-1
 	//mixing layer too close to the bottom, return bottom.
-    /*
         if (dir == +1  &&  old_frac > fraction)
         {
             if (debugging("glayer"))
@@ -19523,7 +19522,6 @@ double Incompress_Solver_Smooth_3D_Cartesian::new_height_at_fraction_vd(
                           fraction,height);
             return front->rect_grid->GU[dim-1];
         }
-    */
 
         while (height >= front->rect_grid->GL[dim-1] &&
                height <= front->rect_grid->GU[dim-1] )
