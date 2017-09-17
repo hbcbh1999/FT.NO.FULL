@@ -151,7 +151,7 @@ void poisson_solver3d_P0_vd(
         }
         use_neumann_solver = pp_min_status(use_neumann_solver);
 
-        solver.SetMaxIter(40000);
+        solver.SetMaxIter(HAO);
         solver.SetTol(1e-14);
 
         start_clock("Before Petsc Solver");
@@ -985,7 +985,7 @@ void poisson_solver3d_vd(
         }
         use_neumann_solver = pp_min_status(use_neumann_solver);
 
-        solver.SetMaxIter(40000);
+        solver.SetMaxIter(HAO);
         solver.SetTol(1e-14);
 
         start_clock("Before Petsc Solver");
@@ -1260,7 +1260,7 @@ void poisson_solver3d_MacPhi_vd(
         }
         use_neumann_solver = pp_min_status(use_neumann_solver);
 
-        solver.SetMaxIter(40000);
+        solver.SetMaxIter(HAO);
         solver.SetTol(1e-14);
 
         start_clock("Before Petsc Solver");
