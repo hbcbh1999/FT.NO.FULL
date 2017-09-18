@@ -353,8 +353,7 @@ void PETSc::Solve_withPureNeumann(void)
 	//KSPSetType(ksp,KSPMINRES);
 	//KSPSetType(ksp,KSPGMRES);
 	//KSPSetType(ksp,KSPBCGS);
-	KSPSetType(ksp,KSPBCGSL);
-    KSPBCGSLSetEll(ksp,2);
+	KSPSetType(ksp,KSPBCGS);
 
         KSPSetComputeSingularValues(ksp, PETSC_TRUE);
 	KSPGetPC(ksp, &pc);
