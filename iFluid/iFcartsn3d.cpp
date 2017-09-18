@@ -5986,7 +5986,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             solver.Add_b(I*3+2, rhs);
         } //loop for (i,j,k) ends
 
-        solver.SetMaxIter(40000);
+        solver.SetMaxIter(HAO);
         solver.SetTol(1e-14);
 
         start_clock("Before Petsc Solve");
