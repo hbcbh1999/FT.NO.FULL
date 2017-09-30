@@ -313,7 +313,8 @@ void PETSc::Solve_withPureNeumann_GMRES(void)
 
 
 	ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp);
-        ierr = KSPSetNullSpace(ksp,nullsp);
+        //ierr = KSPSetNullSpace(ksp,nullsp);
+        ierr = MatSetNullSpace(A,nullsp); // Petsc-3.8
 	// ierr = MatNullSpaceRemove(nullsp,b,PETSC_NULL);
         ierr = MatNullSpaceRemove(nullsp,b); // for petsc-3.5
 
@@ -345,7 +346,8 @@ void PETSc::Solve_withPureNeumann(void)
 
 
 	ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp);
-        ierr = KSPSetNullSpace(ksp,nullsp);
+        //ierr = KSPSetNullSpace(ksp,nullsp);
+        ierr = MatSetNullSpace(A,nullsp); // Petsc-3.8
 
         // KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
         KSPSetOperators(ksp,A,A); // petsc-3.5
