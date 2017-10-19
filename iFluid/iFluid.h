@@ -21,7 +21,7 @@
 #define SLIP    YES
 #define NOSLIP  YES
 
-#define HAO 200 // This is the threshold for HYPRE preconditioner
+#define HAO 40000 // This is the threshold for HYPRE preconditioner
 #define		ifluid_comp(comp)   (((comp) == LIQUID_COMP1 || 	\
 		comp == LIQUID_COMP2) ? YES : NO)
 

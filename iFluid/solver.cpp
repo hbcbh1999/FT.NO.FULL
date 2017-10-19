@@ -358,9 +358,14 @@ void PETSc::Solve_withPureNeumann(void)
 	KSPSetType(ksp,KSPBCGS);
 
         KSPSetComputeSingularValues(ksp, PETSC_TRUE);
+#if defined(__HYPRE__)
 	KSPGetPC(ksp, &pc);
 	PCSetType(pc, PCHYPRE);
     PCHYPRESetType(pc,"boomeramg");
+#else
+	KSPSetType(ksp,KSPBCGSL);
+	KSPBCGSLSetEll(ksp,2);
+#endif /* defined(__HYPRE__) */
 	//PCSetType(pc, PCMG);
 	//PCMGSetLevels(pc, 3, &PETSC_COMM_WORLD);
 	//PCMGSetType(pc,PC_MG_MULTIPLICATIVE);
