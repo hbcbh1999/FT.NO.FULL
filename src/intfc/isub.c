@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -70,7 +70,7 @@ EXPORT	double separation(
 *
 *	This routine computes the vector product in 2D and 3D.
 *	The answer is placed in Pout and is a vector for three dimensions and
-*	a single double (scalar) in two dimensions. 
+*	a single double (scalar) in two dimensions.
 *
 *	Pout = bonds1 X bonds2.
 *
@@ -111,9 +111,9 @@ EXPORT 	void 	vector_product_on_bonds(
 /*
 *			scalar_product_on_bonds():
 *
-* 	This function returns the scalar product of two bonds 
-*	The dimension must be specified when this function is called. 
-*	
+* 	This function returns the scalar product of two bonds
+*	The dimension must be specified when this function is called.
+*
 */
 EXPORT double scalar_product_on_bonds(
 	BOND		*b1,
@@ -124,7 +124,7 @@ EXPORT double scalar_product_on_bonds(
 	int		i;
 
 	sp = 0.0;
-	for (i = 0; i < dim; ++i) 
+	for (i = 0; i < dim; ++i)
 	    sp += (Coords(b1->end)[i] - Coords(b1->start)[i])  *
 		  (Coords(b2->end)[i] - Coords(b2->start)[i]);
 	return sp;
@@ -138,7 +138,7 @@ EXPORT	double scaled_bond_length(
 	double tmp, ans = 0.0;
 	int   i;
 
-	for (i = 0; i < dim; ++i) 
+	for (i = 0; i < dim; ++i)
 	{
 	    tmp = (Coords(b->end)[i] - Coords(b->start)[i])/h[i];
 	    ans += sqr(tmp);
@@ -820,14 +820,14 @@ EXPORT	int curve_in_curve_list(
 	CURVE		**cc;
 
 	for (cc = c_list; cc && *cc ; ++cc)
-	    if (*cc == c) 
+	    if (*cc == c)
 	    	return YES;
 	return NO;
 }		/*end curve_in_curve_list*/
 
 EXPORT  boolean is_c_on_intfc(
         CURVE   *c)
-{         
+{
 	INTERFACE       *intfc;
         CURVE           **cc;
 
@@ -857,7 +857,7 @@ EXPORT void reset_intfc_num_points(
 {
 	HYPER_SURF	*hs;
 	HYPER_SURF_ELEMENT *hse;
-	POINT		*p; 
+	POINT		*p;
 	int		np = 0;
 
 	(void) next_point(intfc,NULL,NULL,NULL);
@@ -1007,7 +1007,7 @@ EXPORT  void plane_fit_normal3d_along_wall(
 	POINT        *pp;
 	int          n,i,j, v;
 	double        pbar[3], lambda[3], dv[3], lenv;
-	double        *pts[MAX_PTS]; 
+	double        *pts[MAX_PTS];
 	static double **r = NULL;
 
 	if (r == NULL)
@@ -1027,7 +1027,7 @@ EXPORT  void plane_fit_normal3d_along_wall(
 	    pp = Point_of_tri(tris1[i])[Next_m3(v)];
 	    pts[n++] = Coords(pp);
 	}
-	
+
 	/*add all points in tris2 excluding the two bdry points */
 	for (i = 0; i < nt2-1; ++i)
 	{
@@ -1133,7 +1133,7 @@ EXPORT	void	PointArrayRing1(
 	    	pp = Point_of_tri(t)[j];
 		if (pp == p) continue;
 		pp_in_list = pointer_in_list((POINTER)pp,*npts1,(POINTER*)pts1);
-		if (!pp_in_list) 
+		if (!pp_in_list)
 		{
 		    pp->hse = Hyper_surf_element(t);
 		    pts1[(*npts1)++] = pp;
@@ -1221,7 +1221,7 @@ LOCAL	void	set_area_weighted_normal(
 
 /*
 *			sine_weighted_normal3d():
-*	
+*
 *	This function uses the method introduced by Nelson Max
 *       "Weights for Computing Vertex Normals from Facet Normals",
 *       Journal of Graphics Tools, 4 (2) (1999), pp. 1-6.
@@ -1238,19 +1238,19 @@ EXPORT  void sine_weighted_normal3d(
 	double		   *nor)
 {
 	INTERFACE    *intfc = hs->interface;
-	
+
         /*
         double coord_x,coord_y,coord_z;
         double old_coord_x,old_coord_y,old_coord_z;
         old_coord_x = Coords(p)[0];
-        old_coord_y = Coords(p)[1]; 
+        old_coord_y = Coords(p)[1];
         old_coord_z = Coords(p)[2];
 
         coord_x = Coords(p)[2]*cos(Coords(p)[0]);
         coord_y = Coords(p)[2]*sin(Coords(p)[0]);
         coord_z = Coords(p)[1];
 
-        Coords(p)[0] = coord_x; 
+        Coords(p)[0] = coord_x;
         Coords(p)[1] = coord_y;
         Coords(p)[2] = coord_z;
         */
@@ -1276,18 +1276,18 @@ EXPORT  void sine_weighted_normal3d(
 				      Tri_list_at_vertex.num_tris,nor);
 
 
-	
+
 	normal_at_point(p)[0] = nor[0];
 	normal_at_point(p)[1] = nor[1];
 	normal_at_point(p)[2] = nor[2];
-	
+
         /*
 	normal_at_point(p)[0] = -nor[0]*sin(Coords(p)[0]) + nor[1]*cos(Coords(p)[0]);
 	normal_at_point(p)[1] = nor[2];
 	normal_at_point(p)[2] = nor[0]*cos(Coords(p)[0]) + nor[1]*sin(Coords(p)[0]);
         */
 
-	
+
 	if(debugging("db_nor"))
 	{
 	    printf("calc af\n");
@@ -1342,7 +1342,7 @@ LOCAL   void set_nel_max_normal(
 
 {
     	/* Note, something wrong here with cylindrical coordinate,
-	 * the Tri_normal assumes that the tri points are in 
+	 * the Tri_normal assumes that the tri points are in
 	 * cylindrical coordinate and use transformation to return
 	 * a normal vector in cylindrical coordinate. The tris here
 	 * are actually in rectangle coordinate.
@@ -1354,14 +1354,14 @@ LOCAL   void set_nel_max_normal(
 	const double   *tnor;
 	TRI     *tri;
 	POINT   *pn0,*pn1;
-	
+
 	nor[0] = nor[1] = nor[2] =0;
         for(i = 0; i < nt; ++i)
 	{
 	    tri = tris[i];
 	    tnor = Tri_normal(tri);
 	    length = Mag3d(tnor);
-	    
+
 	    if(debugging("db_nor"))
 	    {
 		print_general_vector("tnor=", tnor, 3, "\n");
@@ -1614,7 +1614,7 @@ EXPORT	void set_normal_of_tri(
 */
 
 	/* normal(theta, z , r) */
-	
+
 	/*
 	Coords(Point_of_tri(tri)[0])[0] = coordc1_theta;
 	Coords(Point_of_tri(tri)[0])[1] = coordc1_z;
@@ -1698,6 +1698,7 @@ EXPORT	const double	*Tri_normal(
 
 	    n[0] = s[2][1]*s[0][2] - s[2][2]*s[0][1];
 	    n[1] = s[2][2]*s[0][0] - s[2][0]*s[0][2];
+        n[1] = 0.0; // 2D imposing
 	    n[2] = s[2][0]*s[0][1] - s[2][1]*s[0][0];
 
 /*
@@ -1866,7 +1867,7 @@ EXPORT 	int two_points_share_side(
 	}
 	return 0;
 
-}	/*end two_points_share_side*/		
+}	/*end two_points_share_side*/
 
 #define NO_ROBUST_CROSS_BONDS
 
@@ -1970,7 +1971,7 @@ EXPORT	boolean	robust_cross_bonds(
 	    }
 #endif /* defined(DEBUG_CROSS_BONDS) */
 
-	    if ((fabs(num1) > parallel*lb12*lb2) 
+	    if ((fabs(num1) > parallel*lb12*lb2)
 	         || (fabs(num2) > parallel*lb12*lb1)   )
 	    {
 #if defined(DEBUG_CROSS_BONDS)
@@ -1999,7 +2000,7 @@ EXPORT	boolean	robust_cross_bonds(
 	        return YES;
 	    }
 
-	    if (lb1 > lb2) 
+	    if (lb1 > lb2)
 	    {
 	        long_bond = 1;
 	        ux = x1;		uy = y1;
@@ -2050,7 +2051,7 @@ EXPORT	boolean	robust_cross_bonds(
 	    }
 #endif /* defined(DEBUG_CROSS_BONDS) */
 
-	    if (long_bond == 1) 
+	    if (long_bond == 1)
 	    {
 	        a0 /= a1;               a2 /= a1;
 	        if ((t1min<-a0 && -a0<t1max) ||
@@ -2064,7 +2065,7 @@ EXPORT	boolean	robust_cross_bonds(
 	        {
 	            t2 = 1.0;	t1 = a2 - a0;
 	        }
-	        else 
+	        else
 	        {
 #if defined(DEBUG_CROSS_BONDS)
 	            debug_print("rcb","Leaving robust_cross_bonds() NO CROSS\n");
@@ -2072,7 +2073,7 @@ EXPORT	boolean	robust_cross_bonds(
 	            return NO;
 	        }
 	    }
-	    else 
+	    else
 	    {
 	        a0 /= a2;               a1 /= a2;
 	        if ((t2min < a0 && a0 < t2max) ||
@@ -2087,7 +2088,7 @@ EXPORT	boolean	robust_cross_bonds(
 	        {
 	            t1 = 1.0;	t2 = a0 + a1;
 	        }
-	        else 
+	        else
 	        {
 #if defined(DEBUG_CROSS_BONDS)
 	            debug_print("rcb","Leaving robust_cross_bonds() NO CROSS\n");
@@ -2274,7 +2275,7 @@ EXPORT	boolean	robust_cross_bonds(
 #endif /* defined(DEBUG_CROSS_BONDS) */
 	    	return NO;
 	    }
-	    if (lb1 > lb2) 
+	    if (lb1 > lb2)
 	    {
 	    	long_bond = 1;
 	    	ux = x1;		uy = y1;
@@ -2326,7 +2327,7 @@ EXPORT	boolean	robust_cross_bonds(
 
 	    }
 #endif /* defined(DEBUG_CROSS_BONDS) */
-	    if (long_bond == 1) 
+	    if (long_bond == 1)
 	    {
 	    	if (fabs(a0 + t1mid*a1) <= dt1*fabs(a1))
 	    	{
@@ -2336,7 +2337,7 @@ EXPORT	boolean	robust_cross_bonds(
 	    	{
 	    	    t2 = 1.0;	t1 = (a2 - a0)/a1;
 	    	}
-	    	else 
+	    	else
 	    	{
 #if defined(DEBUG_CROSS_BONDS)
 	    	    debug_print("rcb","Left robust_cross_bonds() NO CROSS\n");
@@ -2344,7 +2345,7 @@ EXPORT	boolean	robust_cross_bonds(
 	    	    return NO;
 	    	}
 	    }
-	    else 
+	    else
 	    {
 	    	if (fabs(a0 - t2mid*a2) <= dt2*fabs(a2))
 	    	{
@@ -2354,7 +2355,7 @@ EXPORT	boolean	robust_cross_bonds(
 	    	{
 	    	    t1 = 1.0;	t2 = (a0 + a1)/a2;
 	    	}
-	    	else 
+	    	else
 	    	{
 #if defined(DEBUG_CROSS_BONDS)
 	    	    debug_print("rcb","Left robust_cross_bonds() NO CROSS\n");
@@ -2363,7 +2364,7 @@ EXPORT	boolean	robust_cross_bonds(
 	    	}
 	    }
 	}
-	else 
+	else
 	{
 	    t1 = num1/den;		t2 = num2/den;
 	}
@@ -2466,7 +2467,7 @@ EXPORT	int robust_extend_bond_to_cross_bond(
 
 	/* Find unit vector in direction of extension */
 
-	if (extend_orient == POSITIVE_ORIENTATION) 
+	if (extend_orient == POSITIVE_ORIENTATION)
 	{
 	    for (i = 0; i < dim; ++i)
 	    {
@@ -2475,7 +2476,7 @@ EXPORT	int robust_extend_bond_to_cross_bond(
 	    }
 	    *tcr1 = 0.0;
 	}
-	else 
+	else
 	{
 	    for (i = 0; i < dim; ++i)
 	    {
@@ -2540,14 +2541,14 @@ EXPORT	int robust_extend_bond_to_cross_bond(
 	    	(fabs(W_cross_V) < fabs(ulen*U_cross_VMW)))
 	{
 #if defined(DEBUG_CROSS_BONDS)
-	    if (debugging("rebcb"))	
+	    if (debugging("rebcb"))
 	    	(void) printf("Cross by positive extension not on b2\n");
 	    debug_print("rebcb",
 	          "Left robust_extend_bond_to_cross_bond() NO CROSS\n");
 #endif /* defined(DEBUG_CROSS_BONDS) */
 	    return NO;
 	}
-	
+
 	if (fabs(U_cross_VMW) > 0.0)
 	{
 	    alpha = U_cross_V/(U_cross_VMW);
@@ -2563,7 +2564,7 @@ EXPORT	int robust_extend_bond_to_cross_bond(
 	    if (U_dot_V < 0.0 && U_dot_W < 0.0)
 	    {
 #if defined(DEBUG_CROSS_BONDS)
-	    	if (debugging("rebcb"))	
+	    	if (debugging("rebcb"))
 	    	{
 	    	    (void) printf("b2 lies on opposite side of b1, "
 	    	                  "with respect to extension direction\n");
@@ -2584,19 +2585,19 @@ EXPORT	int robust_extend_bond_to_cross_bond(
 	    	para = U_dot_W;
 	    }
 	}
-	if (para >= 0.0) 
+	if (para >= 0.0)
 	{
 	    if (alpha < 0.0)
 		alpha = 0.0;
 	    if (alpha > 1.0)
 		alpha = 1.0;
-	    Coords(pc)[0] = Coords(b2->start)[0] + 
+	    Coords(pc)[0] = Coords(b2->start)[0] +
 	    	alpha*(Coords(b2->end)[0] - Coords(b2->start)[0]);
-	    Coords(pc)[1] = Coords(b2->start)[1] + 
+	    Coords(pc)[1] = Coords(b2->start)[1] +
 	    	alpha*(Coords(b2->end)[1] - Coords(b2->start)[1]);
 	    *tcr2 = (double) alpha;
 #if defined(DEBUG_CROSS_BONDS)
-	    if (debugging("rebcb"))	
+	    if (debugging("rebcb"))
 	    {
 	    	(void) printf("Cross by extension found at <%g, %g>\n",
 	    		      Coords(pc)[0],Coords(pc)[1]);
@@ -2609,7 +2610,7 @@ EXPORT	int robust_extend_bond_to_cross_bond(
 	else
 	{
 #if defined(DEBUG_CROSS_BONDS)
-	    if (debugging("rebcb"))	
+	    if (debugging("rebcb"))
 	    {
 	    	(void) printf("b2 lies on opposite side of b1, "
 	    	              "with respect to extension direction\n");
@@ -2635,9 +2636,9 @@ EXPORT	int robust_extend_bonds_to_cross(
 {
 	double		hx = (double)(gr->h[0]);
 	double		hy = (double)(gr->h[1]);
-	double		ax = (double)(Coords(b1->start)[0] - 
+	double		ax = (double)(Coords(b1->start)[0] -
 	        		      Coords(b2->start)[0]);
-	double		ay = (double)(Coords(b1->start)[1] - 
+	double		ay = (double)(Coords(b1->start)[1] -
 	        		      Coords(b2->start)[1]);
 	double		bx = (double)(Coords(b1->end)[0] -
 	        		      Coords(b1->start)[0]);
@@ -2647,9 +2648,9 @@ EXPORT	int robust_extend_bonds_to_cross(
 	        		      Coords(b2->start)[0]);
 	double		cy = (double)(Coords(b2->end)[1] -
 	        		      Coords(b2->start)[1]);
-	double		dx = (double)(0.5*(Coords(b1->start)[0] + 
+	double		dx = (double)(0.5*(Coords(b1->start)[0] +
 	        			   Coords(b2->start)[0]));
-	double		dy = (double)(0.5*(Coords(b1->start)[1] + 
+	double		dy = (double)(0.5*(Coords(b1->start)[1] +
 	        			   Coords(b2->start)[1]));
 	double		acc, acb, ccb, cdb;
 	double		p10x, p10y, p11x, p11y;
@@ -2692,7 +2693,7 @@ EXPORT	int robust_extend_bonds_to_cross(
 	    (c2_orient == NEGATIVE_ORIENTATION && ccb*(ccb - acb) > 0.0))
 	{
 #if defined(DEBUG_CROSS_BONDS)
-	    if (debugging("rebcb")) 
+	    if (debugging("rebcb"))
 	    	(void) printf("No cross in required direction\n");
 	    debug_print("rebcb","Left robust_extend_bonds_to_cross(), NO CROSS\n");
 #endif /* defined(DEBUG_CROSS_BONDS) */
@@ -2742,7 +2743,7 @@ EXPORT	int robust_extend_bonds_to_cross(
 	    ex = p20x - p10x;	ey = p20y - p10y;
 	    bce = bx*ey - by*ex;	bde = bx*ex + by*ey;
 	    cce = cx*ey - cy*ex;	cde = cx*ex + cy*ey;
-	    if ((fabs(bce) > EPSILON*fabs(bde)) || 
+	    if ((fabs(bce) > EPSILON*fabs(bde)) ||
 	    		(fabs(cce) > EPSILON*fabs(cde)))
 	    	return NO;	/* Vectors not colinear */
 	    pmidx = 0.5*(p11x + p21x);
@@ -2765,7 +2766,7 @@ EXPORT	int robust_extend_bonds_to_cross(
 	    		max(*tcr2,0.0) : min(*tcr2,1.0);
 	}
 #if defined(DEBUG_CROSS_BONDS)
-	if (debugging("rebcb")) 
+	if (debugging("rebcb"))
 	{
 	    (void) printf("Cross by extension found\n");
 	    (void) printf("at point <%g, %g>, tcr1 = %g, tcr2 = %g\n",
@@ -2878,7 +2879,7 @@ EXPORT int cross_sign(
 /*
 *			c1_to_c2_direction():
 *
-*	Returns the direction (CLOCKWISE or COUNTER_CLOCK) of the 
+*	Returns the direction (CLOCKWISE or COUNTER_CLOCK) of the
 *	interior angle (<= 180 deg) between the half lines defined
 *	by two curves c1 and c2 with given orientation meeting at a common node.
 */
@@ -2963,9 +2964,9 @@ EXPORT void big_angle(
 
 /*
 *			reflect():
-*			
+*
 *	Reflects the point x,y about the boundary, returning xr,yr.  The
-*	boundary segment for reflection is determined by the condition 
+*	boundary segment for reflection is determined by the condition
 *	that xl,yl lie of the boundary.
 */
 
@@ -2985,7 +2986,7 @@ LOCAL void reflect(
 	    *yr = y;
 	}
 	if (xl > gr->U[0] - rtol*gr->h[0])
-	{ 
+	{
 	    *xr = 2*gr->U[0] - x;
 	    *yr = y;
 	}
@@ -3242,7 +3243,7 @@ EXPORT	void init_seg_crx_lists(
 	    	T->seg_crx_lists[i] = scls;
 	    	scls += T->seg_crx_count[i];
 	    }
-	}	
+	}
 	for (i = 0;  i < n_crx;  ++i)
 	    T->seg_crx_lists_store[i] = -1;
 
@@ -3400,14 +3401,14 @@ EXPORT	void print_crxings(
 	    print_hypersurface(cr->hs);
 }		/* end print_crxings */
 
-EXPORT boolean pointer_in_list(         
-	POINTER         pt,         
-	int             num_pts,         
-	POINTER         *pt_list) 
-{         
-	int             i;          
+EXPORT boolean pointer_in_list(
+	POINTER         pt,
+	int             num_pts,
+	POINTER         *pt_list)
+{
+	int             i;
 	for (i = 0; i < num_pts; ++i)
-        {             
+        {
 	    if (pt == pt_list[i])
                 return YES;
         }
@@ -3423,10 +3424,10 @@ EXPORT boolean integer_in_list(
 
         for (i = 0; i < num_int; ++i)
         {
-            if (n == n_list[i])                 
-		return YES;         
-	}         
-	return NO; 
+            if (n == n_list[i])
+		return YES;
+	}
+	return NO;
 }       /*end integer_in_list*/
 
 
@@ -3499,7 +3500,7 @@ EXPORT boolean WLSP_compute_normal2d(
             p->curvature = curvature;
 	}
 	return YES;
-}	/* end WLSP_compute_normal2d */              
+}	/* end WLSP_compute_normal2d */
 
 
 /**********************************************************************
@@ -3514,7 +3515,7 @@ LOCAL void obtain_orthbases(
       	double t[3],t2[3];
       	double norm,k;
       	int i;
-      	if (fabs(nrm1st[0]) > fabs(nrm1st[1]) && 
+      	if (fabs(nrm1st[0]) > fabs(nrm1st[1]) &&
 	    fabs(nrm1st[0]) > fabs(nrm1st[2]))
       	{
             t[0] = 0.0;
@@ -3574,7 +3575,7 @@ LOCAL void polyfit2d_lhf(
         double dtemp_7;
  	/*npnts is the number of points being fit */
         npnts = ngbpts_dim1;
-        
+
         /*Calculate the tangent vector using edge-length weighting */
 
         tng[0] =  ngbpts[(mid - 1) << 1]
@@ -3670,7 +3671,7 @@ LOCAL void polyfit2d_lhf(
 	      dtemp_7 = 1.0;
             for (j = 0; j <= AS_dim1 - 1; j += 1)
 	      AS[j*AS_dim2 + i] =  AS[j*AS_dim2 + i]/dtemp_7;
-	     
+
             ws[i] = dtemp_7;
         }
         /* Solve using QR factorization.  */
@@ -3714,21 +3715,21 @@ LOCAL void polyfit2d_lhf(
  *
  *POLYFIT_LHF3D Compute normal, principal curvatures, and principal direction.
  * [NRM,DEG,PRCURVS,MAXPRDIR] = POLYFIT_LHF_SURF_POINT(XS, NRMS_COOR, DEGREE, STRIP)
- * Computes normal NRM, principal curvatures 
+ * Computes normal NRM, principal curvatures
  * xs: xs(1,1:3) is the target point and  xs(2:end,1:3)  are neighbor points
  * nrm_coor: nrm_coor(1,1:3) is the normal at target point and  nrm_coor(2:end,1:3) are normals at neighbor points
  *************************************************************/
 
 LOCAL void  polyfit3d_lhf(
-	double nrm_out[3], 
-	int *deg_out, 
-	double prcurvs_out[2], 
-	double maxprdir_out[3], 
-	double *xs, 
-	int xs_dim1, 
-	double *nrm_coor, 
-	int nrm_coor_dim1, 
-	int degree, 
+	double nrm_out[3],
+	int *deg_out,
+	double prcurvs_out[2],
+	double maxprdir_out[3],
+	double *xs,
+	int xs_dim1,
+	double *nrm_coor,
+	int nrm_coor_dim1,
+	int degree,
 	int strip)
 {
    	static double us[3075];
@@ -3765,26 +3766,26 @@ LOCAL void  polyfit3d_lhf(
         static double bs1[MAX_NV],bs2[MAX_NV];
 	double w;
 	double nrm[3];
-	
+
    	strip_1 = strip;
    	/* First, compute the rotation matrix */
 
-   	for (i=0; i<=2; i+=1) 
+   	for (i=0; i<=2; i+=1)
 	{
       	    absnrm[i] = fabs(nrm_coor[i]);
       	    nrm_out[i] = nrm_coor[i];
    	}
-   	if (( absnrm[0] >  absnrm[1])&&( absnrm[0] >  absnrm[2])) 
-      	    for (i=0; i<=2; i+=1) 
+   	if (( absnrm[0] >  absnrm[1])&&( absnrm[0] >  absnrm[2]))
+      	    for (i=0; i<=2; i+=1)
          	t1[i] = t1_3[i];
-   	else 
-      	    for (i=0; i<=2; i+=1) 
+   	else
+      	    for (i=0; i<=2; i+=1)
          	t1[i] = t1_2[i];
    	dtemp_4 = 0.0;
-   	for (i=0; i<=2; i+=1) 
+   	for (i=0; i<=2; i+=1)
       	    dtemp_4 = dtemp_4 + (((double) t1[i])) *  nrm_out[i];
    	dtemp_5 = 0.0;
-   	for (i=0; i<=2; i+=1) 
+   	for (i=0; i<=2; i+=1)
 	{
       	    dtemp_18 = (((double) t1[i])) - dtemp_4 *  nrm_out[i];
       	    dtemp_5 = dtemp_5 + dtemp_18 * dtemp_18;
@@ -3795,7 +3796,7 @@ LOCAL void  polyfit3d_lhf(
         if (debugging("wlsp_curvature"))
             printf("dtemp_5 = %lf in polyfit3d_lhf()\n", dtemp_5);
 
-   	for (i=0; i<=2; i+=1) 
+   	for (i=0; i<=2; i+=1)
       	    t1_1[i] =  t1_1[i] / dtemp_6;
    	/* CROSS: Eficient routine for computing cross product */
 
@@ -3806,7 +3807,7 @@ LOCAL void  polyfit3d_lhf(
    	/* Evaluate local coordinate system */
 
    	us_dim1 = nverts - strip;
-   	if (nverts < strip) 
+   	if (nverts < strip)
       	    us_dim1 = 0;
    	memset(us, 0, ((nverts - strip) << 1) * 8);
         if ((nverts - strip) < 0 || 2*(nverts - strip) > 3075) {
@@ -3826,13 +3827,13 @@ LOCAL void  polyfit3d_lhf(
    	/* compute weight based on angles of normals */
 
 	/*   	nrms_v_dim1 = max(nverts - 1, 0);*/
-   	for (i=0; i<=nverts - 2; i+=1) 
+   	for (i=0; i<=nverts - 2; i+=1)
 	{
             int us_idx, bs_idx;
       	    dtemp_7 = 0.0;
       	    dtemp_8 = 0.0;
       	    dtemp_9 = 0.0;
-      	    for (j=0; j<=2; j+=1) 
+      	    for (j=0; j<=2; j+=1)
 	    {
            	dtemp_19 =  xs[ (1 + i) * 3 + j] -  xs[j];
            	dtemp_7 = dtemp_7 + dtemp_19 *  t1_1[j];
@@ -3860,39 +3861,39 @@ LOCAL void  polyfit3d_lhf(
                 clean_up(ERROR);
             }
 	    /*
-	      for (j=0; j<=3 - 1; j+=1) 
+	      for (j=0; j<=3 - 1; j+=1)
          	nrms_v[ i * 3 + j] = nrm_coor[ (1 + i) * 3 + j];
 	    */
    	}
 	/*
-   	if (!strip_1) 
+   	if (!strip_1)
 	{
       	    strip_1 = 0;
-      	    for (i=0; i<=nrms_v_dim1 - 1; i+=1) 
+      	    for (i=0; i<=nrms_v_dim1 - 1; i+=1)
          	dtemp_0[i] = nrms_v[i*3]*nrm_out[0] + nrms_v[1+i*3]*nrm_out[1];
       	    itemp_0 = max(nrms_v_dim1, 0);
-      	    if (nrms_v_dim1 == 1) 
+      	    if (nrms_v_dim1 == 1)
 	    {
          	dtemp_1_dim1 = itemp_0;
-         	for (i=0; i<=itemp_0 - 1; i+=1) 
+         	for (i=0; i<=itemp_0 - 1; i+=1)
             	    dtemp_1[i] =  dtemp_0[0] +  nrms_v[2 + i * 3] *  nrm_out[2];
       	    }
-      	    else 
+      	    else
 	    {
          	dtemp_1_dim1 = nrms_v_dim1;
-         	if (itemp_0 == 1) 
-            	    for (i=0; i<=nrms_v_dim1 - 1; i+=1) 
+         	if (itemp_0 == 1)
+            	    for (i=0; i<=nrms_v_dim1 - 1; i+=1)
                		dtemp_1[i] = dtemp_0[i] + nrms_v[2]*nrm_out[2];
-         	else 
-            	    for (i=0; i<=dtemp_1_dim1 - 1; i+=1) 
+         	else
+            	    for (i=0; i<=dtemp_1_dim1 - 1; i+=1)
                		dtemp_1[i] = dtemp_0[i] + nrms_v[2+i*3]*nrm_out[2];
       	    }
       	    itemp_1 = 0;
-      	    if (dtemp_1_dim1) 
+      	    if (dtemp_1_dim1)
          	itemp_1 = dtemp_1_dim1;
       	    ws_row_dim1 = itemp_1 + 1;
       	    ws_row[0] = 1.0;
-      	    for (i=0; i<=dtemp_1_dim1 - 1; i+=1) 
+      	    for (i=0; i<=dtemp_1_dim1 - 1; i+=1)
 	    {
          	dtemp_2[i] = max(dtemp_1[i], 0.0);
          	ws_row[1 + i] = dtemp_2[i];
@@ -3903,9 +3904,9 @@ LOCAL void  polyfit3d_lhf(
 	ws_row[0] = 1.0;
 	{
       	    ws_row_dim1 = nrms_v_dim1;
-      	    for (i=1; i <= us_dim1; i+=1) 
+      	    for (i=1; i <= us_dim1; i+=1)
 	      {
-         	dtemp_17 = nrm_coor[i*3]*nrm_out[0] + nrm_coor[1 + i*3]*nrm_out[1] 
+         	dtemp_17 = nrm_coor[i*3]*nrm_out[0] + nrm_coor[1 + i*3]*nrm_out[1]
 			+ nrm_coor[2+i*3]*nrm_out[2];
                 if (2+i*3 >= MAX_NV) {
                     printf("Stack overflow: 2+i*3 >= MAX_NV, where i = %d and us_dim1 = %d.\n", i, us_dim1);
@@ -3926,14 +3927,14 @@ LOCAL void  polyfit3d_lhf(
 			us_dim1, strip_1);
    	/* Convert coefficients into normals and curvatures */
 
-   	if ((*deg_out) == 1) 
+   	if ((*deg_out) == 1)
       	    n = 3 - strip_1;
-   	else 
+   	else
       	    n = 6 - strip_1;
    	itemp_2 = max(strip_1 - 1 + n, 0);
-   	if (bs_dim1 > 1) 
+   	if (bs_dim1 > 1)
       	    cs_dim1 = itemp_2;
-   	else 
+   	else
       	    cs_dim1 = 1;
    	for (i=0; i<=cs_dim1 - 1; i+=1) {
       	    cs[i] = bs[ 1 - strip_1 + i];
@@ -3953,7 +3954,7 @@ LOCAL void  polyfit3d_lhf(
    	dtemp_3[1] = - grad[1];
    	dtemp_3[2] = 1.0;
    	dtemp_5 = sqrt(1.0 + (grad[0]*grad[0] + grad[1]*grad[1]));
-   	for (i=0; i<=2; i+=1) 	
+   	for (i=0; i<=2; i+=1)
 	{
       	    nrm_l[i] =  dtemp_3[i] / dtemp_5;
       	    P[i][0] = t1_1[i];
@@ -3965,7 +3966,7 @@ LOCAL void  polyfit3d_lhf(
    	dtemp_11 = 0.0;
    	dtemp_12 = 0.0;
    	dtemp_13 = 0.0;
-   	for (i=0; i<=2; i+=1) 
+   	for (i=0; i<=2; i+=1)
 	{
       	    dtemp_11 = dtemp_11 +  P[0][i] *  nrm_l[i];
       	    dtemp_12 = dtemp_12 +  P[1][i] *  nrm_l[i];
@@ -3991,7 +3992,7 @@ LOCAL void  polyfit3d_lhf(
                 clean_up(ERROR);
             }
 	  }
-	  
+
 	  for (i = 1; i < us_dim1; i++) {
 	    nrm[0] = nrm_coor[3*i];
 	    nrm[1] = nrm_coor[3*i+1];
@@ -4014,8 +4015,8 @@ LOCAL void  polyfit3d_lhf(
 				       us_dim1, 0);
 	  eval_vander_bivar(us,us_dim1,bs2,&bs_dim1,1,ws_row,
 				       us_dim1, 0);
-	  hess[0] = bs1[1]; hess[1] = 0.5*(bs1[2]+bs2[1]); hess[2] = bs2[2]; 
-	  /*end function linfit_lhf_grad_surf_point() */	  
+	  hess[0] = bs1[1]; hess[1] = 0.5*(bs1[2]+bs2[1]); hess[2] = bs2[2];
+	  /*end function linfit_lhf_grad_surf_point() */
 	  H[0][0] = hess[0];
 	  H[0][1] = hess[1];
 	  H[1][0] = hess[1];
@@ -4033,7 +4034,7 @@ LOCAL void  polyfit3d_lhf(
 	  dtemp_14 = 0.0;
 	  dtemp_15 = 0.0;
 	  dtemp_16 = 0.0;
-	  for (i=0; i<=2; i+=1) 
+	  for (i=0; i<=2; i+=1)
 	    {
 	      dtemp_14 = dtemp_14 +  P[0][i] *  maxprdir_l[i];
 	      dtemp_15 = dtemp_15 +  P[1][i] *  maxprdir_l[i];
@@ -4043,11 +4044,11 @@ LOCAL void  polyfit3d_lhf(
 	  maxprdir_out[1] = dtemp_15;
 	  maxprdir_out[2] = dtemp_16;
    	}
-   	else 
+   	else
 	{
       	    prcurvs_out[0] = 0.0;
       	    prcurvs_out[1] = 0.0;
-      	    for (i=0; i<=2; i+=1) 
+      	    for (i=0; i<=2; i+=1)
 	      maxprdir_out[i] = 0.0;
    	}
    	return;
@@ -4081,16 +4082,16 @@ LOCAL void linfit_lhf_grad_surf_point(double *us, int us_dim1, double t1[3], dou
 			       us_dim1, 0);
   deg_out2 = eval_vander_bivar(us,us_dim1,bs2,&bs_dim1,1,ws,
 			       us_dim1, 0);
-  hess[0] = bs1[1]; hess[1] = 0.5*(bs1[2]+bs2[1]); hess[2] = bs2[2]; 
+  hess[0] = bs1[1]; hess[1] = 0.5*(bs1[2]+bs2[1]); hess[2] = bs2[2];
 }
 /*************************************************************
  *
  * FUNCTION: eval_curvature_lhf_surf
  *
- *EVAL_CURVATURE_LHF_SURF Compute principal curvature, principal direction 
+ *EVAL_CURVATURE_LHF_SURF Compute principal curvature, principal direction
  *and pseudo-inverse.
- * [CURVS,DIR,JINV] = EVAL_CURVATURE_LHF_SURF(GRAD,H) Computes principal 
- * curvature in 2x1 CURVS, principal direction of maximum curvature in 3x2 
+ * [CURVS,DIR,JINV] = EVAL_CURVATURE_LHF_SURF(GRAD,H) Computes principal
+ * curvature in 2x1 CURVS, principal direction of maximum curvature in 3x2
  * DIR, and pseudo-inverse of J in 2x3 JINV.  Input arguments are the
  * gradient of the height function in 2x1 GRAD, and the Hessian of the
  * height function in 2x2 H with a local coordinate frame.
@@ -4098,9 +4099,9 @@ LOCAL void linfit_lhf_grad_surf_point(double *us, int us_dim1, double t1[3], dou
  *************************************************************/
 
 LOCAL void  eval_curvature_lhf_surf(
-   	double curvs_out[2], 
-   	double dir_out[3], 
-   	double grad[2], 
+   	double curvs_out[2],
+   	double dir_out[3],
+   	double grad[2],
    	double H[2][2])
 {
    	double grad_sqnorm, grad_norm, ell, ell2, ell3;
@@ -4118,12 +4119,12 @@ LOCAL void  eval_curvature_lhf_surf(
    	ell = sqrt(1.0 + grad_sqnorm);
    	ell2 = 1.0 + grad_sqnorm;
    	ell3 = ell*(1.0 + grad_sqnorm);
-   	if (grad_norm == 0) 
+   	if (grad_norm == 0)
 	{
       	    c = 1.0;
       	    s = 0.0;
    	}
-   	else 
+   	else
 	{
       	    c =  grad[0]/grad_norm;
       	    s =  grad[1]/grad_norm;
@@ -4140,19 +4141,19 @@ LOCAL void  eval_curvature_lhf_surf(
    	W[0][0] = W1[0];
    	W[0][1] = W1[1];
    	W[1][0] = W1[1];
-   	W[1][1] = ((c*H[0][1] - s*H[0][0])*(-s) + 
+   	W[1][1] = ((c*H[0][1] - s*H[0][0])*(-s) +
 			(c*H[1][1] - s*H[0][1])*c)/ell;
    	/* Lambda = eig(W); */
 
    	kH2 =  W[0][0] +  W[1][1];
-   	tmp = sqrt(( W[0][0] -  W[1][1])*( W[0][0] -  W[1][1]) + 
+   	tmp = sqrt(( W[0][0] -  W[1][1])*( W[0][0] -  W[1][1]) +
 			4.0*W[0][1]*W[0][1]);
-   	if (kH2 > 0.0) 
+   	if (kH2 > 0.0)
 	{
       	    curvs_out[0] = (kH2 + tmp)/2.0;
       	    curvs_out[1] = (kH2 - tmp)/2.0;
    	}
-   	else 
+   	else
 	{
       	    curvs_out[0] = (kH2 - tmp)/2.0;
       	    curvs_out[1] = (kH2 + tmp)/2.0;
@@ -4167,17 +4168,17 @@ LOCAL void  eval_curvature_lhf_surf(
    	U[1][1] = c;
    	U[2][0] = grad_norm/ell;
    	U[2][1] = 0.0;
-   	if (curvs_out[0] ==  curvs_out[1]) 
-      	    for (i=0; i<=2; i+=1) 
+   	if (curvs_out[0] ==  curvs_out[1])
+      	    for (i=0; i<=2; i+=1)
          	dir_out[i] = U[i][0];
-   	else 
+   	else
 	{
-      	    if (fabs(W[0][0] -  curvs_out[1]) > fabs(W[0][0] -  curvs_out[0])) 
+      	    if (fabs(W[0][0] -  curvs_out[1]) > fabs(W[0][0] -  curvs_out[0]))
 	    {
          	d1[0] =  W[0][0] -  curvs_out[1];
          	d1[1] = W[0][1];
       	    }
-      	    else 
+      	    else
 	    {
          	d1[0] = - W[0][1];
          	d1[1] =  W[0][0] -  curvs_out[0];
@@ -4204,13 +4205,13 @@ LOCAL void  eval_curvature_lhf_surf(
  *************************************************************/
 
 LOCAL int eval_vander_bivar(
-   	double *us, 
-   	int us_dim1, 
-   	double *bs, 
-   	int *bs_dim1, 
-   	int degree, 
-   	double *ws, 
-   	int ws_dim1, 
+   	double *us,
+   	int us_dim1,
+   	double *bs,
+   	int *bs_dim1,
+   	int degree,
+   	double *ws,
+   	int ws_dim1,
    	int strip)
 {
    	static double V[28672];
@@ -4235,7 +4236,7 @@ LOCAL int eval_vander_bivar(
 
 	ncols =  ncoeffs[degree - 1] - strip;
 	while ((ncoeffs[degree_1_out - 1] - strip > npnts)
-		&&(degree_1_out > 1)) 
+		&&(degree_1_out > 1))
 	{
       	    degree_1_out = degree_1_out - 1;
       	    ncols =  ncoeffs[degree_1_out - 1] - strip;
@@ -4250,7 +4251,7 @@ LOCAL int eval_vander_bivar(
         }
  	/* Allocate the maximum size */
 
-   	for (i=0; i<=npnts - 1; i+=1) 
+   	for (i=0; i<=npnts - 1; i+=1)
 	{
 	    int V_idx;
       	    V[i * V_dim2] = 1.0;
@@ -4284,7 +4285,7 @@ LOCAL int eval_vander_bivar(
                 clean_up(ERROR);
             }
 
-      	    for (j=2; j<=degree_1_out; j+=1) 
+      	    for (j=2; j<=degree_1_out; j+=1)
 	    {
          	jj = 1 + jj;
          	V[i*V_dim2-1+jj] =  V[i*V_dim2-1+jj-j]*us[i << 1];
@@ -4303,7 +4304,7 @@ LOCAL int eval_vander_bivar(
                     clean_up(ERROR);
                 }
 
-         	for (i3=0; i3<=j - 1; i3+=1) 
+         	for (i3=0; i3<=j - 1; i3+=1)
 		{
             	    jj = 1 + jj;
             	    V[i*V_dim2-1+jj] = V[i*V_dim2-2+jj-j]*us[1+(i << 1)];
@@ -4329,7 +4330,7 @@ LOCAL int eval_vander_bivar(
       	/* Scale weights to be inversely proportional to distance */
 
       	dtemp_1 = 0.0;
-      	for (i=0; i<=us_dim1 - 1; i+=1) 
+      	for (i=0; i<=us_dim1 - 1; i+=1)
 	{
             dtemp_4 = us[i << 1]*us[i << 1] + us[1+(i << 1)]*us[1+(i << 1)];
             if (2*i >= 3075 || 1+2*i >= 3075) {
@@ -4343,7 +4344,7 @@ LOCAL int eval_vander_bivar(
                 clean_up(ERROR);
             }
       	}
-      	for (i=0; i<=us_dim1 - 1; i+=1) 
+      	for (i=0; i<=us_dim1 - 1; i+=1)
 	{
             ws1[i] =  ws1[i] + 0.01 * (dtemp_1 / (((double)npnts)));
             if (i >= 1024) {
@@ -4351,15 +4352,15 @@ LOCAL int eval_vander_bivar(
                 clean_up(ERROR);
             }
         }
-        if (degree_1_out < 4) 
+        if (degree_1_out < 4)
 	{
-            for (i=0; i<=npnts - 1; i+=1) 
+            for (i=0; i<=npnts - 1; i+=1)
 	    {
-            	if ( ws1[i] != 0.0) 
+            	if ( ws1[i] != 0.0)
 		{
                	    ws1[i] = ws[i]/sqrt(ws1[i]);
             	}
-            	else 
+            	else
 		{
                	    ws1[i] = ws[i];
             	}
@@ -4369,7 +4370,7 @@ LOCAL int eval_vander_bivar(
                 }
 	    }
       	}
-      	else 
+      	else
 	{
          for (i=0; i<=npnts - 1; i+=1) {
             if ( ws1[i] != 0.0) {
@@ -4797,7 +4798,7 @@ EXPORT boolean WLSP_compute_normal3d_cyl(
         int xs_dim, nrm_coor_dim;
         double xs[60][3],prcurvs[2],maxprdir[3];
         int deg;
-        double nrm_coor[60][3];       
+        double nrm_coor[60][3];
 	double nrm_norm;
         pc = p; /*point to current point */
         PointArrayRing2(pc,hse,hs,&np1,&np2,pts_ring1,pts_ring2);
@@ -4805,13 +4806,13 @@ EXPORT boolean WLSP_compute_normal3d_cyl(
 
         xs_dim = np1 + np2 + 1;
         nrm_coor_dim = np1 + np2 + 1;
-        
+
 	/*
         xs[0][0] = Coords(pc)[0];
         xs[0][1] = Coords(pc)[1];
         xs[0][2] = Coords(pc)[2];
 	* This part is temporarily modified for cylindrical coordinate
-	*/ 
+	*/
 	xs[0][0] = (Coords(pc)[2])*cos(Coords(pc)[0]);
 	xs[0][1] = (Coords(pc)[2])*sin(Coords(pc)[0]);
 	xs[0][2] = Coords(pc)[1];
@@ -4867,7 +4868,7 @@ EXPORT boolean WLSP_compute_normal3d_cyl(
 	    /*
             nrm_coor[i+np1+1][0] = pts_ring2[i]->_nor0[0];
             nrm_coor[i+np1+1][1] = pts_ring2[i]->_nor0[1];
-            nrm_coor[i+np1+1][2] = pts_ring2[i]->_nor0[2];            
+            nrm_coor[i+np1+1][2] = pts_ring2[i]->_nor0[2];
 	    */
 	    nrm_coor[i+np1+1][0] = -(pts_ring2[i]->_nor0[0])*sin( (Coords(pts_ring2[i]))[0] )
 			           +(pts_ring2[i]->_nor0[2])*cos( (Coords(pts_ring2[i]))[0] );
@@ -4900,7 +4901,7 @@ EXPORT boolean WLSP_compute_normal3d(
         HYPER_SURF_ELEMENT *hse,
         HYPER_SURF         *hs)
 {
-                        
+
         if (debugging("wlsp_curvature"))
         {
             printf("Entered WLSP_compute_normal3d() for (%lf, %lf, %lf)\n", p->_coords[0], p->_coords[1], p->_coords[2]);
@@ -4930,7 +4931,7 @@ EXPORT boolean WLSP_compute_normal3d(
         int xs_dim, nrm_coor_dim;
         double xs[60][3],prcurvs[2],maxprdir[3];
         int deg;
-        double nrm_coor[60][3];       
+        double nrm_coor[60][3];
  */
 
         int xs_dim, nrm_coor_dim, deg;
@@ -4948,7 +4949,7 @@ EXPORT boolean WLSP_compute_normal3d(
 
         xs_dim = np1 + np2 + 1;
         nrm_coor_dim = np1 + np2 + 1;
-        
+
         xs[0][0] = Coords(pc)[0];
         xs[0][1] = Coords(pc)[1];
         xs[0][2] = Coords(pc)[2];
@@ -4986,7 +4987,7 @@ EXPORT boolean WLSP_compute_normal3d(
 
             nrm_coor[i+np1+1][0] = pts_ring2[i]->_nor0[0];
             nrm_coor[i+np1+1][1] = pts_ring2[i]->_nor0[1];
-            nrm_coor[i+np1+1][2] = pts_ring2[i]->_nor0[2];            
+            nrm_coor[i+np1+1][2] = pts_ring2[i]->_nor0[2];
         }
 
         polyfit3d_lhf(nrm,&deg,prcurvs,maxprdir,*xs,xs_dim,*nrm_coor,
@@ -5331,7 +5332,7 @@ EXPORT	void	TriAndFirstRing(
 	    {
 	    	t = Tri_list_at_vertex.tris[j];
 		tri_in_list = pointer_in_list((POINTER)t,*nt,(POINTER*)tris);
-		if (!tri_in_list) 
+		if (!tri_in_list)
 		{
 		    tris[(*nt)++] = t;
 		}
@@ -5364,7 +5365,7 @@ EXPORT	void	TriAndFirstTwoRings(
 	    {
 	    	t = Tri_list_at_vertex.tris[j];
 		tri_in_list = pointer_in_list((POINTER)t,*nt,(POINTER*)tris);
-		if (!tri_in_list) 
+		if (!tri_in_list)
 		{
 		    tris[(*nt)++] = t;
 		    for (k = 0; k < 3; ++k)
@@ -5387,15 +5388,15 @@ EXPORT	void	TriAndFirstTwoRings(
 	    {
 	    	t = Tri_list_at_vertex.tris[j];
 		tri_in_list = pointer_in_list((POINTER)t,*nt,(POINTER*)tris);
-		if (!tri_in_list) 
+		if (!tri_in_list)
 		{
 		    tris[(*nt)++] = t;
 		}
 	    }
 	}
 }	/* end TriAndFirstTwoRings */
-	
-/*	
+
+/*
 	Create a list of bonds which are prev and next neighbours of the
 	bond of hse. The order argument is the number of bonds on each
 	side.

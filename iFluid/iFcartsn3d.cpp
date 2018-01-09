@@ -365,8 +365,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
         min_rho = (m_rho[0] + m_rho[1]) - max_rho;
 
         for (k = kmin; k <= kmax; k++)
-        for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
+        {
+#if defined(__IMPOSING2D__)
+            double avgy1 = 0.0, avgy2 = 0.0, avgy3 = 0.0, avgy4 = 0.0, sumy1 = 0.0, sumy2 = 0.0, sumy3 = 0.0, sumy4 = 0.0;
+#endif
+        for (j = jmin; j <= jmax; j++)
         {
             index = d_index3d(i,j,k,top_gmax);
             comp = top_comp[index];
@@ -395,7 +399,28 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
                 cell_center[index].m_state.m_mu = cell_center[index].m_state.m_rho*nu;
                 cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_rho_old*nu;
             }
-
+#if defined(__IMPOSING2D__)
+            sumy1 += cell_center[index].m_state.m_rho;
+            sumy2 += cell_center[index].m_state.m_rho_old;
+            sumy3 += cell_center[index].m_state.m_mu;
+            sumy4 += cell_center[index].m_state.m_mu_old;
+#endif
+        }
+#if defined(__IMPOSING2D__)
+        avgy1 = sumy1 / (jmax - jmin + 1);
+        avgy2 = sumy2 / (jmax - jmin + 1);
+        avgy3 = sumy3 / (jmax - jmin + 1);
+        avgy4 = sumy4 / (jmax - jmin + 1);
+#endif
+        for (j = jmin; j <= jmax; j++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+#if defined(__IMPOSING2D__)
+            cell_center[index].m_state.m_rho = avgy1;
+            cell_center[index].m_state.m_rho_old = avgy2;
+            cell_center[index].m_state.m_mu = avgy3;
+            cell_center[index].m_state.m_mu_old = avgy4;
+#endif
             density = fabs(cell_center[index].m_state.m_rho);
             if (density > max_density)
             {
@@ -411,6 +436,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
                 indmin[1] = j;
                 indmin[2] = k;
             }
+        }
         }
         max_tmp = max_density;
         min_tmp = min_density;
@@ -3289,7 +3315,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::compDiffWithSmoothProperty_velocity_
             cell_center[index].m_state.m_U[l] = vel[l][index];
         }// end of Reflection Treatment
         */
-        copyMeshStates_vd();
+        //copyMeshStates_vd();
 
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
@@ -6355,6 +6381,37 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection_MAC_vd(void)
 
         //project U^{*}, instead of (U^{*}-U^{n})
         //get div(U^{*}) and divergence constraint S^{n+1}
+#if defined(__IMPOSING2D__)
+        double avgy = 0.0, sumy;
+        for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++)
+        {
+            icoords[0] = i;
+            icoords[1] = j;
+            icoords[2] = k;
+            index = d_index3d(i,j,k,top_gmax);
+            getDivU_MAC_vd(icoords,&diffusion,2,bGhostCell); //divergence constraint S^{n+1}
+            sumy += diffusion;
+        }
+        avgy = sumy / (jmax - jmin + 1);
+        for (j = jmin; j <= jmax; j++)
+        {
+            icoords[0] = i;
+            icoords[1] = j;
+            icoords[2] = k;
+            index = d_index3d(i,j,k,top_gmax);
+
+            source[index] = cell_center[index].m_state.div_U/accum_dt; //div(U^{*}/dt)
+            source[index] -= avgy/accum_dt; //div(U^{*}/dt) - S^{n+1}/dt
+
+            diff_coeff[index] = cell_center[index].m_state.m_rho;
+            diff_coeff_old[index] = cell_center[index].m_state.m_rho_old;
+        }
+        }
+#else
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -6371,6 +6428,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeProjection_MAC_vd(void)
             diff_coeff[index] = cell_center[index].m_state.m_rho;
             diff_coeff_old[index] = cell_center[index].m_state.m_rho_old;
         }
+#endif
 
         FT_ParallelExchGridArrayBuffer(source,front);
         FT_ParallelExchGridArrayBuffer(diff_coeff,front);
@@ -6495,6 +6553,10 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
                     cell_center[index].m_state.m_U[l] -= accum_dt/rho*grad_phi[l];
                 }
             }
+#if defined(__IMPOSING2D__)
+                    grad_phi[1] = 0.0;
+                    cell_center[index].m_state.m_U[1] = 0.0;
+#endif
 
             speed = fabs(cell_center[index].m_state.m_U[0]) +
                     fabs(cell_center[index].m_state.m_U[1]) +
@@ -6542,6 +6604,28 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             cell_center[index].m_state.m_U[l] = vel[l][index];
         }
+#if defined(__IMPOSING2D__)
+        double avgy = 0.0, sumy;
+        for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++)
+        {
+            icoords[0] = i;
+            icoords[1] = j;
+            icoords[2] = k;
+            index = d_index3d(i,j,k,top_gmax);
+            sumy += computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
+        }
+        avgy = sumy / (jmax - jmin + 1);
+        for (j = jmin; j <= jmax; j++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            source[index] = avgy;
+        }
+        }
+#else
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -6552,6 +6636,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
             index = d_index3d(i,j,k,top_gmax);
             source[index] = computeFieldPointDiv_MAC_vd(icoords,vel);//removal tag: adjust Reflection B.C. afterwards
         }
+#endif
         //removal tag: HAOZ. adjust
         FT_ParallelExchGridArrayBuffer(source,front);
         //store the values of div(U^{n+1}) in div_U
@@ -6590,6 +6675,29 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
         {
             value = sum_div = max_value = 0;
 
+#if defined(__IMPOSING2D__)
+            double avgy = 0.0, sumy;
+            for (k = kmin; k <= kmax; k++)
+            for (i = imin; i <= imax; i++)
+            {
+            sumy = 0.0;
+            for (j = jmin; j <= jmax; j++)
+            {
+                icoords[0] = i;
+                icoords[1] = j;
+                icoords[2] = k;
+                index = d_index3d(i,j,k,top_gmax);
+                getDivU_MAC_vd(icoords,&diffusion,2,bGhostCell);
+                sumy += diffusion;
+            }
+            avgy = sumy / (jmax - jmin + 1);
+            for (j = jmin; j <= jmax; j++)
+            {
+                index = d_index3d(i,j,k,top_gmax);
+                source[index] = avgy;
+            }
+            }
+#else
             for (k = kmin; k <= kmax; k++)
             for (j = jmin; j <= jmax; j++)
             for (i = imin; i <= imax; i++)
@@ -6603,6 +6711,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewVelocity_fullMAC_vd(void)
                 getDivU_MAC_vd(icoords,&diffusion,2,bGhostCell);
                 source[index] = diffusion;
             }
+#endif
             FT_ParallelExchGridArrayBuffer(source,front);
 
             for (k = 0; k <= top_gmax[2]; k++)
@@ -7805,6 +7914,34 @@ void Incompress_Solver_Smooth_3D_Cartesian::compAdvectionTerm_MAC_decoupled_vd(i
             cell_center[index].m_state.m_c_adv = array[index];
         }
     }
+#if defined(__IMPOSING2D__)
+    double avgy = 0.0, sumy;
+        for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++)
+        {
+            index  = d_index3d(i,j,k,top_gmax);
+            sumy += cell_center[index].m_state.m_rho_adv;
+            //array[index] = cell_center[index].m_state.m_rho_adv;
+        }
+        avgy = sumy / (jmax - jmin + 1);
+        for (j = jmin; j <= jmax; j++)
+        {
+            index  = d_index3d(i,j,k,top_gmax);
+            array[index] = avgy;
+        }
+        }
+        scatMeshArray();
+        for (k = 0; k <= top_gmax[2]; k++)
+        for (j = 0; j <= top_gmax[1]; j++)
+        for (i = 0; i <= top_gmax[0]; i++)
+        {
+            index  = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_rho_adv = array[index];
+        }
+#endif /* (__IMPOSING2D__) */
 } /* end compAdvectionTerm_MAC_decoupled_vd */
 
 
@@ -20063,15 +20200,36 @@ void Incompress_Solver_Smooth_3D_Cartesian::
 void Incompress_Solver_Smooth_3D_Cartesian::computePressurePmI(void)
 {
         int i,j,k,index;
-
+#if defined(__IMPOSING2D__)
+        double avgy = 0.0, sumy;
         for (k = kmin; k <= kmax; k++)
-	for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
-	{
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            sumy += cell_center[index].m_state.m_phi;
+        }
+        avgy = sumy / (jmax - jmin + 1);
+        for (j = jmin; j <= jmax; j++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            cell_center[index].m_state.m_P += avgy;
+            //cell_center[index].m_state.m_P += cell_center[index].m_state.m_phi;
+            array[index] = cell_center[index].m_state.m_P;
+        }
+        }
+#else
+        for (k = kmin; k <= kmax; k++)
+        for (j = jmin; j <= jmax; j++)
+        for (i = imin; i <= imax; i++)
+        {
             index = d_index3d(i,j,k,top_gmax);
             cell_center[index].m_state.m_P += cell_center[index].m_state.m_phi;
-	    array[index] = cell_center[index].m_state.m_P;
-	}
+            array[index] = cell_center[index].m_state.m_P;
+        }
+#endif
 	scatMeshArray();
 	for (k = 0; k <= top_gmax[2]; k++)
 	for (j = 0; j <= top_gmax[1]; j++)

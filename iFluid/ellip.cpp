@@ -225,6 +225,28 @@ void poisson_solver3d_P0_vd(
                         "num_iter = %d, rel_residual = %le \n",
                         num_iter, rel_residual);
 
+#if defined(__IMPOSING2D__)
+        double avgy = 0.0, sumy;
+        for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++) // 2D symmetry IMPOSING
+        {
+            I = ijk_to_I[i][j][k];
+            sumy += x[I-ilower];
+            //soln[index] = x[I-ilower];
+        }
+        avgy = sumy / (jmax - jmin + 1); // averaging
+        for (j = jmin; j <= jmax; j++) // 2D symmetry IMPOSING
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            soln[index] = avgy;
+        }
+        if (*max_soln < soln[index]) *max_soln = soln[index];
+        if (*min_soln > soln[index]) *min_soln = soln[index];
+        }
+#else
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -235,6 +257,7 @@ void poisson_solver3d_P0_vd(
             if (*max_soln < soln[index]) *max_soln = soln[index];
             if (*min_soln > soln[index]) *min_soln = soln[index];
         }
+#endif /* defined(__IMPOSING2D__) */
         FT_ParallelExchGridArrayBuffer(soln,front);
         pp_global_max(max_soln,1);
         pp_global_min(min_soln,1);
@@ -1058,7 +1081,27 @@ void poisson_solver3d_vd(
             (void) printf("In poisson_solver_vd(): "
                         "num_iter = %d, rel_residual = %le \n",
                         num_iter, rel_residual);
-
+#if defined(__IMPOSING2D__)
+        double avgy = 0.0, sumy;
+        for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++)
+        {
+            I = ijk_to_I[i][j][k];
+            sumy += x[I-ilower];
+        }
+        avgy = sumy / (jmax - jmin + 1);
+        for (j = jmin; j <= jmax; j++)
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            soln[index] = avgy;
+        }
+        if (*max_soln < soln[index]) *max_soln = soln[index];
+        if (*min_soln > soln[index]) *min_soln = soln[index];
+        }
+#else
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -1069,6 +1112,7 @@ void poisson_solver3d_vd(
             if (*max_soln < soln[index]) *max_soln = soln[index];
             if (*min_soln > soln[index]) *min_soln = soln[index];
         }
+#endif
         FT_ParallelExchGridArrayBuffer(soln,front);
         pp_global_max(max_soln,1);
         pp_global_min(min_soln,1);
@@ -1334,7 +1378,27 @@ void poisson_solver3d_MacPhi_vd(
                           "num_iter = %d, rel_residual = %le \n",
                           num_iter, rel_residual);
 	}
-
+#if defined(__IMPOSING2D__)
+        double avgy = 0.0, sumy;
+        for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+        for (j = jmin; j <= jmax; j++) // 2D symmetry IMPOSING
+        {
+            I = ijk_to_I[i][j][k];
+            sumy += x[I-ilower];
+        }
+        avgy = sumy / (jmax - jmin + 1); // averaging
+        for (j = jmin; j <= jmax; j++) // 2D symmetry IMPOSING
+        {
+            index = d_index3d(i,j,k,top_gmax);
+            soln[index] = avgy;
+        }
+        if (*max_soln < soln[index]) *max_soln = soln[index];
+        if (*min_soln > soln[index]) *min_soln = soln[index];
+        }
+#else
         for (k = kmin; k <= kmax; k++)
         for (j = jmin; j <= jmax; j++)
         for (i = imin; i <= imax; i++)
@@ -1345,6 +1409,7 @@ void poisson_solver3d_MacPhi_vd(
             if (*max_soln < soln[index]) *max_soln = soln[index];
             if (*min_soln > soln[index]) *min_soln = soln[index];
         }
+#endif
         FT_ParallelExchGridArrayBuffer(soln,front);
         pp_global_max(max_soln,1);
         pp_global_min(min_soln,1);

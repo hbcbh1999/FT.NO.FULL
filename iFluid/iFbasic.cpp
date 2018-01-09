@@ -4317,13 +4317,33 @@ void Incompress_Solver_Smooth_3D_Basis::setSmoothedProperties(void)
     //TODO && FIXME Reflection Treatment Concern:
 	for (l = 0; l < dim; ++l)
 	{
+#if defined(__IMPOSING2D__)
+        double avgy = 0, sumy;
+	    for (k = kmin; k <= kmax; k++)
+        for (i = imin; i <= imax; i++)
+        {
+        sumy = 0.0;
+	    for (j = jmin; j <= jmax; j++)
+	    {
+	    	index  = d_index3d(i,j,k,top_gmax);
+	    	sumy += cell_center[index].m_state.f_surf[l];
+	    }
+        avgy = sumy / (jmax - jmin + 1);
+	    for (j = jmin; j <= jmax; j++)
+	    {
+	    	index  = d_index3d(i,j,k,top_gmax);
+	    	array[index] = avgy;
+	    }
+        }
+#else
 	    for (k = kmin; k <= kmax; k++)
 	    for (j = jmin; j <= jmax; j++)
-            for (i = imin; i <= imax; i++)
+        for (i = imin; i <= imax; i++)
 	    {
 	    	index  = d_index3d(i,j,k,top_gmax);
 	    	array[index] = cell_center[index].m_state.f_surf[l];
 	    }
+#endif
 	    scatMeshArray();
 	    for (k = 0; k <= top_gmax[2]; k++)
 	    for (j = 0; j <= top_gmax[1]; j++)
