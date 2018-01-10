@@ -14907,7 +14907,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
             }
 
             cell_center[index].m_state.m_rho_old = cell_center[index].m_state.m_rho;
-            cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_rho; // viscosity is constant for each constant fluid
+            cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_mu; // viscosity is constant for each constant fluid
 
             //conservation of volume
             rho = cell_center[index].m_state.m_rho;
