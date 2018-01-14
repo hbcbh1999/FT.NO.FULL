@@ -355,10 +355,10 @@ void PETSc::Solve_withPureNeumann(void)
 	//KSPSetType(ksp,KSPMINRES);
 	//KSPSetType(ksp,KSPGMRES);
 	//KSPSetType(ksp,KSPBCGS);
-	KSPSetType(ksp,KSPBCGS);
 
         KSPSetComputeSingularValues(ksp, PETSC_TRUE);
 #if defined(__HYPRE__)
+	KSPSetType(ksp,KSPBCGS);
 	KSPGetPC(ksp, &pc);
 	PCSetType(pc, PCHYPRE);
     PCHYPRESetType(pc,"boomeramg");

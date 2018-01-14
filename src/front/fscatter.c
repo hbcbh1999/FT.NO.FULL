@@ -317,7 +317,8 @@ EXPORT	void	pp_clip_rect_grids(
 
 	for (i = 0; i < dim; ++i)
 	{
-	    double h = t_gr->h[i];
+	    //double h = t_gr->h[i]; // h is random or 0 caught by fp_trap FIXME ** TODO
+	    double h = zoom_gr->h[i]; //
 	    tgmax[i] = irint((zoom_gr->VU[i] - zoom_gr->VL[i])/h);
 	    t_gr->GL[i] = zoom_gr->GL[i];
 	    if (buffered_boundary_type(rbt[i][0]))

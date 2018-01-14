@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,7 @@ EXPORT int redistribute(
 {
 	int		dim = fr->rect_grid->dim;
 	int		status = BAD_REDISTRIBUTION;
-	
+
 	switch(dim)
 	{
 #if defined(ONED)
@@ -70,6 +70,11 @@ EXPORT int redistribute(
 #endif /* defined(TWOD) */
 #if defined(THREED)
 	case 3:
+        if (fr->dt <= 0.0000001) // This is a good addon for SY simulation when triangulating at initialization.
+            return GOOD_REDISTRIBUTION;
+        // there is a good chance that the return statement below will be removed
+        //return GOOD_REDISTRIBUTION; //TODO && FIXME: This is for an experiment for simple interface.
+        printf("Redistribute Processing at dt = %f\n", fr->dt);
 	    status = redistribute3d(fr,do_redist,restart_init);
 	    /*In this case scatter_front fails,  */
 	    /*all procs will have the same value for status. */
@@ -128,7 +133,7 @@ EXPORT int redistribute(
 #endif /* if defined(USE_OVERTURE) */
 	    if (gs == 1)
 		return MODIFY_TIME_STEP_REDISTRIBUTE;
-		
+
 	    gs = (status == UNABLE_TO_UNTANGLE) ? 1 : 0;
 #if defined(USE_OVERTURE)
 #else /* if defined(USE_OVERTURE) */
@@ -136,7 +141,7 @@ EXPORT int redistribute(
 #endif /* if defined(USE_OVERTURE) */
 
 	    if (gs == 1)
-		return UNABLE_TO_UNTANGLE; 
+		return UNABLE_TO_UNTANGLE;
 
 	    gs = (status == GOOD_REDISTRIBUTION) ? 0 : 1;
 #if defined(USE_OVERTURE)
@@ -145,7 +150,7 @@ EXPORT int redistribute(
 #endif /* if defined(USE_OVERTURE) */
 
 	    if (gs == 1)
-		return BAD_REDISTRIBUTION; 
+		return BAD_REDISTRIBUTION;
 	}
 	return status;
 }		/*end redistribute*/
@@ -195,7 +200,7 @@ EXPORT	boolean	redist_needed(
 
 	if (Interface_redistributed(fr) == YES)
 	    do_redist = NO;
-	else if (Redistribution_count(fr) % 
+	else if (Redistribution_count(fr) %
 		 Frequency_of_redistribution(fr,wfam))
 	    do_redist = NO;
 	else

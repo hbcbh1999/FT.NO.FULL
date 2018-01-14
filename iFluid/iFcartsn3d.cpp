@@ -14881,7 +14881,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::setInitialCondition_RSSY_vd(LEVEL_FU
 
             if (status  == YES &&
             ifluid_comp(positive_component(hs)) &&
-                    ifluid_comp(negative_component(hs)))
+                    ifluid_comp(negative_component(hs)) && m_smoothing_radius > 0)
             {
             sign = (comp == m_comp[0]) ? -1 : 1;
                     D = smoothedDeltaFunction(coords,point);
@@ -18793,6 +18793,7 @@ void Incompress_Solver_Smooth_3D_Cartesian::solve_vd(double dt)
             }
             ++ite_num;
         } //while-loop ends
+        // update density again
 
         if (debugging("sample_velocity"))
             sampleVelocity();
@@ -18880,11 +18881,19 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeRTParameters(double dt, char 
                     for (k = 0; k < dim; ++k)
                     {
                         p = Point_of_tri(tri)[k];
-                        if (Index_of_point(p) == -1)
+                        //if (Index_of_point(p) == -1)// tip of the Spike ONLY
                         {
                             crds = Coords(p);
                             if (crds[dim-1] > zmax)
                                 zmax = crds[dim-1];
+                        }
+                    }
+                    for (k = 0; k < dim; ++k)
+                    {
+                        p = Point_of_tri(tri)[k];
+                        if (Index_of_point(p) == -1)
+                        {
+                            crds = Coords(p);
                             if (crds[dim-1] < zmin)
                                 zmin = crds[dim-1];
                         }
