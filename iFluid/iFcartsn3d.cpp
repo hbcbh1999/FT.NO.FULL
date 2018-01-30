@@ -358,11 +358,16 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
         COMPONENT comp;
         double density, max_tmp, min_tmp, nu, max_rho, min_rho;
         int indmax[3],indmin[3];
+        double coord_x, coord_y, coord_z;
+        double max_mu, min_mu;
 
         max_density = -1;
         min_density = HUGE;
         max_rho = (m_rho[0] > m_rho[1]) ? m_rho[0] : m_rho[1];
         min_rho = (m_rho[0] + m_rho[1]) - max_rho;
+
+        max_mu = (m_mu[0] > m_mu[1]) ? m_mu[0] : m_mu[1];
+        min_mu = (m_mu[0] + m_mu[1]) - max_mu;
 
         for (k = kmin; k <= kmax; k++)
         for (i = imin; i <= imax; i++)
@@ -374,6 +379,9 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
         {
             index = d_index3d(i,j,k,top_gmax);
             comp = top_comp[index];
+            coord_x = cell_center[index].m_coords[0];
+            coord_y = cell_center[index].m_coords[1];
+            coord_z = cell_center[index].m_coords[2];
             if (!ifluid_comp(comp))
             {
                 cell_center[index].m_state.m_rho = 0;
@@ -387,6 +395,12 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
                 cell_center[index].m_state.m_rho -= m_dt*cell_center[index].m_state.m_rho_adv;
                 if (cell_center[index].m_state.m_rho > max_rho)	cell_center[index].m_state.m_rho = max_rho;
                 if (cell_center[index].m_state.m_rho < min_rho) cell_center[index].m_state.m_rho = min_rho;
+                double rho = cell_center[index].m_state.m_rho;
+                double c = min_rho*(max_rho-rho)/rho/(max_rho-min_rho);
+                if (c > 1.) c = 1.0;
+                if (c < 0.) c = 0.0;
+                cell_center[index].m_state.m_mu = c*max_mu + (1-c) * min_mu;
+                //printf("pseudo_concentration %f @ (%f %f %f)\n",min_rho*(max_rho-rho)/rho/(max_rho-min_rho),coord_x, coord_y, coord_z);
             }
             else //flag==1
             {
@@ -395,9 +409,11 @@ void Incompress_Solver_Smooth_3D_Cartesian::computeNewDensity_vd(int flag)
                 if (cell_center[index].m_state.m_rho > max_rho) cell_center[index].m_state.m_rho = max_rho;
                 if (cell_center[index].m_state.m_rho < min_rho) cell_center[index].m_state.m_rho = min_rho;
                 //update mu
-                nu = (m_mu[0]+m_mu[1])/(m_rho[0]+m_rho[1]);
-                cell_center[index].m_state.m_mu = cell_center[index].m_state.m_rho*nu;
-                cell_center[index].m_state.m_mu_old = cell_center[index].m_state.m_rho_old*nu;
+                double rho = cell_center[index].m_state.m_rho;
+                double c = min_rho*(max_rho-rho)/rho/(max_rho-min_rho);
+                if (c > 1.) c = 1.0;
+                if (c < 0.) c = 0.0;
+                cell_center[index].m_state.m_mu = c*max_mu + (1-c) * min_mu;
             }
 #if defined(__IMPOSING2D__)
             sumy1 += cell_center[index].m_state.m_rho;
