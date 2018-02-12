@@ -56,10 +56,19 @@ LOCAL   void    vtp_plot_surfaces(INTERFACE*,const double*,
                                   const double*,boolean,
                                   const char*,const char*,
                                   boolean,SURFACE_COLOR,SURFACE_COLOR,boolean,double,int,char);
-LOCAL   void    vtk_plot_surfaces(INTERFACE*,const double*,
-                                  const double*,boolean,
-                                  const char*,const char*,
-                                  boolean,SURFACE_COLOR,SURFACE_COLOR,boolean,double,int,char);
+LOCAL	void	vtk_plot_surfaces(
+	INTERFACE     *intfc,
+	const double   *BBL,
+	const double   *BBU,
+	boolean          clip,
+	const char    *dname,
+	const char    *name,
+	boolean	      bdry,
+	SURFACE_COLOR color1,
+	SURFACE_COLOR color2,
+	boolean 	      print_in_binary,
+	double 	      time,
+	int 	      step);
 LOCAL   void    vtk_plot_curves( INTERFACE*, const double*,
                                  const double*, const char*,
                                  const char*,SURFACE_COLOR,int,boolean,double,int);
@@ -3504,9 +3513,9 @@ EXPORT void vtk_interface_plot(
             sprintf(name,"intfc.t%s",right_flush(step,7));
             if (pp_numnodes() > 1)
                 sprintf(name,"%s-p%s",name,right_flush(pp_mynode(),4));
+	    vtk_plot_surfaces(intfc,BBL,BBU,NO,dname,name,NO,pRED,pRED,
+				print_in_binary,time,step);
 
-            vtk_plot_surfaces(intfc,BBL,BBU,NO,dname,name,NO,pRED,pRED,
-                              print_in_binary,time,step,coordinate);
 	}
 
 }		/*end vtk_interface_plot*/
@@ -3932,7 +3941,7 @@ LOCAL	void	vtp_plot_surfaces(
 
 }	/*end vtk_plot_surfaces*/
 
-
+//TODO
 LOCAL	void	vtk_plot_surfaces(
 	INTERFACE     *intfc,
 	const double   *BBL,
@@ -3945,27 +3954,23 @@ LOCAL	void	vtk_plot_surfaces(
 	SURFACE_COLOR color2,
 	boolean 	      print_in_binary,
 	double 	      time,
-	int 	      step,
-	char          coordinate)
+	int 	      step)
 {
 	FILE	          *file;
 	POINT             *p;
 	SURFACE	          **s;
 	TRI	          *tri;
-	boolean              plot_surf, add_tri;
+	boolean              plot_surf;
 	double 	          D, intensity = .5;
 	double             L[MAXD],U[MAXD],tol[MAXD];
-	double	          *crds,*ccrds,*norm;
+	double	          *crds;
 	int	          num_surfs, num_tris, i, j, k, l;
 	int               npts, ntris;
 	int		  length, length2;
 	static const char *indent = "    ";
 	static double      *pts = NULL;
-	static double      *pts_normal = NULL;
-	static double      *pts_curvature = NULL;
 	static int        *verts = NULL;
 	static int        alloc_len_verts = 0, alloc_len_pts = 0;
-	static int	  alloc_len_pts_normal = 0, alloc_len_pts_curvature = 0;
 	static char       *fname = NULL;
 	char 		  str[100];
 	static size_t     fname_len = 0;
@@ -3993,20 +3998,6 @@ LOCAL	void	vtk_plot_surfaces(
 		free(pts);
 	    alloc_len_pts = 3*intfc->num_points;
 	    uni_array(&pts,alloc_len_pts,FLOAT);
-	}
-	if (alloc_len_pts_normal < 3*intfc->num_points)
-	{
-	    if (pts_normal != NULL)
-		free(pts_normal);
-	    alloc_len_pts_normal = 3*intfc->num_points;
-	    uni_array(&pts_normal, alloc_len_pts_normal, FLOAT);
-	}
-	if (alloc_len_pts_curvature < intfc->num_points)
-	{
-	    if (pts_curvature != NULL)
-		free(pts_curvature);
-	    alloc_len_pts_curvature = intfc->num_points;
-	    uni_array(&pts_curvature, alloc_len_pts_curvature, FLOAT);
 	}
 	if (alloc_len_verts < 4*num_tris)
 	{
@@ -4036,17 +4027,7 @@ LOCAL	void	vtk_plot_surfaces(
 	        {
 	            for (k = 0; k < 3; ++k)
 		    {
-			//crds = Coords(Point_of_tri(tri)[k]);
-			if(coordinate == 'C' || coordinate == 'c')
-			{
-			    ccrds[0] = crds[0];
-			    ccrds[1] = crds[1];
-			    ccrds[2] = crds[2];
-			    crds[0] = ccrds[2]*cos(ccrds[0]);
-			    crds[1] = ccrds[2]*sin(ccrds[0]);
-			    crds[2] = ccrds[1];
-			}
-
+			crds = Coords(Point_of_tri(tri)[k]);
 	                for (l = 0; l < 3; ++l)
 			    if ((crds[l] < L[l] - tol[l]) ||
 			        (U[l] + tol[l] < crds[l]))
@@ -4062,30 +4043,9 @@ LOCAL	void	vtk_plot_surfaces(
 		            p = Point_of_tri(tri)[k];
 			    if (Index_of_point(p) == -1)
 			    {
-                                //crds = Coords(p);
-				if (coordinate == 'r' || coordinate == 'R')
-				{
-				    crds = Coords(p);
-				    norm = p->_nor;
-				}
-				else if(coordinate == 'c' || coordinate == 'C')
-				{
-				    crds[0] = Coords(p)[2]*cos(Coords(p)[0]);
-				    crds[1] = Coords(p)[2]*sin(Coords(p)[0]);
-				    crds[2] = Coords(p)[1];
-
-				    norm[0] = -p->_nor[0]*sin(Coords(p)[0]) + p->_nor[2]*cos(Coords(p)[0]);
-				    norm[1] =  p->_nor[0]*cos(Coords(p)[0]) + p->_nor[2]*sin(Coords(p)[0]);
-				    norm[2] = p->_nor[1];
-				}
-
+			        crds = Coords(p);
 	                        for (l = 0; l < 3; ++l)
 				    pts[3*npts+l] = crds[l];
-				for (l = 0; l < 3; ++l)
-				    pts_normal[3*npts+l] = norm[l];
-
-				pts_curvature[npts] = p->curvature;
-
 				Index_of_point(p) = npts++;
 			    }
 			    verts[4*ntris+k] = Index_of_point(p);
@@ -4097,57 +4057,19 @@ LOCAL	void	vtk_plot_surfaces(
 		if (plot_surf == YES)
 		    ++num_surfs;
 	    }
-	    else //clip == NO
+	    else
 	    {
 	        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s);
 		     tri = tri->next)
 	        {
-                    add_tri = NO;
-                    for (k = 0; k < 3; ++k)
-                    {
-                        p = Point_of_tri(tri)[k];
-                        if( (((Coords(p)[0] - tol[0]) > gr->GL[0] && (Coords(p)[0] + tol[0]) < gr->GU[0]) && ((Coords(p)[1] - tol[1]) > gr->GL[1] && (Coords(p)[1] + tol[1]) < gr->GU[1]) && ((Coords(p)[2] - tol[2]) > gr->GL[2] && (Coords(p)[2] + tol[2]) < gr->GU[2])) )
-                            add_tri = YES;
-                    }
-
-                    if(add_tri == NO)
-                        continue;
-
 	            for (k = 0; k < 3; ++k)
 		    {
 		        p = Point_of_tri(tri)[k];
 			if (Index_of_point(p) == -1)
 			{
 			    crds = Coords(p);
-			    norm = p->_nor;
 	                    for (l = 0; l < 3; ++l)
-			    {
-                                //pts[3*npts+l] = crds[l];
-				if (coordinate == 'R' || coordinate == 'r')
-				{
-				    pts[3*npts+l] = crds[l];
-				    pts_normal[3*npts+l] = norm[l];
-				}
-				else if(coordinate == 'C' || coordinate == 'c')
-				{
-				    if (l == 0)
-				    {
-					pts[3*npts+l] = crds[2]*cos(crds[0]);
-					pts_normal[3*npts+l] = -norm[0]*sin(Coords(p)[0]) + norm[2]*cos(Coords(p)[0]);
-				    }
-				    else if(l == 1)
-				    {
-					pts[3*npts+l] = crds[2]*sin(crds[0]);
-					pts_normal[3*npts+l] = norm[0]*cos(Coords(p)[0]) + norm[2]*sin(Coords(p)[0]);
-				    }
-				    else if(l == 2)
-				    {
-					pts[3*npts+l] = crds[1];
-					pts_normal[3*npts+l] = norm[1];
-				    }
-				}
-			    }
-			    pts_curvature[npts] = p->curvature;
+				pts[3*npts+l] = crds[l];
 			    Index_of_point(p) = npts++;
 			}
 			verts[4*ntris+k] = Index_of_point(p);
@@ -4159,14 +4081,12 @@ LOCAL	void	vtk_plot_surfaces(
 	    }
 	}
 
-        /*
 	if ((file = fopen(fname,"w")) == NULL)
 	{
 	    (void) printf("WARNING in vtk_plot_surfaces(), "
 	                  "can't open %s\n",fname);
 	    return;
 	}
-	*/
 
 	if(print_in_binary)
 	{
@@ -4185,146 +4105,9 @@ LOCAL	void	vtk_plot_surfaces(
 	    fwrite(str, sizeof(char), 7, file);
 	    sprintf(str,"DATASET POLYDATA\n");
 	    fwrite(str, sizeof(char), 17, file);
-            sprintf(str,"POINTS %d float\n", npts);
-	    length = count_digits(npts);
-	    fwrite(str, sizeof(char), 14 + length, file);
-	}
-	else
-	{
-	    if ((file = fopen(fname,"w")) == NULL)
-            {
-                (void) printf("WARNING in vtk_plot_surfaces(), "
-                              "can't open %s\n",fname);
-                 return;
-            }
 
-	    (void) fprintf(file,"# vtk DataFile Version 3.0 \n"
-		                "FronTier Interface \n"
-		       	        "ASCII \n"
-			        "DATASET POLYDATA \n");
-	    (void) fprintf(file, "POINTS %d double\n",npts);
-	}
-	for (i = 0; i < npts; ++i)
-	{
-	    if(print_in_binary)
-	    {
-		float vals[1];
-		for(j = 0; j < 3; ++j)
-		{
-		    if(hardware_is_little_endian())
-		        vals[0] = endian_float_swap(pts[3*i+j]);
-		    else
-			vals[0] = pts[3*i+j];
-                    fwrite(vals, sizeof(float), 1, file);
-		}
-	     }
-	     else
-             {
-                 (void) fprintf(file,"%-9g %-9g %-9g\n",
-                                      pts[3*i],pts[3*i+1],pts[3*i+2]);
-	     }
-	}
-
-	D = (num_surfs == 1) ? 1.0 : 1/(num_surfs - 1.0);
-	if(print_in_binary)
-	{
-	    sprintf(str, "\nPOLYGONS %d %d\n", ntris, ntris*4);
-	    length = count_digits(ntris);
-	    length2 = count_digits(ntris*4);
-	    fwrite(str, sizeof(char), 12 + length + length2, file);
-	    for(j = 0; j < ntris; ++j)
-	    {
-		for(k = 0; k < 3; ++k)
-		{
-                    int vals[1];
-		    if(k == 0)
-		    {
-		        if(hardware_is_little_endian())
-		            vals[0] = endian_int_swap(3);
-			else
-			    vals[0] = 3;
-			fwrite(vals, sizeof(int), 1, file);
-		    }
-		    if(hardware_is_little_endian())
-                        vals[0] = endian_int_swap(verts[4*j+k]);
-                    else
-                        vals[0] = verts[4*j+k];
-                    fwrite(vals, sizeof(int), 1, file);
-		}
-	    }
-
-	}
-	else
-	{
-	    fprintf(file,"POLYGONS %d %d \n",ntris,ntris*4);
-	    for (j = 0; j < ntris; ++j)
-	    {
-	        (void) fprintf(file,"%d %d %d %d \n",
-			       3,verts[4*j],verts[4*j+1],verts[4*j+2]);
-	    }
-
-
-	}
-
-	if(print_in_binary)
-	{
-	    sprintf(str, "\nPOINT_DATA %d", npts);
-	    length = count_digits(npts);
-	    fwrite(str, sizeof(char), 12 + length, file);
-	    sprintf(str, "\nVECTORS normal float\n");
-	    fwrite(str, sizeof(char), 22, file);
-	    float nor_vals[1];
-	    for(i = 0; i < npts; ++i)
-	    {
-
-		for(j = 0; j < 3; ++j)
-		{
-		    if(hardware_is_little_endian())
-			nor_vals[0] = endian_float_swap(pts_normal[3*i+j]);
-		    else
-			nor_vals[0] = pts_normal[3*i+j];
-		    fwrite(nor_vals, sizeof(float), 1, file);
-		}
-	    }
-	}
-	else
-	{
-	    fprintf(file,"POINT_DATA %d\n", npts);
-	    fprintf(file,"VECTORS normal float\n");
-	    for(i = 0; i < npts; ++i)
-	    {
-                 (void) fprintf(file,"%-9g %-9g %-9g\n",
-                                      pts_normal[3*i],pts_normal[3*i+1],pts_normal[3*i+2]);
-	    }
-	}
-
-	if(print_in_binary)
-	{
-	    float curv_vals[1];
-	    sprintf(str, "\nSCALARS curvature float 1\n");
-	    fwrite(str, sizeof(char), 27, file);
-	    sprintf(str, "LOOKUP_TABLE default\n");
-	    fwrite(str, sizeof(char), 21, file);
-	    for(i = 0; i < npts; ++i)
-	    {
-		if(hardware_is_little_endian())
-		   curv_vals[0] = endian_float_swap(pts_curvature[i]);
-		else
-		   curv_vals[0] = pts_curvature[i];
-		fwrite(curv_vals, sizeof(float), 1, file);
-	    }
-	}
-	else
-	{
-	    fprintf(file,"SCALARS curvature float 1\n");
-	    fprintf(file,"LOOKUP_TABLE default\n");
-	    for(i = 0; i < npts; ++i)
-		fprintf(file,"%-9g\n",pts_curvature[i]);
-	}
-	if(print_in_binary)
-	{
-	    sprintf(str, "\nFIELD FieldData 2\n");
-            fwrite(str, sizeof(char), 19, file);
+	    sprintf(str, "FIELD FieldData 2\n");
+            fwrite(str, sizeof(char), 18, file);
 	    sprintf(str, "TIME 1 1 float\n");
             fwrite(str, sizeof(char), 15, file);
 	    tmp1 = time;
@@ -4355,16 +4138,88 @@ LOCAL	void	vtk_plot_surfaces(
 	    sprintf(str, "\n");
             fwrite(str, sizeof(char), 1, file);
 
+            sprintf(str,"POINTS %d float\n", npts);
+	    length = count_digits(npts);
+	    fwrite(str, sizeof(char), 14 + length, file);
 	}
 	else
 	{
+	    if ((file = fopen(fname,"w")) == NULL)
+            {
+                (void) printf("WARNING in vtk_plot_surfaces(), "
+                              "can't open %s\n",fname);
+                 return;
+            }
+
+	    (void) fprintf(file,"# vtk DataFile Version 3.0 \n"
+		                "FronTier Interface \n"
+		       	        "ASCII \n"
+			        "DATASET POLYDATA \n");
 	    (void) fprintf(file, "FIELD FieldData 2\n");
 	    (void) fprintf(file, "TIME 1 1 float\n");
 	    (void) fprintf(file, "%5.5e\n", time);
 	    (void) fprintf(file, "CYCLE 1 1 int\n");
 	    (void) fprintf(file, "%d\n", step);
+	    (void) fprintf(file, "POINTS %d double\n",npts);
 	}
 
+	for (i = 0; i < npts; ++i)
+	{
+	    if(print_in_binary)
+	    {
+		float vals[1];
+		for(j = 0; j < 3; ++j)
+		{
+		    if(hardware_is_little_endian())
+		        vals[0] = endian_float_swap(pts[3*i+j]);
+		    else
+			vals[0] = pts[3*i+j];
+                    fwrite(vals, sizeof(float), 1, file);
+		}
+	     }
+	     else
+	         (void) fprintf(file,"%-9g %-9g %-9g\n",
+		       	        pts[3*i],pts[3*i+1],pts[3*i+2]);
+
+	}
+
+	D = (num_surfs == 1) ? 1.0 : 1/(num_surfs - 1.0);
+	if(print_in_binary)
+	{
+	    sprintf(str, "\nPOLYGONS %d %d\n", ntris, ntris*4);
+	    length = count_digits(ntris);
+	    length2 = count_digits(ntris*4);
+	    fwrite(str, sizeof(char), 12 + length + length2, file);
+	    for(j = 0; j < ntris; ++j)
+	    {
+		for(k = 0; k < 3; ++k)
+		{
+                    int vals[1];
+		    if(k == 0)
+		    {
+		        if(hardware_is_little_endian())
+		            vals[0] = endian_int_swap(3);
+			else
+			    vals[0] = 3;
+			fwrite(vals, sizeof(int), 1, file);
+		    }
+		    if(hardware_is_little_endian())
+                        vals[0] = endian_int_swap(verts[4*j+k]);
+                    else
+                        vals[0] = verts[4*j+k];
+                    fwrite(vals, sizeof(int), 1, file);
+		}
+	    }
+	}
+	else
+	{
+	    fprintf(file,"POLYGONS %d %d \n",ntris,ntris*4);
+	    for (j = 0; j < ntris; ++j)
+	    {
+	        (void) fprintf(file,"%d %d %d %d \n",
+			       3,verts[4*j],verts[4*j+1],verts[4*j+2]);
+	    }
+	}
 	(void) fclose(file);
 
 }	/*end vtk_plot_surfaces*/
