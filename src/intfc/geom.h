@@ -341,6 +341,9 @@ typedef struct {
     double Meniscus;
         PERT_BDRY_TYPE  pert_bdry_type[3];
     double wv_len;//most unstable wavelength in Smeeton Youngs' Experiment III
+    double gravity; // multiplier of grav
+    double surfTen; // surface tension coefficient
+    double rhodiff; // absolute difference value between two densities
 } FOURIER_POLY;
 
 struct _RANDOM_PARAMS_VD
@@ -603,6 +606,7 @@ IMPORT	void	print_RECT_GRID_structure(const RECT_GRID*);
 IMPORT	void	print_rectangular_grid(const RECT_GRID*);
 IMPORT	void	read_rectangular_grid(const IO_TYPE*,RECT_GRID*,boolean,REMAP*);
 IMPORT	void	set_dual_grid(RECT_GRID*,const RECT_GRID*);
+IMPORT	void	set_dual_grid2(RECT_GRID*,const RECT_GRID*);    //Dan
 IMPORT	void	set_rect_grid(const double*,const double*,const double*,
 			      const double*,const int*,const int*,const int*,
 			      int,const REMAP*,RECT_GRID*);

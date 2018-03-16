@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 *	Copyright 1999 by The University at Stony Brook, All rights reserved.
 *
-*	This file contains the high-level routine for the re-distribution 
+*	This file contains the high-level routine for the re-distribution
 *	of triangles on given surfaces according to given criteria,
 *
 *			redistribute_surface()
@@ -48,7 +48,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	point_in_bond.	With these three D additions, these two D routines
 *	applied to curves of a three D interface, will modify the triangles
 *	of the surfaces bounded by the curves and bonds, so that a valid
-*	interface is produced.	These subroutines must not be called 
+*	interface is produced.	These subroutines must not be called
 *	independently.
 *
 *	Each has the functionality as stated above.
@@ -109,7 +109,7 @@ LOCAL	int	find_scaled_extrem_edge(TRI*,RECT_GRID*,SPQ_FLAG);
 LOCAL	void	exchange_queues(POINTER_Q*,POINTER_Q*);
 LOCAL	void	redistribute_curve3d(CURVE*,Front*);
 LOCAL	void	sort_pointer_queue(POINTER_Q*,INTERFACE*,SPQ_FLAG);
-LOCAL 	void 	print_tri_surf_queue(POINTER_Q*);  
+LOCAL 	void 	print_tri_surf_queue(POINTER_Q*);
 LOCAL   void  	set_tri_status_order(int);
 LOCAL   void    tecplot_tri_queue(const char*, FILE*, POINTER_Q*);
 LOCAL	boolean	check_and_rm_tetrahedron(TRI*,int,POINTER_Q**,SURFACE*);
@@ -129,18 +129,18 @@ LOCAL	boolean	small_area_tri_on_intfc(INTERFACE*);
 *
 *	Returns one of the following values
 *
-*	BAD_REDISTRIBUTION  	
+*	BAD_REDISTRIBUTION
 *		if Surface_redistribute() fails.
-*	      	if intersections() fails after Surface_redistribute() succeeds. 
+*	      	if intersections() fails after Surface_redistribute() succeeds.
 *		if restart_init is set and the restart interface is tangled.
-*						
-*	UNABLE_TO_UNTANGLE	
+*
+*	UNABLE_TO_UNTANGLE
 *		if redistributed intfc is tangled and scalar_unravel fails.
 *		if Surface_redistribute() fails after scalar_unravel succeeds.
 *		if intersections() fails after Surface_redistribute() succeeds.
 *		if new tangle found after old tangle was successfully removed.
 *
-*	GOOD_REDISTRIBUTION	
+*	GOOD_REDISTRIBUTION
 *		otherwise.
 *
 *	If the do_redist flag is NO, the redistribution step
@@ -171,13 +171,13 @@ EXPORT	boolean	compute_smooth_para(
 	POINT	*p1, *p2, *p3;
 	double	hv1[3], hv2[3], ang, tri_area;
 	double	dist, lenk, max_cos, avep[3];
-	
+
 	if(Boundary_point(p))
 	    return NO;
 
 	for(k=0; k<3; k++)
 	    avep[k] = 0.0;
-	
+
 	lenk = 0.0;
 	max_cos = -1.0;
 
@@ -188,10 +188,10 @@ EXPORT	boolean	compute_smooth_para(
 	    tri1 = ptris[j];
 	    p1 = Point_of_tri(tri1)[Next_m3(Vertex_of_point(tri1,p))];
 	    p2 = Point_of_tri(tri1)[Prev_m3(Vertex_of_point(tri1,p))];
-		        
+
 	    for(k=0; k<3; k++)
 		avep[k] += Coords(p1)[k];
-			
+
 	    //compute cone dist
 	    lenk += distance_between_positions(Coords(p1), Coords(p2), 3);
 
@@ -199,8 +199,8 @@ EXPORT	boolean	compute_smooth_para(
 	    tri2 = ptris[(j-1+n)%n];
 	    p3 = Point_of_tri(tri2)[Next_m3(Vertex_of_point(tri2,p))];
 	    triangle_height_vec(hv1, Coords(p), Coords(p2), Coords(p1));
-	    
-	    //if a very small tri is found, just skip it, 
+
+	    //if a very small tri is found, just skip it,
 	    //delete_min_side_of_tri will deal with this case.
 	    tri_area = 0.5*distance_between_positions(Coords(p),Coords(p1),
 	    			3)*Mag3d(hv1);
@@ -212,12 +212,12 @@ EXPORT	boolean	compute_smooth_para(
 	    if(ang > max_cos)
 		max_cos = ang;
 	}
-		    
+
 	for(k=0; k<3; k++)
 	    avep[k] /= n;
-		    
+
 	dist = distance_between_positions(avep, Coords(p), 3);
-		    
+
 	// dist/lenk, max_cos to test bad point
 	if(dist/lenk > stol->cone_ratio || max_cos > stol->max_cos)
 	{
@@ -226,7 +226,7 @@ EXPORT	boolean	compute_smooth_para(
 	    ft_assign(smooth_para->avep, avep, 3*FLOAT);
 	    smooth_para->cor = dist/lenk > stol->cone_ratio ? dist/lenk : -1.0;
 	    smooth_para->cos = max_cos > stol->max_cos ? max_cos : -1.0;
-	    
+
 	    return YES;
 	}
 
@@ -244,33 +244,33 @@ EXPORT	boolean	compute_average_point(
 	int	j, k, n;
 	POINT	*p1;
 	double	avep[3];
-	
+
 	if(Boundary_point(p))
 	    return NO;
 
 	for(k=0; k<3; k++)
 	    avep[k] = 0.0;
-	
+
 	n = set_tri_list_around_point(p, tri, &ptris, s->interface);
 
 	for(j=0; j<n; j++)
 	{
 	    tri1 = ptris[j];
 	    p1 = Point_of_tri(tri1)[Next_m3(Vertex_of_point(tri1,p))];
-		        
+
 	    for(k=0; k<3; k++)
 		avep[k] += Coords(p1)[k];
 	}
-		    
+
 	for(k=0; k<3; k++)
 	    avep[k] /= n;
-		    
+
 	smooth_para->pt = p;
 	smooth_para->tri = tri;
 	ft_assign(smooth_para->avep, avep, 3*FLOAT);
 	smooth_para->cor = -1.0;
 	smooth_para->cos = -1.0;
-	    
+
 	return YES;
 }
 
@@ -314,7 +314,7 @@ EXPORT  void    detect_and_move_points(
 		Index_of_point(p) = 1;
 		if(!compute_smooth_para(&smooth_que[num], p,tri,s,&stol))
 		    continue;
-		
+
 		num++;
 		if(num >= MAX_SMOOTH_PARA)
 		{
@@ -328,7 +328,7 @@ EXPORT  void    detect_and_move_points(
 
 	if(num > 0)
 	    s->interface->modified = YES;
-	
+
 	//Apply Laplacian smooth
 	for(i=0; i<num; i++)
 	    compute_point_smooth(&smooth_que[i], &stol, s->interface);
@@ -403,11 +403,11 @@ int	collect_bdry_tris(
 	{
 	    for(i=0; i<3; i++)
 	    {
-		if(is_side_bdry(tri, i))	
+		if(is_side_bdry(tri, i))
 		    continue;
 		if(Tri_on_side(tri,i) != NULL)
 		    continue;
-		
+
 		p0 = Point_of_tri(tri)[i];
 		p1 = Point_of_tri(tri)[Next_m3(i)];
 		pc0 = Coords(p0)[dir];
@@ -432,7 +432,7 @@ int	collect_bdry_tris(
 		}
 	    }
 	}
-	
+
 	*m_coord = pm;
 	return nt;
 }
@@ -467,7 +467,7 @@ void	invert_surface(
 	    Tri_neighbor(t)[2] = tn;
 
 	    set_normal_of_tri(t);
-	/*    
+	/*
 	    for(i=0; i<3; i++)
 	    {
 		p = Point_of_tri(t)[i];
@@ -513,7 +513,7 @@ LOCAL  boolean  check_adjecant_constrain(
                 if( ((p0 == pt) && (p2 == ptn)) || ((p3 == pt) && (p1 == ptn)) )
                     return YES;
 
-                //(2) only the out_side or the in_side have common points with new_tris, 
+                //(2) only the out_side or the in_side have common points with new_tris,
                 //this constraint can avoid tangled surface.
                 if(p0 == pt || p0 == ptn || p1 == pt || p1 == ptn)
                     status_out = YES;
@@ -666,17 +666,17 @@ boolean	connect_reflect_surface(
 	int		i, nt;
 	double		*h, pm1;
 	boolean		sav_copy;
-	
+
 	DEBUG_ENTER(connect_reflect_surface)
 
 	sav_intfc = current_interface();
 	set_current_interface(intfc);
-	
+
 	sav_copy = copy_intfc_states();
 	set_copy_intfc_states(YES);
 	rs = copy_surface(os, NULL, NULL, YES);
 	set_copy_intfc_states(sav_copy);
-	
+
 	nt = collect_bdry_tris(&pm1, otris, osides, plane, dir, nor, os);
 	nt = collect_bdry_tris(&pm1, rtris, rsides, plane, dir, nor, rs);
 
@@ -715,7 +715,7 @@ boolean	connect_reflect_surface(
 
 	set_current_interface(sav_intfc);
 	DEBUG_LEAVE(connect_reflect_surface)
-	
+
 	return YES;
 }
 
@@ -794,16 +794,16 @@ void	reflect_extend_intfc(
 	boolean		status;
 	int		dir, nor;
 	double		tol = 0.01, ref_shift = 0.1;
-	
+
 	DEBUG_ENTER(reflect_extend_intfc)
-	
+
 	intfc = fr->interf;
 	gr = computational_grid(intfc);
 	h = gr->h;
-	
+
 	dir = 2;
 	nor = 0;
-	
+
 	//for nor==0 case ONLY, pm: the global min coords in direction dir,
 	//plane: the global min reflect plane.
 	pm = intfc_bdry_coord(dir,nor,intfc);
@@ -820,9 +820,9 @@ void	reflect_extend_intfc(
 	    DEBUG_LEAVE(reflect_extend_intfc)
 	    return;
 	}
-	
+
 	strip_subdomain_bdry_curves(intfc);
-	
+
 	add_to_debug("sep_for_open");
 	sep_common_pt_for_open_bdry(intfc);
 	remove_from_debug("sep_for_open");
@@ -830,8 +830,8 @@ void	reflect_extend_intfc(
 	printf("#ref enter %24.15e %24.15e\n", pm, plane);
 	//the reflect plane.
 	pm = nor == 0 ? pm - ref_shift*h[dir] : pm + ref_shift*h[dir];
-	
-	//null sides outside plane should be connectted with the reflected 
+
+	//null sides outside plane should be connectted with the reflected
 	//surface.
 	if(rect_boundary_type(intfc, dir, nor) == OPEN_BOUNDARY)
 	{
@@ -840,15 +840,15 @@ void	reflect_extend_intfc(
 		connect_reflect_surface(dir, nor, pm, plane, *s, intfc);
 	    }
 	}
-	
+
 	null_sides_are_consistent();
-	check_print_intfc("After connect ref intfc", "ref_af", 'g', 
+	check_print_intfc("After connect ref intfc", "ref_af", 'g',
 			intfc, fr->step, -1, YES);
 
-	fflush(NULL);	
+	fflush(NULL);
 	status = scatter_front(fr);
-	
-	check_print_intfc("After scat af connect ref intfc", "ref_scat_af", 
+
+	check_print_intfc("After scat af connect ref intfc", "ref_scat_af",
 			'g', intfc, 1, -1, NO);
 
 	DEBUG_LEAVE(reflect_extend_intfc)
@@ -861,7 +861,7 @@ EXPORT	double	min_null_pair_angle(
 	double	*p3)
 {
         double	hv1[3], hv2[3], ang;
-	
+
 	triangle_height_vec(hv1, p1, p0, p2);
 	triangle_height_vec(hv2, p1, p3, p2);
 	ang = Dot3d(hv1,hv2)/(Mag3d(hv1)*Mag3d(hv2));
@@ -884,7 +884,7 @@ EXPORT	void	set_increased_buffer_grid(
 	{
 	    dlbuf[i] = gr->lbuf[i];
 	    rgr->GL[i] = gr->GL[i];
-	    if(dlbuf[i] != 0 && 
+	    if(dlbuf[i] != 0 &&
 	       rect_boundary_type(intfc,i,0) == SUBDOMAIN_BOUNDARY)
 	    {
 		dlbuf[i] += inc;
@@ -899,7 +899,7 @@ EXPORT	void	set_increased_buffer_grid(
 		dubuf[i] += inc;
 		rgr->GU[i] = gr->GU[i] + inc*gr->h[i];
 	    }
-	    
+
 	    rgr->gmax[i] = gr->gmax[i];
 	    rgr->L[i] = gr->L[i];
 	    rgr->U[i] = gr->U[i];
@@ -1024,11 +1024,11 @@ EXPORT int smooth_redistribute_init(
 		{
 	    	    if(wave_type(*s) != FIRST_SCALAR_PHYSICS_WAVE_TYPE)
 			continue;
-	    
+
 		    printf("#detect_and_move_points\n");
 		    detect_and_move_points(*s);
 		}
-	
+
 		//printf("\nAfter moving the points\n");
 		start_clock("scatter_front");
 		status = scatter_front(fr);
@@ -1042,14 +1042,14 @@ EXPORT int smooth_redistribute_init(
                     return NO;
 		    //clean_up(ERROR);
 		}
-	
+
 	    }
 	}
 	*/
 	{
 	    int		num_iter = 0;
             int         max_num_iter = 10;
-            fr->is_bad_tri = YES;	    
+            fr->is_bad_tri = YES;
             Interface_redistributed(fr) = NO;
 
             while(fr->is_bad_tri == YES)
@@ -1063,17 +1063,17 @@ EXPORT int smooth_redistribute_init(
                     set_use_bd_dist(NO);
                 fr->is_bad_tri = NO;
                 force_redistribute = YES;
-	       
+
 		status = (Interface_redistributed(fr) == YES) ?
 		        FUNCTION_SUCCEEDED :
 		        surface_redistribute_init(fr,&force_redistribute);
 
                 if(fr->is_bad_tri == YES)
 		    Interface_redistributed(fr) = NO;
-		
-		//There are two cases, 
+
+		//There are two cases,
 		//    1. redistribute_surface fails for one proc, intfc is ok,
-		//    2. the scatter_front in surface_redistribute fails, 
+		//    2. the scatter_front in surface_redistribute fails,
 		//    intfc is changed and is not consistent.
 	    	if (status == FUNCTION_FAILED)
 		{
@@ -1083,22 +1083,22 @@ EXPORT int smooth_redistribute_init(
 		    return BAD_REDISTRIBUTION;
 		}
 
-	    	check_print_intfc("After surface redist", "sur_redist_af", 'g', 
+	    	check_print_intfc("After surface redist", "sur_redist_af", 'g',
 	        	      fr->interf, fr->step, -1, YES);
-	
+
 		//printf("#redist finish %d\n\n", i);
-	
+
 		if(debugging("pt_surface"))
 		    clean_up(0);
 	    }
 
 	    if(debugging("pt_surface"))
 		clean_up(0);
-	    
+
             set_use_bd_dist(NO);
 	    intfc = fr->interf;
 	}
-	
+
 	DEBUG_LEAVE(smooth_redistribute_init)
 	return FUNCTION_SUCCEEDED;
 }
@@ -1129,11 +1129,11 @@ EXPORT int smooth_redistribute_temp(
 		{
 	    	    if(wave_type(*s) != FIRST_SCALAR_PHYSICS_WAVE_TYPE)
 			continue;
-	    
+
 		    printf("#detect_and_move_points\n");
 		    detect_and_move_points(*s);
 		}
-	
+
 		//printf("\nAfter moving the points\n");
 		start_clock("scatter_front");
 		status = scatter_front(fr);
@@ -1147,14 +1147,14 @@ EXPORT int smooth_redistribute_temp(
                     return NO;
 		    //clean_up(ERROR);
 		}
-	
+
 	    }
 	}
 	*/
 	{
 	    int		num_iter = 0;
             int         max_num_iter;
-            fr->is_bad_tri = YES;	    
+            fr->is_bad_tri = YES;
             Interface_redistributed(fr) = NO;
 
             if(fr->step == 0)
@@ -1178,17 +1178,17 @@ EXPORT int smooth_redistribute_temp(
                     set_use_bd_dist(NO);
                 fr->is_bad_tri = NO;
                 force_redistribute = YES;
-	       
+
 		status = (Interface_redistributed(fr) == YES) ?
 		        FUNCTION_SUCCEEDED :
 		        surface_redistribute_temp(fr,&force_redistribute); /*surface_redistribute_temp called*/
 
                 if(fr->is_bad_tri == YES)
 		    Interface_redistributed(fr) = NO;
-		
-		//There are two cases, 
+
+		//There are two cases,
 		//    1. redistribute_surface fails for one proc, intfc is ok,
-		//    2. the scatter_front in surface_redistribute fails, 
+		//    2. the scatter_front in surface_redistribute fails,
 		//    intfc is changed and is not consistent.
 	    	if (status == FUNCTION_FAILED)
 		{
@@ -1198,22 +1198,22 @@ EXPORT int smooth_redistribute_temp(
 		    return BAD_REDISTRIBUTION;
 		}
 
-	    	check_print_intfc("After surface redist", "sur_redist_af", 'g', 
+	    	check_print_intfc("After surface redist", "sur_redist_af", 'g',
 	        	      fr->interf, fr->step, -1, YES);
-	
+
 		//printf("#redist finish %d\n\n", i);
-	
+
 		if(debugging("pt_surface"))
 		    clean_up(0);
 	    }
 
 	    if(debugging("pt_surface"))
 		clean_up(0);
-	    
+
             set_use_bd_dist(NO);
 	    intfc = fr->interf;
 	}
-	
+
 	DEBUG_LEAVE(smooth_redistribute_temp)
 	return FUNCTION_SUCCEEDED;
 }
@@ -1243,11 +1243,11 @@ EXPORT int smooth_redistribute(
 		{
 	    	    if(wave_type(*s) != FIRST_SCALAR_PHYSICS_WAVE_TYPE)
 			continue;
-	    
+
 		    printf("#detect_and_move_points\n");
 		    detect_and_move_points(*s);
 		}
-	
+
 		//printf("\nAfter moving the points\n");
 		start_clock("scatter_front");
 		status = scatter_front(fr);
@@ -1261,15 +1261,15 @@ EXPORT int smooth_redistribute(
                     return NO;
 		    //clean_up(ERROR);
 		}
-	
+
 	    }
 	}
         */
-	
+
 	{
 	    int		num_iter = 0;
             int         max_num_iter;
-            fr->is_bad_tri = YES;	    
+            fr->is_bad_tri = YES;
             Interface_redistributed(fr) = NO;
 
             if(fr->step == 0)
@@ -1288,17 +1288,17 @@ EXPORT int smooth_redistribute(
                     set_use_bd_dist(NO);
                 fr->is_bad_tri = NO;
                 force_redistribute = YES;
-	       
+
 		status = (Interface_redistributed(fr) == YES) ?
 		        FUNCTION_SUCCEEDED :
 		        Surface_redistribute(fr,&force_redistribute); /*surface_redistribute called*/
 
                 if(fr->is_bad_tri == YES)
 		    Interface_redistributed(fr) = NO;
-		
-		//There are two cases, 
+
+		//There are two cases,
 		//    1. redistribute_surface fails for one proc, intfc is ok,
-		//    2. the scatter_front in surface_redistribute fails, 
+		//    2. the scatter_front in surface_redistribute fails,
 		//    intfc is changed and is not consistent.
 	    	if (status == FUNCTION_FAILED)
 		{
@@ -1308,22 +1308,22 @@ EXPORT int smooth_redistribute(
 		    return BAD_REDISTRIBUTION;
 		}
 
-	    	check_print_intfc("After surface redist", "sur_redist_af", 'g', 
+	    	check_print_intfc("After surface redist", "sur_redist_af", 'g',
 	        	      fr->interf, fr->step, -1, YES);
-	
+
 		//printf("#redist finish %d\n\n", i);
-	
+
 		if(debugging("pt_surface"))
 		    clean_up(0);
 	    }
 
 	    if(debugging("pt_surface"))
 		clean_up(0);
-	    
+
             set_use_bd_dist(NO);
 	    intfc = fr->interf;
 	}
-	
+
 	DEBUG_LEAVE(smooth_redistribute)
 	return FUNCTION_SUCCEEDED;
 }
@@ -1421,7 +1421,7 @@ EXPORT int redistribute3d(
 	start_clock("redist_and_untangle");
 
 	intfc = fr->interf;
-	
+
 	if(fr->step == -1)
 	{
 	    char  sn[30];
@@ -1469,7 +1469,7 @@ EXPORT int redistribute3d(
 		    {
 	    	        if(wave_type(*s) != FIRST_SCALAR_PHYSICS_WAVE_TYPE)
 			    continue;
-	    
+
 		        detect_and_move_points(*s);
 		    }
 		    start_clock("scatter_front");
@@ -1517,10 +1517,10 @@ EXPORT int redistribute3d(
 
                     if(fr->is_bad_tri == YES)
                         Interface_redistributed(fr) = NO;
-		
-		    //There are two cases, 
+
+		    //There are two cases,
 		    //    1. redistribute_surface fails for one proc, intfc is ok,
-		    //    2. the scatter_front in surface_redistribute fails, 
+		    //    2. the scatter_front in surface_redistribute fails,
 		    //    intfc is changed and is not consistent.
 	    	    if (status == FUNCTION_FAILED)
 		    {
@@ -1532,7 +1532,7 @@ EXPORT int redistribute3d(
 		        DEBUG_LEAVE(redistribute3d)
 		        return BAD_REDISTRIBUTION;
 		    }
-	
+
 		    if(debugging("pt_surface"))
 		        clean_up(0);
 	        }
@@ -1571,42 +1571,42 @@ EXPORT int redistribute3d(
 
 	        sav_c_gr = Computational_grid(intfc);
 	        sav_t_gr = topological_grid(intfc);
-	    
-	        //use a large grid, scatter_front will construct a large 
+
+	        //use a large grid, scatter_front will construct a large
 	        //buffer for intfc.
 	        change_buffer_for_intfc(intfc);
-	    
-	        //after changing the grid, do not comm component because component3d 
+
+	        //after changing the grid, do not comm component because component3d
 	        //will be called and make_tri_lists is needed.
 	        //set_default_comp(YES);
 	        start_clock("scatter_front");
 	        status = scatter_front(fr);
 	        stop_clock("scatter_front");
 	        //set_default_comp(NO);
-	
+
 	        if(fr->step == 0)
 	            null_sides_are_consistent();
-	        //DEBUG_TMP check_print_intfc("Before surface recon in repeat", 
+	        //DEBUG_TMP check_print_intfc("Before surface recon in repeat",
 	    	//DEBUG_TMP "repair_bf", 'g', fr->interf, fr->step, -1, YES);
-	
+
 	        //add_to_debug("db_un");
 	        //add_to_debug("box_intfc");
-	
+
 	        sav_fr_gr = fr->rect_grid;
 	        fr->rect_grid = computational_grid(intfc);
-   
+
 	        /* repair_intfc_at_crossings3d */
 
 
 	        start_clock("repair_front_at_grid_crossing");
 	        status = repair_front_at_grid_crossing(fr); /* repair_intfc_at_crossings3d */
 	        stop_clock("repair_front_at_grid_crossing");
-	
+
 	        //recover the previous grid.
 	        fr->rect_grid = sav_fr_gr;
 	        Computational_grid(intfc) = sav_c_gr;
 	        topological_grid(intfc) = sav_t_gr;
-	
+
 	        Computational_grid(fr->interf) = sav_c_gr;
 	        topological_grid(fr->interf) = sav_t_gr;
 
@@ -1624,7 +1624,15 @@ EXPORT int redistribute3d(
 
 		/* repair_intfc_at_crossings3d */
 		start_clock("repair_front_at_grid_crossing");
+        //debugdan    FIXME
+        printf("DEBUGDAN: before repair_front_at_grid_crossing(), ");
+        check_num_of_tris(fr->interf);
+        //debugdan    FIXME
 		status = repair_front_at_grid_crossing(fr); /* repair_intfc_at_crossings3d */
+        //debugdan    FIXME
+        printf("DEBUGDAN: after repair_front_at_grid_crossing(), ");
+        check_num_of_tris(fr->interf);
+        //debugdan    FIXME
 		stop_clock("repair_front_at_grid_crossing");
 
 
@@ -1634,7 +1642,7 @@ EXPORT int redistribute3d(
 
 	    if(fr->step == 0)
 	        null_sides_are_consistent();
-	    //DEBUG_TMP check_print_intfc("After surface recon", "repair_af", 'g', 
+	    //DEBUG_TMP check_print_intfc("After surface recon", "repair_af", 'g',
 	        	//DEBUG_TMP fr->interf, fr->step, -1, NO);
 
             status = pp_min_status(status);
@@ -1657,13 +1665,21 @@ EXPORT int redistribute3d(
             //check for bad triangles.
                 //if(use_bd_dist_smooth == YES)
                 //    set_use_bd_dist(YES);
+        //debugdan    FIXME
+        printf("DEBUGDAN: before smooth_redistribute_init(), ");
+        check_num_of_tris(fr->interf);
+        //debugdan    FIXME
                 status = smooth_redistribute_init(fr);
+        //debugdan    FIXME
+        printf("DEBUGDAN: after smooth_redistribute_init(), ");
+        check_num_of_tris(fr->interf);
+        //debugdan    FIXME
                 //set_use_bd_dist(NO);
                 status = pp_min_status(status);
                 if(!status)
                 {
                     DEBUG_LEAVE(redistribute3d)
-                    set_no_redist_small(YES); 
+                    set_no_redist_small(YES);
                     //set_increased_recon_box(YES);
                     //set_use_bd_dist_smooth(YES);
                     return MODIFY_TIME_STEP;
@@ -1697,30 +1713,30 @@ EXPORT int redistribute3d(
             set_no_redist_small(NO);
             //set_increased_recon_box(NO);
             //set_use_bd_dist_smooth(NO);
-	    
+
 	    start_clock("scatter_front");
-	    
+
 	    add_to_debug("sep_for_open");
 	    remove_from_debug("ref_scat");
-	    
+
 	    status = scatter_front(fr);
-	    
+
 	    remove_from_debug("sep_for_open");
 	    stop_clock("scatter_front");
-	    
-	    
+
+
 	    if (!status)
 	    {
 		printf("WARNING, scatter_front fails after "
 		       "locally reconstruction in redistribute3d.\n");
-		
+
 		set_use_rect_tris(NO);
 
 		stop_clock("redist_and_untangle");
 		DEBUG_LEAVE(redistribute3d)
 		return INCONSISTENT_RECONSTRUCTION;
 	    }
-	    
+
 	    if(fr->step == 0)
 	        null_sides_are_consistent();
 
@@ -1773,7 +1789,7 @@ EXPORT int redistribute3d(
 	    int              nattemps;
 	    (void) print_number_of_tangles("",intfc,cross);
 	    start_clock("untangle");
-	    if (restart_init) 
+	    if (restart_init)
 	    {
 		stop_clock("untangle");
 		stop_clock("redistribute");
@@ -1784,7 +1800,7 @@ EXPORT int redistribute3d(
 	    }
 
 	    nattemps = 0;
-	    while (cross) 
+	    while (cross)
 	    {
 		++nattemps;
 		if (!scalar_unravel_3d(fr,&cross))
@@ -1831,7 +1847,7 @@ EXPORT int redistribute3d(
 				      "new tangle, will attempt to untangle\n");
 		    }
 		}
-		
+
 	    }
 	    stop_clock("untangle");
 	}
@@ -1856,8 +1872,8 @@ boolean	is_use_bd_dist();
 /*
 * 		surface_redistribute()
 *
-* 	The choice of name surface_redistribute() clashes in an obvious 
-* 	way with the name redistribute_surface().  
+* 	The choice of name surface_redistribute() clashes in an obvious
+* 	way with the name redistribute_surface().
 */
 
 EXPORT boolean surface_redistribute_init(
@@ -1892,7 +1908,7 @@ EXPORT boolean surface_redistribute_init(
 	++Redistribution_count(fr);
 
 		// Redistribute vector surfaces
-	
+
 	set_size_of_intfc_state(size_of_state(fr->interf));
 	set_copy_intfc_states(YES);
 	set_current_interface(fr->interf);
@@ -1901,7 +1917,7 @@ EXPORT boolean surface_redistribute_init(
 	status = YES;
 	if (redist_vec_cur == YES)
 	{
-	    for (s = fr->interf->surfaces; s && *s ; ++s) 
+	    for (s = fr->interf->surfaces; s && *s ; ++s)
 	    {
 	    	if ((!omit_redistribution(*s)) &&
 		    (wave_type(*s) >= FIRST_VECTOR_PHYSICS_WAVE_TYPE))
@@ -1909,7 +1925,7 @@ EXPORT boolean surface_redistribute_init(
 			status = NO;
 	    }
 	}
-	
+
 	start_clock("Add_and_Delete_Points");
 	if(is_use_bd_dist())
 	{
@@ -1917,24 +1933,24 @@ EXPORT boolean surface_redistribute_init(
 	    printf("#extend intfc in redist.\n");
 	    sav_c_gr = Computational_grid(intfc);
 	    sav_t_gr = topological_grid(intfc);
-	    
-	    //use a large grid, scatter_front will construct a large 
+
+	    //use a large grid, scatter_front will construct a large
 	    //buffer for intfc.
 	    change_buffer_for_intfc(intfc);
-	   
-	    //after changing the grid, do not comm component because component3d 
+
+	    //after changing the grid, do not comm component because component3d
 	    //will be called and make_tri_lists is needed.
 	    //set_default_comp(YES);
 	    start_clock("scatter_front");
 	    status = scatter_front(fr);
 	    stop_clock("scatter_front");
 	    //set_default_comp(NO);
-	    
+
 	    sav_fr_gr = fr->rect_grid;
 	    fr->rect_grid = computational_grid(intfc);
-   
+
 	}
-	
+
 	if (redist_non_vec_cur == YES)
 	{
 	    //printf("#redist curve3d bf\n");
@@ -1945,7 +1961,7 @@ EXPORT boolean surface_redistribute_init(
 	    //}
 
 	    //DEBUG_TMP printf("#redist surface bf\n");
-	    for (s = fr->interf->surfaces; s && *s ; ++s) 
+	    for (s = fr->interf->surfaces; s && *s ; ++s)
 	    {
 	    	if ((!omit_redistribution(*s)) &&
 	    	    (wave_type(*s) >= FIRST_PHYSICS_WAVE_TYPE) &&
@@ -1976,7 +1992,7 @@ EXPORT boolean surface_redistribute_init(
 
         boolean status_is_bad_tri;
         status_is_bad_tri = pp_max_status(fr->is_bad_tri);
-	
+
         if(status_is_bad_tri == YES)
             fr->is_bad_tri = YES;
 
@@ -2001,13 +2017,13 @@ EXPORT boolean surface_redistribute_init(
 	    fr->rect_grid = sav_fr_gr;
 	    Computational_grid(intfc) = sav_c_gr;
 	    topological_grid(intfc) = sav_t_gr;
-	
+
 	    Computational_grid(fr->interf) = sav_c_gr;
 	    topological_grid(fr->interf) = sav_t_gr;
 	}
 	else
 	{
-	    //DEBUG_TMP check_print_intfc("After redistribute_surface", "redist_sf_af", 'g', 
+	    //DEBUG_TMP check_print_intfc("After redistribute_surface", "redist_sf_af", 'g',
 		//DEBUG_TMP	fr->interf, fr->step, -1, NO);
 	    //DEBUG_TMP make_interface_topology_lists(fr->interf);
 	    //DEBUG_TMP check_valid_intfc("after redistribute_surface", fr->interf);
@@ -2016,7 +2032,7 @@ EXPORT boolean surface_redistribute_init(
 	start_clock("scatter_front");
 	status = scatter_front(fr);
 	stop_clock("scatter_front");
-	
+
 	if (!status)
 	{
 	    set_use_bd_dist(YES);
@@ -2068,7 +2084,7 @@ EXPORT boolean surface_redistribute_temp(
 	++Redistribution_count(fr);
 
 		// Redistribute vector surfaces
-	
+
 	set_size_of_intfc_state(size_of_state(fr->interf));
 	set_copy_intfc_states(YES);
 	set_current_interface(fr->interf);
@@ -2077,7 +2093,7 @@ EXPORT boolean surface_redistribute_temp(
 	status = YES;
 	if (redist_vec_cur == YES)
 	{
-	    for (s = fr->interf->surfaces; s && *s ; ++s) 
+	    for (s = fr->interf->surfaces; s && *s ; ++s)
 	    {
 	    	if ((!omit_redistribution(*s)) &&
 		    (wave_type(*s) >= FIRST_VECTOR_PHYSICS_WAVE_TYPE))
@@ -2092,7 +2108,7 @@ EXPORT boolean surface_redistribute_temp(
                 }
 	    }
 	}
-	
+
 	start_clock("Add_and_Delete_Points");
 	if(is_use_bd_dist())
 	{
@@ -2100,24 +2116,24 @@ EXPORT boolean surface_redistribute_temp(
 	    printf("#extend intfc in redist.\n");
 	    sav_c_gr = Computational_grid(intfc);
 	    sav_t_gr = topological_grid(intfc);
-	    
-	    //use a large grid, scatter_front will construct a large 
+
+	    //use a large grid, scatter_front will construct a large
 	    //buffer for intfc.
 	    change_buffer_for_intfc(intfc);
-	   
-	    //after changing the grid, do not comm component because component3d 
+
+	    //after changing the grid, do not comm component because component3d
 	    //will be called and make_tri_lists is needed.
 	    //set_default_comp(YES);
 	    start_clock("scatter_front");
 	    status = scatter_front(fr);
 	    stop_clock("scatter_front");
 	    //set_default_comp(NO);
-	    
+
 	    sav_fr_gr = fr->rect_grid;
 	    fr->rect_grid = computational_grid(intfc);
-   
+
 	}
-	
+
 	if (redist_non_vec_cur == YES)
 	{
 	    //printf("#redist curve3d bf\n");
@@ -2128,7 +2144,7 @@ EXPORT boolean surface_redistribute_temp(
 	    //}
 
 	    //DEBUG_TMP printf("#redist surface bf\n");
-	    for (s = fr->interf->surfaces; s && *s ; ++s) 
+	    for (s = fr->interf->surfaces; s && *s ; ++s)
 	    {
 	    	if ((!omit_redistribution(*s)) &&
 	    	    (wave_type(*s) >= FIRST_PHYSICS_WAVE_TYPE) &&
@@ -2161,7 +2177,7 @@ EXPORT boolean surface_redistribute_temp(
 
         boolean status_is_bad_tri;
         status_is_bad_tri = pp_max_status(fr->is_bad_tri);
-	
+
         if(status_is_bad_tri == YES)
             fr->is_bad_tri = YES;
 
@@ -2186,13 +2202,13 @@ EXPORT boolean surface_redistribute_temp(
 	    fr->rect_grid = sav_fr_gr;
 	    Computational_grid(intfc) = sav_c_gr;
 	    topological_grid(intfc) = sav_t_gr;
-	
+
 	    Computational_grid(fr->interf) = sav_c_gr;
 	    topological_grid(fr->interf) = sav_t_gr;
 	}
 	else
 	{
-	    //DEBUG_TMP check_print_intfc("After redistribute_surface", "redist_sf_af", 'g', 
+	    //DEBUG_TMP check_print_intfc("After redistribute_surface", "redist_sf_af", 'g',
 		//DEBUG_TMP	fr->interf, fr->step, -1, NO);
 	    //DEBUG_TMP make_interface_topology_lists(fr->interf);
 	    //DEBUG_TMP check_valid_intfc("after redistribute_surface", fr->interf);
@@ -2201,7 +2217,7 @@ EXPORT boolean surface_redistribute_temp(
 	start_clock("scatter_front");
 	status = scatter_front(fr);
 	stop_clock("scatter_front");
-	
+
 	if (!status)
 	{
 	    set_use_bd_dist(YES);
@@ -2252,7 +2268,7 @@ EXPORT boolean surface_redistribute(
 	++Redistribution_count(fr);
 
 		// Redistribute vector surfaces
-	
+
 	set_size_of_intfc_state(size_of_state(fr->interf));
 	set_copy_intfc_states(YES);
 	set_current_interface(fr->interf);
@@ -2261,7 +2277,7 @@ EXPORT boolean surface_redistribute(
 	status = YES;
 	if (redist_vec_cur == YES)
 	{
-	    for (s = fr->interf->surfaces; s && *s ; ++s) 
+	    for (s = fr->interf->surfaces; s && *s ; ++s)
 	    {
 	    	if ((!omit_redistribution(*s)) &&
 		    (wave_type(*s) >= FIRST_VECTOR_PHYSICS_WAVE_TYPE))
@@ -2269,7 +2285,7 @@ EXPORT boolean surface_redistribute(
 			status = NO;
 	    }
 	}
-	
+
 	start_clock("Add_and_Delete_Points");
 	if(is_use_bd_dist())
 	{
@@ -2277,24 +2293,24 @@ EXPORT boolean surface_redistribute(
 	    printf("#extend intfc in redist.\n");
 	    sav_c_gr = Computational_grid(intfc);
 	    sav_t_gr = topological_grid(intfc);
-	    
-	    //use a large grid, scatter_front will construct a large 
+
+	    //use a large grid, scatter_front will construct a large
 	    //buffer for intfc.
 	    change_buffer_for_intfc(intfc);
-	   
-	    //after changing the grid, do not comm component because component3d 
+
+	    //after changing the grid, do not comm component because component3d
 	    //will be called and make_tri_lists is needed.
 	    //set_default_comp(YES);
 	    start_clock("scatter_front");
 	    status = scatter_front(fr);
 	    stop_clock("scatter_front");
 	    //set_default_comp(NO);
-	    
+
 	    sav_fr_gr = fr->rect_grid;
 	    fr->rect_grid = computational_grid(intfc);
-   
+
 	}
-	
+
 	if (redist_non_vec_cur == YES)
 	{
 	    //printf("#redist curve3d bf\n");
@@ -2305,7 +2321,7 @@ EXPORT boolean surface_redistribute(
 	    //}
 
 	    //DEBUG_TMP printf("#redist surface bf\n");
-	    for (s = fr->interf->surfaces; s && *s ; ++s) 
+	    for (s = fr->interf->surfaces; s && *s ; ++s)
 	    {
 	    	if ((!omit_redistribution(*s)) &&
 	    	    (wave_type(*s) >= FIRST_PHYSICS_WAVE_TYPE) &&
@@ -2336,7 +2352,7 @@ EXPORT boolean surface_redistribute(
 
         boolean status_is_bad_tri;
         status_is_bad_tri = pp_max_status(fr->is_bad_tri);
-	
+
         if(status_is_bad_tri == YES)
             fr->is_bad_tri = YES;
 
@@ -2361,13 +2377,13 @@ EXPORT boolean surface_redistribute(
 	    fr->rect_grid = sav_fr_gr;
 	    Computational_grid(intfc) = sav_c_gr;
 	    topological_grid(intfc) = sav_t_gr;
-	
+
 	    Computational_grid(fr->interf) = sav_c_gr;
 	    topological_grid(fr->interf) = sav_t_gr;
 	}
 	else
 	{
-	    //DEBUG_TMP check_print_intfc("After redistribute_surface", "redist_sf_af", 'g', 
+	    //DEBUG_TMP check_print_intfc("After redistribute_surface", "redist_sf_af", 'g',
 		//DEBUG_TMP	fr->interf, fr->step, -1, NO);
 	    //DEBUG_TMP make_interface_topology_lists(fr->interf);
 	    //DEBUG_TMP check_valid_intfc("after redistribute_surface", fr->interf);
@@ -2376,7 +2392,7 @@ EXPORT boolean surface_redistribute(
 	start_clock("scatter_front");
 	status = scatter_front(fr);
 	stop_clock("scatter_front");
-	
+
 	if (!status)
 	{
 	    set_use_bd_dist(YES);
@@ -2404,7 +2420,7 @@ struct _TRI_SURF {
 	double   sqr_norm, dist, bd_dist;
 	int     side;
 };
-typedef struct _TRI_SURF	TRI_SURF; 
+typedef struct _TRI_SURF	TRI_SURF;
 
 #define Tri_surf(p)			((TRI_SURF *) (p)->pointer)
 #define PQ_for_tri(tri)			((POINTER_Q *) Tri_workspace(tri))
@@ -2486,8 +2502,8 @@ LOCAL POINTER_Q *alloc_and_add_to_queue(
 	{
 	    for(j=0; j<3; j++)
 	        ts->dist += coef[j]*Coords(Point_of_tri(t)[i])[j];
-	    
-	    ts->bd_dist = min3(ts->bd_dist, 
+
+	    ts->bd_dist = min3(ts->bd_dist,
 			    fabs(cen[i] - gr->L[i]), fabs(cen[i] - gr->U[i]));
 	}
 
@@ -2572,13 +2588,13 @@ LOCAL  void  tri_queue_test(
 	double		tst_pt[3] = {  0.0,     0.8985,                 1.47066};
 	double		tst_pt1[3] = { 1.0,     0.8985,                 1.47066};
 	double		tol = 1.0/40.0;
- 
-	if (p_q == NULL) 
+
+	if (p_q == NULL)
 	{
 	    (void) printf("tri_queue_test NULL POINTER_Q %s\n", msg);
 	    return;
         }
-	
+
 	k = 0;
 	q = head_of_pointer_queue(p_q);
 	while (q != tail_of_pointer_queue(p_q))
@@ -2589,14 +2605,14 @@ LOCAL  void  tri_queue_test(
 	    for (i = 0; i < 3; i++)
 	    {
 		p = Point_of_tri(tri)[i];
-		
-		if(distance_between_positions(Coords(Point_of_tri(tri)[i]), tst_pt, 3)<tol  || 
+
+		if(distance_between_positions(Coords(Point_of_tri(tri)[i]), tst_pt, 3)<tol  ||
 		   distance_between_positions(Coords(Point_of_tri(tri)[i]), tst_pt1, 3)<tol )
 		{
 		    printf("#de tri sort  k = %d\n", k);
 		    printf("sqr_norm = %24.15e, dist = %24.15e\n", t_surf->sqr_norm, t_surf->dist);
 		    print_tri(tri, t_surf->surf->interface);
-		    
+
 		    break;
 		}
 	    }
@@ -2644,7 +2660,7 @@ LOCAL  boolean redistribute_surface_init(
 	intfc = s->interface;
 	dim = intfc->dim;
 	gr = fr->rect_grid;
-	
+
 	//set the tolerance for tri_status
 	wc = wave_type(s)< FIRST_VECTOR_PHYSICS_WAVE_TYPE ?
 				GENERAL_WAVE : VECTOR_WAVE;
@@ -2653,7 +2669,7 @@ LOCAL  boolean redistribute_surface_init(
 	max_sqr_length = Max_scaled_tri_side_sqr_length(fr);
 	aspect_tol2 = sqr(Aspect_ratio_tolerance(fr,wc));
 	min_sqr_norm = Min_sqr_norm(gr);
-	    
+
 	status = YES;
 	insert_queue = delete_queue = NULL;
 	nt = nf = nl = ns = 0;
@@ -2664,13 +2680,13 @@ LOCAL  boolean redistribute_surface_init(
 
 	    double  *p0 = Coords(Point_of_tri(tri)[0]);
 	    double  *p1 = Coords(Point_of_tri(tri)[1]);
-	    double  *p2 = Coords(Point_of_tri(tri)[2]);	
+	    double  *p2 = Coords(Point_of_tri(tri)[2]);
 
 	    nt++;
 	    switch (tri_status(tri,gr))
 	    {
 	    case BAD_ANGLE:
-		//printf("\nBAD ANGLE tri index = %d\n", nt-1);	
+		//printf("\nBAD ANGLE tri index = %d\n", nt-1);
 		//printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		//printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		//printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2679,7 +2695,7 @@ LOCAL  boolean redistribute_surface_init(
 		++nf;
 		break;
 	    case LARGE:
-		//printf("\nLARGE TRIANGLE tri index = %d\n", nt-1);	
+		//printf("\nLARGE TRIANGLE tri index = %d\n", nt-1);
 		//printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		//printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		//printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2689,7 +2705,7 @@ LOCAL  boolean redistribute_surface_init(
 		break;
                 /*
 	    case SMALL:
-		//printf("\nSMALL TRIANGLE tri index = %d\n", nt-1);	
+		//printf("\nSMALL TRIANGLE tri index = %d\n", nt-1);
 		//printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		//printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		//printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2704,7 +2720,8 @@ LOCAL  boolean redistribute_surface_init(
 		break;
 	    }
 	}
-        //printf("\nNumber of large tris in redistribution : %d %d %d %d\n", nt,nf,nl,ns);
+    //debugdan    FIXME
+    printf("Number of tris and bad tris in redistribute_surface_init : %d %d %d %d\n", nt,nf,nl,ns);
 
 	if(insert_queue==NULL && delete_queue==NULL)
 	{
@@ -2741,14 +2758,14 @@ LOCAL  boolean redistribute_surface_init(
 	{
 	    insert_queue = head_of_pointer_queue(insert_queue);
 	    tri = Tri_of_q(insert_queue);
-	    
+
 	    nside = find_scaled_extrem_edge(tri,gr,LONGEST);
 	    insert_queue = dequeue(tri,insert_queue);
-	    
+
 	    //if (is_side_bdry(tri,nside))
 		//continue;
-	    
-	    oppt = Tri_on_side(tri,nside);	    
+
+	    oppt = Tri_on_side(tri,nside);
 	    if(is_tri_in_queue(oppt,insert_queue))
 		insert_queue = dequeue(oppt,insert_queue);
 	    if(is_tri_in_queue(oppt,delete_queue))
@@ -2756,13 +2773,18 @@ LOCAL  boolean redistribute_surface_init(
 
 	    //if(skip_bdry_tri(oppt) || skip_bdry_tri(tri))
 		//continue;
-            
+
 	    // find and make tri side mid point
 	    for(i = 0; i < dim; ++i)
 		coords[i] = 0.5*(Coords(Point_of_tri(tri)[nside])[i] +
 		                 Coords(Point_of_tri(tri)[Next_m3(nside)])[i]);
 	    midp = Point(coords);
             //printf("\nNumber of large tris in redistribution count : %e coords %e %e %e\n", count,Coords(Point_of_tri(tri)[nside])[0],Coords(Point_of_tri(tri)[nside])[1],Coords(Point_of_tri(tri)[nside])[2]);
+
+        //debugdan    FIXME
+        if (fr->step == 9 && coords[0] > 0 && coords[1] > 0 && coords[1] < 0.1)
+            printf("Break here.\n");
+        //debugdan    FIXME
 
 	    if (!insert_point_in_tri_side(midp,nside,tri,s))
 	    {
@@ -2780,13 +2802,13 @@ LOCAL  boolean redistribute_surface_init(
 
 	    double  *p0 = Coords(Point_of_tri(tri)[0]);
 	    double  *p1 = Coords(Point_of_tri(tri)[1]);
-	    double  *p2 = Coords(Point_of_tri(tri)[2]);	
+	    double  *p2 = Coords(Point_of_tri(tri)[2]);
 
 	    nt++;
 	    switch (tri_status(tri,gr))
 	    {
 	    case LARGE:
-		//printf("\nLARGE TRIANGLE tri index = %d\n", nt-1);	
+		//printf("\nLARGE TRIANGLE tri index = %d\n", nt-1);
 		//printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		//printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		//printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2800,10 +2822,10 @@ LOCAL  boolean redistribute_surface_init(
 		break;
 	    }
 	}
-	
+
         printf("\nafter Number of large tris in redistribution : %d %d %d %d\n", nt,nf,nl,ns);
         */
-	    
+
 	if(use_bd_dist)
 	    sort_pointer_queue(delete_queue,intfc,BD_DIST);
 	else
@@ -2821,7 +2843,7 @@ LOCAL  boolean redistribute_surface_init(
 	    tri = Tri_of_q(delete_queue);
 
 	    nside = find_scaled_extrem_edge(tri,gr,SHORTEST);
-		
+
 	    delete_queue = dequeue(tri, delete_queue);
 
 	    if(!delete_min_side_of_tri(tri,nside,s,&delete_queue,fr))
@@ -2930,7 +2952,7 @@ LOCAL  boolean redistribute_surface_temp(
 	max_sqr_length = Max_scaled_tri_side_sqr_length(fr);
 	aspect_tol2 = sqr(Aspect_ratio_tolerance(fr,wc));
 	min_sqr_norm = Min_sqr_norm(gr);
-	    
+
 	status = YES;
 	insert_queue = delete_queue = NULL;
 	nt = nf = nl = ns = 0;
@@ -2941,15 +2963,15 @@ LOCAL  boolean redistribute_surface_temp(
 
 	    double  *p0 = Coords(Point_of_tri(tri)[0]);
 	    double  *p1 = Coords(Point_of_tri(tri)[1]);
-	    double  *p2 = Coords(Point_of_tri(tri)[2]);	
+	    double  *p2 = Coords(Point_of_tri(tri)[2]);
 
 	    nt++;
 	    switch (tri_status(tri,gr))
 	    {
-		
+
 		/*
 	    case BAD_ANGLE:
-		printf("\nBAD ANGLE tri index = %d\n", nt-1);	
+		printf("\nBAD ANGLE tri index = %d\n", nt-1);
 		printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2958,7 +2980,7 @@ LOCAL  boolean redistribute_surface_temp(
 		++nf;
 		break;
 	    case LARGE:
-		printf("\nLARGE TRIANGLE tri index = %d\n", nt-1);	
+		printf("\nLARGE TRIANGLE tri index = %d\n", nt-1);
 		printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2966,11 +2988,11 @@ LOCAL  boolean redistribute_surface_temp(
 		insert_queue = alloc_and_add_to_queue(tri,s,insert_queue,nside,gr);
                 fr->is_bad_tri = YES;
 		break;
-	
+
 		*/
 	    case SMALL:
 		/*
-		printf("\nSMALL TRIANGLE tri index = %d\n", nt-1);	
+		printf("\nSMALL TRIANGLE tri index = %d\n", nt-1);
 		printf(" Point 1: (%10.8g, %10.8g, %10.8g)\n", p0[0], p0[1], p0[2]);
 		printf(" Point 2: (%10.8g, %10.8g, %10.8g)\n", p1[0], p1[1], p1[2]);
 		printf(" Point 3: (%10.8g, %10.8g, %10.8g)\n", p2[0], p2[1], p2[2]);
@@ -2997,6 +3019,55 @@ LOCAL  boolean redistribute_surface_temp(
 	    }
 	}
         printf("\nNumber of small tris in redistribution_temp: %d %d %d %d\n", nt,nf,nl,ns);
+
+    //debugdan    FIXME
+/*
+    if (ns == 238 || ns == 244)
+    {
+        reset_intfc_num_points(fr->interf);
+        vtk_interface_plot("testdan",fr->interf,NO,0,0,'r');
+        int debugns, debugnt;
+        double minc[3], maxc[3];
+        debugns = 0;
+        debugnt = 0;
+        for (tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
+        {
+            debugnt++;
+
+            double  *p0 = Coords(Point_of_tri(tri)[0]);
+            double  *p1 = Coords(Point_of_tri(tri)[1]);
+            double  *p2 = Coords(Point_of_tri(tri)[2]);
+
+            for (i = 0; i < 3; i++)
+            {
+                minc[i] = (p0[i] < p1[i]) ? p0[i] : p1[i];
+                minc[i] = (minc[i] < p2[i]) ? minc[i] : p2[i];
+                maxc[i] = (p0[i] > p1[i]) ? p0[i] : p1[i];
+                maxc[i] = (maxc[i] > p2[i]) ? maxc[i] : p2[i];
+            }
+
+            switch (tri_status(tri,gr))
+            {
+                case SMALL:
+                    if (minc[0] > -1e-12 && maxc[0] < 0.15+1e-12 &&
+                        minc[1] > -1e-12 && maxc[1] < 0.2+1e-12 &&
+                        minc[2] > 6.6)
+                    {
+                        printf("\nSMALL TRIANGLE tri index = %d\n", debugnt-1);
+                        printf(" Point 1: (%lf, %lf, %lf)\n", p0[0], p0[1], p0[2]);
+                        printf(" Point 2: (%lf, %lf, %lf)\n", p1[0], p1[1], p1[2]);
+                        printf(" Point 3: (%lf, %lf, %lf)\n", p2[0], p2[1], p2[2]);
+                    }
+                    debugns++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        //exit(-1);
+    }
+*/
+    //debugdan    FIXME
 
 	if(insert_queue==NULL && delete_queue==NULL)
 	{
@@ -3033,14 +3104,14 @@ LOCAL  boolean redistribute_surface_temp(
 	{
 	    insert_queue = head_of_pointer_queue(insert_queue);
 	    tri = Tri_of_q(insert_queue);
-	    
+
 	    nside = find_scaled_extrem_edge(tri,gr,LONGEST);
 	    insert_queue = dequeue(tri,insert_queue);
-	    
+
 	    //if (is_side_bdry(tri,nside))
 		//continue;
-	    
-	    oppt = Tri_on_side(tri,nside);	    
+
+	    oppt = Tri_on_side(tri,nside);
 	    if(is_tri_in_queue(oppt,insert_queue))
 		insert_queue = dequeue(oppt,insert_queue);
 	    if(is_tri_in_queue(oppt,delete_queue))
@@ -3048,7 +3119,7 @@ LOCAL  boolean redistribute_surface_temp(
 
 	    //if(skip_bdry_tri(oppt) || skip_bdry_tri(tri))
 		//continue;
-            
+
 	    // find and make tri side mid point
 	    for(i = 0; i < dim; ++i)
 		coords[i] = 0.5*(Coords(Point_of_tri(tri)[nside])[i] +
@@ -3062,7 +3133,7 @@ LOCAL  boolean redistribute_surface_temp(
 		status = NO;
 	    }
 	}
-	    
+
 	if(use_bd_dist)
 	    sort_pointer_queue(delete_queue,intfc,BD_DIST);
 	else
@@ -3079,8 +3150,27 @@ LOCAL  boolean redistribute_surface_temp(
 	    tri = Tri_of_q(delete_queue);
 
 	    nside = find_scaled_extrem_edge(tri,gr,SHORTEST);
-		
+
 	    delete_queue = dequeue(tri, delete_queue);
+
+        //debugdan    FIXME
+/*
+        double *p0 = Coords(Point_of_tri(tri)[0]);
+        double *p1 = Coords(Point_of_tri(tri)[1]);
+        double *p2 = Coords(Point_of_tri(tri)[2]);
+        double tol = 0.01;
+        if (fabs(p0[0]-0.055) < tol && fabs(p0[1]-0.175) < tol && fabs(p0[2]-6.697) < tol &&
+            fabs(p1[0]-0.054) < tol && fabs(p1[1]-0.200) < tol && fabs(p1[2]-6.691) < tol &&
+            fabs(p2[0]-0.000) < tol && fabs(p2[1]-0.200) < tol && fabs(p2[2]-6.731) < tol)
+        {
+            printf("Break here.\n");
+            int x = 0;
+            x++;
+            x--;
+            //can't break here?
+        }
+*/
+        //debugdan    FIXME
 
 	    if(!delete_min_side_of_tri(tri,nside,s,&delete_queue,fr))
 	    {
@@ -3092,6 +3182,56 @@ LOCAL  boolean redistribute_surface_temp(
 	}
 
 
+    //debugdan    FIXME
+/*
+    if (ns == 238 || ns == 244)
+    {
+        reset_intfc_num_points(fr->interf);
+        vtk_interface_plot("testdan",fr->interf,NO,0,1,'r');
+        int debugns, debugnt;
+        double minc[3], maxc[3];
+        debugns = 0;
+        debugnt = 0;
+        printf("\nAfter delete_queue:\n");
+        for (tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
+        {
+            debugnt++;
+
+            double  *p0 = Coords(Point_of_tri(tri)[0]);
+            double  *p1 = Coords(Point_of_tri(tri)[1]);
+            double  *p2 = Coords(Point_of_tri(tri)[2]);
+
+            for (i = 0; i < 3; i++)
+            {
+                minc[i] = (p0[i] < p1[i]) ? p0[i] : p1[i];
+                minc[i] = (minc[i] < p2[i]) ? minc[i] : p2[i];
+                maxc[i] = (p0[i] > p1[i]) ? p0[i] : p1[i];
+                maxc[i] = (maxc[i] > p2[i]) ? maxc[i] : p2[i];
+            }
+
+            switch (tri_status(tri,gr))
+            {
+                case SMALL:
+                    if (minc[0] > -1e-12 && maxc[0] < 0.15+1e-12 &&
+                        minc[1] > -1e-12 && maxc[1] < 0.2+1e-12 &&
+                        minc[2] > 6.6)
+                    {
+                        printf("\nSMALL TRIANGLE tri index = %d\n", debugnt-1);
+                        printf(" Point 1: (%lf, %lf, %lf)\n", p0[0], p0[1], p0[2]);
+                        printf(" Point 2: (%lf, %lf, %lf)\n", p1[0], p1[1], p1[2]);
+                        printf(" Point 3: (%lf, %lf, %lf)\n", p2[0], p2[1], p2[2]);
+                    }
+                    debugns++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        printf("ns = %d.\n", debugns);
+        exit(-1);
+    }
+*/
+    //debugdan    FIXME
 
 
         if(debugging("prt_small_tri_que") && (pp_mynode() == 950 || pp_mynode() == 951) )
@@ -3149,7 +3289,7 @@ LOCAL  boolean redistribute_surface(
 	intfc = s->interface;
 	dim = intfc->dim;
 	gr = fr->rect_grid;
-	
+
 	//set the tolerance for tri_status
 	wc = wave_type(s)< FIRST_VECTOR_PHYSICS_WAVE_TYPE ?
 				GENERAL_WAVE : VECTOR_WAVE;
@@ -3158,7 +3298,7 @@ LOCAL  boolean redistribute_surface(
 	max_sqr_length = Max_scaled_tri_side_sqr_length(fr);
 	aspect_tol2 = sqr(Aspect_ratio_tolerance(fr,wc));
 	min_sqr_norm = Min_sqr_norm(gr);
-	    
+
 	status = YES;
 	insert_queue = delete_queue = NULL;
 	nt = nf = nl = ns = 0;
@@ -3229,14 +3369,14 @@ LOCAL  boolean redistribute_surface(
 	{
 	    insert_queue = head_of_pointer_queue(insert_queue);
 	    tri = Tri_of_q(insert_queue);
-	    
+
 	    nside = find_scaled_extrem_edge(tri,gr,LONGEST);
 	    insert_queue = dequeue(tri,insert_queue);
-	    
+
 	    //if (is_side_bdry(tri,nside))
 		//continue;
-	    
-	    oppt = Tri_on_side(tri,nside);	    
+
+	    oppt = Tri_on_side(tri,nside);
 	    if(is_tri_in_queue(oppt,insert_queue))
 		insert_queue = dequeue(oppt,insert_queue);
 	    if(is_tri_in_queue(oppt,delete_queue))
@@ -3244,8 +3384,12 @@ LOCAL  boolean redistribute_surface(
 
 	    //if(skip_bdry_tri(oppt) || skip_bdry_tri(tri))
 		//continue;
-            
+
 	    // find and make tri side mid point
+        //debugdan    FIXME
+        //printf("debugdan: ");
+        //print_tri(tri,intfc);
+        //debugdan    FIXME
 	    for(i = 0; i < dim; ++i)
 		coords[i] = 0.5*(Coords(Point_of_tri(tri)[nside])[i] +
 		                 Coords(Point_of_tri(tri)[Next_m3(nside)])[i]);
@@ -3258,7 +3402,7 @@ LOCAL  boolean redistribute_surface(
 		status = NO;
 	    }
 	}
-	    
+
 	if(use_bd_dist)
 	    sort_pointer_queue(delete_queue,intfc,BD_DIST);
 	else
@@ -3276,7 +3420,7 @@ LOCAL  boolean redistribute_surface(
 	    tri = Tri_of_q(delete_queue);
 
 	    nside = find_scaled_extrem_edge(tri,gr,SHORTEST);
-		
+
 	    delete_queue = dequeue(tri, delete_queue);
 
 	    if(!delete_min_side_of_tri(tri,nside,s,&delete_queue,fr))
@@ -3288,7 +3432,7 @@ LOCAL  boolean redistribute_surface(
 
 	}
 
-	
+
 	DEBUG_LEAVE(redistribute_surface)
 	return status;
 }		/*end redistribute_surface*/
@@ -3369,7 +3513,7 @@ EXPORT	TRI_STATUS tri_status(
         h1 = h_min;
         h2 = h_min;
 
-	sqr_area = 0.25*Dot3d(nor,nor); 
+	sqr_area = 0.25*Dot3d(nor,nor);
 
 
         if (use_bd_dist_smooth == YES)
@@ -3466,7 +3610,7 @@ EXPORT	int	remove_tris_and_seal(
 	int	i, num_out_tris, num_new_tris;
 
 	DEBUG_ENTER(remove_tris_and_seal);
-	
+
 	num_out_tris = bound_tris_set(out_tris, tris, nt);
 
         if (num_out_tris >= 500) {
@@ -3477,7 +3621,7 @@ EXPORT	int	remove_tris_and_seal(
 	//tris are already dequeue in delete_min_side_of_tri
 	for(i=0; i<nt; i++)
 	    remove_tri_from_surface(tris[i], s, NO);
-	    
+
 	if(num_out_tris == 0)
 	{
 	    DEBUG_LEAVE(remove_tris_and_seal);
@@ -3485,20 +3629,20 @@ EXPORT	int	remove_tris_and_seal(
 	}
 
 	sep_common_point_from_loop(out_tris, num_out_tris, NULL, NULL, intfc);
-	
+
 	//new null side tris can be added into out_tris
-	num_out_tris = sep_common_edge_from_tris(&new_out_tris, 
+	num_out_tris = sep_common_edge_from_tris(&new_out_tris,
 				out_tris, num_out_tris, intfc);
 
-	//since a smooth_null_loop is applied above, the positions of 
-	//3 vertics of a tri is changed, all the bound tris should be 
+	//since a smooth_null_loop is applied above, the positions of
+	//3 vertics of a tri is changed, all the bound tris should be
 	//removed from the que.
-	
+
 	for(i=0; i<num_out_tris; i++)
 	    *pq = dequeue(new_out_tris[i], *pq);
 
 	num_new_tris = 0;
-	nt = seal_all_loops_wo_constraint(new_tris, &num_new_tris, 
+	nt = seal_all_loops_wo_constraint(new_tris, &num_new_tris,
 			new_out_tris, num_out_tris, 0, NO);
 
 
@@ -3563,7 +3707,7 @@ LOCAL boolean delete_min_side_of_tri(
 	p[3] = Point_of_tri(nbtri)[Prev_m3(nside)];
 
 
-        if(debugging("prt_small_tri_que") && (pp_mynode() == 950 || pp_mynode() == 951) ) { 
+        if(debugging("prt_small_tri_que") && (pp_mynode() == 950 || pp_mynode() == 951) ) {
 	    for (i = 0; i < 4; ++i)
             {
                 (void) printf("p%d: ",i);
@@ -3601,7 +3745,7 @@ LOCAL boolean delete_min_side_of_tri(
 		t = tris[k][i];
 		j = Vertex_of_point(t, p[k]);
 		pt = Point_of_tri(t)[Prev_m3(j)];
-		
+
 		for(j=0; j<4; j++)
 		    if(pt == p[j])
 			break;
@@ -3620,11 +3764,13 @@ LOCAL boolean delete_min_side_of_tri(
 	}
 
 	//skip the bdry case.
-	if(Boundary_point(p[2]) || Boundary_point(p[3]))
+/*
+    if(Boundary_point(p[2]) || Boundary_point(p[3]))
 	{
 	    DEBUG_LEAVE(delete_min_side_of_tri)
 	    return YES;
 	}
+*/    //Dan    FIXME
 	for(i=0; i<np[0]; i++)
 	    if(Boundary_point(plist[0][i]))
 	    {
@@ -3657,7 +3803,7 @@ LOCAL boolean delete_min_side_of_tri(
 	//printf("#shape np %3d  %3d %3d\n", rm_flag, np[0], np[1]);
 	if(rm_flag)
 	{
-	    //make sure, after removing, no boundary point appears in the 
+	    //make sure, after removing, no boundary point appears in the
 	    //null loop
 	    //DEBUG_TMP printf("#shape np %3d  %3d %3d\n", rm_flag, np[0], np[1]);
 
@@ -3670,14 +3816,14 @@ LOCAL boolean delete_min_side_of_tri(
                 clean_up(ERROR);
             }
 
-	    //DEBUG_TMP printf("#delete_min,  duplicate point, nt = %d\n", nt);	
+	    //DEBUG_TMP printf("#delete_min,  duplicate point, nt = %d\n", nt);
 
 	    if(debugging("delete_dup"))
 	    {
 		sprintf(fname,"dup_min%d_%d.plt",pp_mynode(),cnt);
 		cnt++;
 		printf("debug file %s\n", fname);
-		
+
 		file = fopen(fname,"w");
 		tecplot_show_tris("in_tris", in_tris, nt, file);
 		fclose(file);
@@ -3701,7 +3847,7 @@ LOCAL boolean delete_min_side_of_tri(
 	//collapse two tris.
 	pmid = average_points(YES,p[0],Hyper_surf_element(tri),Hyper_surf(s),
 				  p[1],Hyper_surf_element(tri),Hyper_surf(s));
-	
+
 	//change the point for the surrounding tris.
 	for (i = 0; i < 2; ++i)
 	{
@@ -3751,10 +3897,10 @@ LOCAL boolean delete_min_side_of_tri(
 *	Returns 2*(1 + cos(theta)) where theta is the maximum internal
 *	vertex of the triangle when mapped into the scaled metric space
 *	x[i] -> x[i]/h[i].
-*	
+*
 *	Note the formulas are based on the law of cosines which states
 *	that
-*	
+*
 *	sqr(si) + sqr(sj) - sqr(sk) = 2*si*sj*cos(theta_k)
 *
 *	where si, sj, and sk are the lengths of the three sides of the
@@ -3916,7 +4062,7 @@ LOCAL boolean flip_max_side_of_tri(
 	        return NO;
 	    }
 	}
-	
+
 	if(skip_bdry_tri(tri) || skip_bdry_tri(otri))
 	{
 	    *pq = dequeue(tri,*pq);
@@ -4028,7 +4174,7 @@ LOCAL boolean is_critical_side(
 		if (Tri_on_side(nbp,i) == nbn) return YES;
 	}
 
-	
+
 	return NO;
 }	/* end is_critical_side */
 
@@ -4064,35 +4210,35 @@ LOCAL boolean check_and_rm_tetrahedron(
 	int	nside;
 
 	nbtri = Tri_on_side(tri,side);
-	
+
 	if (is_side_bdry(tri,Prev_m3(side)) ||
 	    is_side_bdry(tri,Next_m3(side)))
 	    return NO;
-	    
+
 	nbp = Tri_on_side(tri,Prev_m3(side));
 	nbn = Tri_on_side(tri,Next_m3(side));
 	p = Point_of_tri(tri)[Prev_m3(side)];
 
-	nside = Vertex_of_point(nbp, p); 
+	nside = Vertex_of_point(nbp, p);
 	if(is_side_bdry(nbp,nside) || Tri_on_side(nbp,nside) != nbn)
 	    return NO;
-	
+
 	nside = Next_m3(nside);
 	if(is_side_bdry(nbp,nside) || Tri_on_side(nbp,nside) != nbtri)
 	    return NO;
-	
+
 	for (nside = 0; nside < 3; ++nside)
 	    if (Tri_on_side(nbtri,nside) == tri) break;
-	
+
 	nside = Prev_m3(nside);
 	if(is_side_bdry(nbtri,nside) || Tri_on_side(nbtri,nside) != nbn)
 	    return NO;
 
 	printf("#check_and_rm_tetrahedron, removing tetrahedron.\n");
-	
+
 	if(pq == NULL)
 	    return YES;
-	
+
 	*pq = dequeue(tri,*pq);
 	*pq = dequeue(nbtri,*pq);
 	*pq = dequeue(nbp,*pq);
@@ -4102,7 +4248,7 @@ LOCAL boolean check_and_rm_tetrahedron(
 	remove_tri_from_surface(nbtri, s, YES);
 	remove_tri_from_surface(nbp, s, YES);
 	remove_tri_from_surface(nbn, s, YES);
-	
+
 	return YES;
 }
 
@@ -4133,7 +4279,7 @@ boolean	compare_pointers(
 	ave_norm = (norm1 + norm2)*0.5;
 
 	//two tris have very similar area, compare the postions.
-	if( fabs(norm1 - norm2) < ave_norm*tol ) 
+	if( fabs(norm1 - norm2) < ave_norm*tol )
 	    return   Tri_surf(pq1)->dist > Tri_surf(pq2)->dist;
 	else
 	    return   norm1 > norm2;
@@ -4151,7 +4297,7 @@ boolean	compare_bd_dist(
 	ave_dist = (dist1 + dist2)*0.5;
 
 	//two tris have very similar area, compare the postions.
-	if( fabs(dist1 - dist2) < ave_dist*tol ) 
+	if( fabs(dist1 - dist2) < ave_dist*tol )
 	    return   Tri_surf(pq1)->dist > Tri_surf(pq2)->dist;
 	else
 	    return   dist1 > dist2;
@@ -4164,7 +4310,7 @@ LOCAL void sort_pointer_queue(
 	SPQ_FLAG	flag)
 {
 	POINTER_Q	*pq1,*pq2;
-	
+
 	if (pq == NULL)
 	    return;
 
@@ -4176,7 +4322,7 @@ LOCAL void sort_pointer_queue(
 	    {
 		if (compare_pointers(pq1, pq2))
 	    	    exchange_queues(pq1,pq2);
-	        
+
 		while (pq2 != tail_of_pointer_queue(pq))
 	        {
 	    	    pq2 = pq2->next;
@@ -4190,7 +4336,7 @@ LOCAL void sort_pointer_queue(
 	    {
 		if (!compare_pointers(pq1, pq2))
 	    	    exchange_queues(pq1,pq2);
-	        
+
 		while (pq2 != tail_of_pointer_queue(pq))
 	        {
 	    	    pq2 = pq2->next;
@@ -4204,7 +4350,7 @@ LOCAL void sort_pointer_queue(
 	    {
 		if (compare_bd_dist(pq1, pq2))
 	    	    exchange_queues(pq1,pq2);
-	        
+
 		while (pq2 != tail_of_pointer_queue(pq))
 	        {
 	    	    pq2 = pq2->next;
@@ -4236,14 +4382,14 @@ LOCAL void redistribute_curve3d(
 	    max_b_length = Max_bond_len(fr,GENERAL_WAVE);
 	    min_b_length = Min_bond_len(fr,GENERAL_WAVE);
 	}
-       
+
 	if (debugging("b_length"))
 	{
 	    (void) printf("max_b_length = %g, min_b_length = %g\n",
 	                  max_b_length,min_b_length);
 	    detail_of_curve(c);
 	}
-	
+
 	for (b = c->first; b != NULL; b = b->next)
 	{
 	    if (b->length >= max_b_length)
@@ -4324,8 +4470,8 @@ LOCAL 	void	print_tri_surf_queue(
 	TRI_SURF 	*t_surf;
 	TRI 		*tri;
 	int		cnt = 0;
-  
-	if (p_q == NULL) 
+
+	if (p_q == NULL)
 	{
 	    (void) printf("NULL POINTER_Q\n");
 	    return;
@@ -4364,7 +4510,7 @@ EXPORT	boolean	point_outside_open_bdry(
 	zero_scalar(nor, 3*FLOAT);
 	for(i=0; i<3; i++)
 	{
-	    if(rect_boundary_type(intfc,i,0) == OPEN_BOUNDARY && 
+	    if(rect_boundary_type(intfc,i,0) == OPEN_BOUNDARY &&
 	       Coords(p)[i] < gr->VL[i] + gr->h[i])
 	    {
 		*k = i;
@@ -4372,7 +4518,7 @@ EXPORT	boolean	point_outside_open_bdry(
 		nor[3] = (gr->VL[i] - Coords(p)[i])/gr->h[i];
 		return YES;
 	    }
-	    if(rect_boundary_type(intfc,i,1) == OPEN_BOUNDARY && 
+	    if(rect_boundary_type(intfc,i,1) == OPEN_BOUNDARY &&
 	       Coords(p)[i] > gr->VU[i] - gr->h[i])
 	    {
 		*k = i;
@@ -4419,4 +4565,124 @@ EXPORT  void    tecplot_interface_in_ball(
 	}
 
 }	/* end tecplot_interface */
+
+// TODO ** FIXME:
+EXPORT  void    loopingTris(
+        INTERFACE *intfc,
+        RECT_GRID *gr
+        )
+{
+    SURFACE **s;
+    for(s=intfc->surfaces; s && *s; s++)
+        loop_Over_Tris(intfc, gr, *s);
+}
+EXPORT  void    loop_Over_Tris(
+        INTERFACE *intfc,
+        RECT_GRID *gr,
+        SURFACE *s
+        )
+{
+    POINTER_Q *insert_queue, *delete_queue;
+    TRI	  *tri, *oppt;
+    POINT	  *midp;
+    int nside, i, dim = intfc->dim;
+    double coords[3];
+	set_pointer_queue_opts(PQ_BLOCK_SIZE,Num_pqs_in_block,PQ_ALLOC_TYPE,
+		               "vmalloc",PQ_ALLOC_SIZE_FOR_POINTERS,
+			       sizeof(TRI_SURF),0);
+
+    //INNER LOOP START
+    insert_queue = delete_queue = NULL;
+    for (tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
+    {
+        insert_queue = alloc_and_add_to_queue(tri,s,insert_queue,nside,gr);
+        //front->is_bad_tri = YES; // TODO ** FIXME: is it useful by any means here?
+    }
+    //INNER LOOP END
+
+    printf("use_bd_dist = %d for initial interface (revamped)\n", use_bd_dist);
+    if(use_bd_dist)
+        sort_pointer_queue(insert_queue,intfc,BD_DIST); // BD_DIST = 2
+    else
+        sort_pointer_queue(insert_queue,intfc,LONGEST);//LONGEST = 1
+
+    while (insert_queue)
+    {
+        insert_queue = head_of_pointer_queue(insert_queue);
+        tri = Tri_of_q(insert_queue);
+
+        nside = find_scaled_extrem_edge(tri,gr,LONGEST);
+	    insert_queue = dequeue(tri,insert_queue);
+
+        //if (is_side_bdry(tri,nside))
+        //continue;
+            //print_tri("this is tri", tri);
+        oppt = Tri_on_side(tri,nside);
+        //print_tri("opposite tri is ",oppt); // TODO ** FIXME, HAO
+        if(is_tri_in_queue(oppt,insert_queue))
+        insert_queue = dequeue(oppt,insert_queue);
+        if(is_tri_in_queue(oppt,delete_queue))
+        delete_queue = dequeue(oppt,delete_queue);
+
+        //if(skip_bdry_tri(oppt) || skip_bdry_tri(tri))
+        //continue;
+
+        // find and make tri side mid point
+        for(i = 0; i < dim; ++i)
+        coords[i] = 0.5*(Coords(Point_of_tri(tri)[nside])[i] +
+                         Coords(Point_of_tri(tri)[Next_m3(nside)])[i]);
+        midp = Point(coords);
+            //printf("\nNumber of large tris in redistribution count : %e coords %e %e %e\n", count,Coords(Point_of_tri(tri)[nside])[0],Coords(Point_of_tri(tri)[nside])[1],Coords(Point_of_tri(tri)[nside])[2]);
+
+        if (!insert_point_in_tri_side(midp,nside,tri,s))
+        {
+        printf("WARNING redistribute_surface, "
+               "insert_point_in_tri_side fails.\n");
+        }
+    }
+}
+
+// TODO ** FIXME:
+EXPORT  void   movingPointMeniscus(
+        INTERFACE *intfc,
+        POINTER func_params
+        )
+{
+    SURFACE **s;
+    for(s=intfc->surfaces; s && *s; s++)
+        move_points_Meniscus(*s,func_params);
+}
+EXPORT  void    move_points_Meniscus(
+        SURFACE *s,
+        POINTER func_params
+        )
+{
+    double coords1[3], coords2[3], coords3[3];
+    TRI *tri;
+    for (tri=first_tri(s); !at_end_of_tri_list(tri,s); tri=tri->next)
+    {
+        //first point of tri
+        coords1[0] = fabs(Coords(Point_of_tri(tri)[0])[0]);
+        coords1[1] = fabs(Coords(Point_of_tri(tri)[0])[1]);
+        coords1[2] = Coords(Point_of_tri(tri)[0])[2];
+        //printf("before coords for first tri: %f %f %f\n", coords1[0], coords1[1], coords1[2]);
+        // update Z coordinate
+        Coords(Point_of_tri(tri)[0])[2] = coords1[2] - level_wave_func_Meniscus(func_params, coords1);
+        //printf("after  coords for first tri: %f %f %f\n", coords1[0], coords1[1], coords1[2] - level_wave_func_Meniscus(func_params,coords1));
+
+        //second point of tri
+        coords2[0] = fabs(Coords(Point_of_tri(tri)[1])[0]);
+        coords2[1] = fabs(Coords(Point_of_tri(tri)[1])[1]);
+        coords2[2] = Coords(Point_of_tri(tri)[1])[2];
+        // update Z coordinate
+        Coords(Point_of_tri(tri)[1])[2] = coords2[2] - level_wave_func_Meniscus(func_params, coords2);
+
+        //third point of tri
+        coords3[0] = fabs(Coords(Point_of_tri(tri)[2])[0]);
+        coords3[1] = fabs(Coords(Point_of_tri(tri)[2])[1]);
+        coords3[2] = Coords(Point_of_tri(tri)[2])[2];
+        // update Z coordinate
+        Coords(Point_of_tri(tri)[2])[2] = coords3[2] - level_wave_func_Meniscus(func_params, coords3);
+    }
+}
 

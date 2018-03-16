@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -37,13 +37,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <intfc/iloc.h>
 
 LOCAL 	void 	data_of_point(POINT*,int);
-	
+
 EXPORT 	int 	index_of_pointer(
 	POINTER	*array,
 	POINTER p)
 {
   	int i=0;
-	while (*array != p) 
+	while (*array != p)
 	{
 	    ++array;
 	    ++i;
@@ -55,7 +55,7 @@ EXPORT 	int 	index_of_pointer(
 *			points_on_surface():
 *
 *	Counts number of unique points on surface.
-*/	
+*/
 
 EXPORT  int 	points_on_surface(
 	SURFACE 	*s)
@@ -128,7 +128,7 @@ EXPORT 	void 	points_of_interface(
 }		/*end points_of_interface*/
 
 LOCAL 	void 	data_of_point(
-	POINT	 		*p,	
+	POINT	 		*p,
 	int			i)
 {
 	(void) printf("%6d %llu %3d %g %g %g %5d %5s    \n",
@@ -149,23 +149,23 @@ EXPORT 	void 	find_blk_tri(
         {
 	    ind = blk_tri->is[j];
 	    s = blk_tri->surfs[ind];
-    
-	    for (i = 0, tri = blk_tri->first[ind]; 
+
+	    for (i = 0, tri = blk_tri->first[ind];
 	         i < blk_tri->num_tris[ind];
 	         ++i, tri = tri->next)
 	    {
 	        if(!the_tri(tri))
 		    continue;
-	        
-		printf("\n#blk_tri surface %d  %p   %d %d\n",j, s, 
+
+		printf("\n#blk_tri surface %d  %p   %d %d\n",j, s,
 	            negative_component(s), positive_component(s));
 		(void) printf("find_blk_tri  blk_tri = %p\n",blk_tri);
 	        (void) printf("num_surfs = %d  num_tris = %p  num_null_sides = %p  "
 		      "first = %p\n",
-		      blk_tri->blk_info->num_surfs,blk_tri->num_tris, 
+		      blk_tri->blk_info->num_surfs,blk_tri->num_tris,
 		      blk_tri->num_null_sides,blk_tri->first);
 	        (void) printf("\n");
-	
+
 	        (void) printf("i = %3d\n",i);
 	        print_tri(tri,s->interface);
 	    }
@@ -183,18 +183,18 @@ EXPORT 	void 	print_blk_tri(
   	(void) printf("print_blk_tri()  blk_tri = %p\n",blk_tri);
 	(void) printf("num_surfs = %d  num_tris = %p  num_null_sides = %p  "
 		      "first = %p\n",
-		      blk_tri->blk_info->num_surfs,blk_tri->num_tris, 
+		      blk_tri->blk_info->num_surfs,blk_tri->num_tris,
 		      blk_tri->num_null_sides,blk_tri->first);
 	(void) printf("\n");
-	
+
 	for (j = 0; j < blk_tri->num_surfaces; j++)
         {
 	    ind = blk_tri->is[j];
 	    s = blk_tri->surfs[ind];
-	    printf("\n#blk_tri surface %d  %p   %d %d\n",j, s, 
+	    printf("\n#blk_tri surface %d  %p   %d %d\n",j, s,
 	        negative_component(s), positive_component(s));
-	    
-	    for (i = 0, tri = blk_tri->first[ind]; 
+
+	    for (i = 0, tri = blk_tri->first[ind];
 	         i < blk_tri->num_tris[ind];
 	         ++i, tri = tri->next)
 	    {
@@ -220,8 +220,8 @@ EXPORT boolean the_tri_rot(TRI *tri)
 {
 	boolean	found;
 	int	i,j, k;
-	double	tol = 1.0e-5;	
-	
+	double	tol = 1.0e-5;
+
 	double p[3][3] = {{   -0.02499999999999994,    -0.5196872723365785,     -7.075000000000001 },
 		 	 {   0.009031057621189484,    -0.5528323463283031,     -7.055905773569994  },
 			 {   -0.02906516710305997,    -0.5341372337303483,     -7.056496648997642 } };
@@ -231,7 +231,7 @@ EXPORT boolean the_tri_rot(TRI *tri)
 	for(k=0; k < 3; k++)
 	{
 	    found = YES;
-	    
+
 	    for (i = 0; i < 3; i++)
 	    {
 		for (j = 0; j < 3; j++)
@@ -284,9 +284,18 @@ EXPORT boolean the_tri(TRI *tri)
 	double tol = 1.0e-5;	/* vertices coords must have at least */
 				/* five digits after decimal points */
 
-	double p[3][3] = {{0.50416,0.0,0.0},
-			  {0.49583,0.00416,0.0},
-			  {0.49583,0.0,0.0}};
+//	double p[3][3] = {{0.50416,0.0,0.0},
+//			  {0.49583,0.00416,0.0},
+//			  {0.49583,0.0,0.0}};
+//	double p[3][3] = {{-0.093162,0.008128,9.74036},
+//			  {-0.1,-0.001288,9.730831},
+//			  {-0.089849,0.003082,9.746954}};
+//	double p[3][3] = {{0.1,-0.001288,9.730831},
+//              {0.093162,0.008128,9.74036},
+//			  {0.089849,0.003082,9.746954}};
+	double p[3][3] = {{-0.1,0.008128,9.74036},
+			  {-0.1,-0.001288,9.730831},
+			  {-0.089849,0.003082,9.746954}};
 
 	/*return NO; */
 
@@ -303,8 +312,8 @@ EXPORT boolean the_tri(TRI *tri)
 	return YES;
 }	/* end the_tri */
 
-LOCAL boolean check_pt(double *p1, 
-		    double *p2) 
+LOCAL boolean check_pt(double *p1,
+		    double *p2)
 {
 	int	i;
 	double	tol = 2.0e-3;
@@ -366,9 +375,9 @@ EXPORT	boolean check_tri_and_neighbor(TRI *tri)
 		    	continue;
 		    if (Tri_on_side(nbtri,j) == tri)
 		    {
-		    	if (Point_of_tri(tri)[i] != 
+		    	if (Point_of_tri(tri)[i] !=
 			    Point_of_tri(nbtri)[Next_m3(j)] ||
-		    	    Point_of_tri(tri)[Next_m3(i)] != 
+		    	    Point_of_tri(tri)[Next_m3(i)] !=
 			    Point_of_tri(nbtri)[j])
 			{
 			    printf("Inconsistency on tri side %d: "
@@ -411,7 +420,7 @@ EXPORT boolean the_bond(BOND *b)
 
 	double p[2][3] = {{0.504166666666666652,0,0},	/* Place holder for */
 			 {0.495833333333333348,0,0}};	/* coords of end points */
-	
+
 	for (i = 0; i < 3; i++)
 	{
 	    if (fabs(Coords(b->start)[i] - p[0][i]) > tol)
@@ -430,7 +439,7 @@ EXPORT boolean the_bond(BOND *b)
 *	for selective debugging. The past experience tells us that
 *	it is much easy to debug when a specific point is identified.
 *	The use of this function requires input of the coordinates
-*	for the point. 
+*	for the point.
 *
 */
 LOCAL boolean the_point_one(POINT *pt, double *p)
@@ -439,7 +448,7 @@ LOCAL boolean the_point_one(POINT *pt, double *p)
 	double tol = 0.0001;	/* vertices coords must have at least */
 				/* five digits after decimal points */
 	int dim = current_interface()->dim;
-	
+
 	for (i = 0; i < dim; i++)
 	{
 	    if (fabs(Coords(pt)[i] - p[i]) > tol)
@@ -463,9 +472,9 @@ LOCAL   boolean the_pt_one(double *pt, double *p)
 	int i;
 	double tol = 1.0e-4;	/* vertices coords must have at least */
 				/* five digits after decimal points */
-	
+
 	int dim = current_interface()->dim;
-	
+
 	for (i = 0; i < dim; i++)
 	{
 	    if (fabs(pt[i] - p[i]) > tol)
@@ -478,7 +487,7 @@ EXPORT  boolean  the_pt(double *pt)
 {
 	double	p1[3] = {0.512068, 3.906350, 34.733800};
 	double	p2[3] = {0.513022, 3.884300, 34.735400};
-	
+
 	if(the_pt_one(pt,p1) || the_pt_one(pt,p2))
 	    return YES;
 	return NO;

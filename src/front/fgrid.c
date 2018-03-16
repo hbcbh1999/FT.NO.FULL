@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -200,7 +200,7 @@ LOCAL	int set_grid_intfc_components2d(
 	    	n_list = seg_crx_lists[k_n];
 	    	cr = crx_store + *n_list;
 	    	cN = (cr->crossing_direction == LEFT_TO_RIGHT) ?
-				positive_component(cr->hs) : 
+				positive_component(cr->hs) :
 				negative_component(cr->hs);
 	    }
 
@@ -366,7 +366,7 @@ LOCAL	int set_grid_intfc_components2d(
 	    	k_w    = 2*ymax*xmax + ymax + ix - 1;
 	    	ncw    = seg_crx_count[k_w];
 	    	w_list = seg_crx_lists[k_w];
-	
+
 	    	k_s    = k_w - xmax;
 	    	ncs    = seg_crx_count[k_s];
 	    	s_list = seg_crx_lists[k_s];
@@ -654,7 +654,7 @@ LOCAL	int set_grid_intfc_components3d(
 	status = track_comp_through_crxings3d(smin,smax,gmax,
 			grid_intfc,MULTIPLE);
 
-	
+
         if(prev_interface(intfc) != NULL)
             prev_interface(grid_intfc) = NULL;
 
@@ -971,6 +971,7 @@ EXPORT	INTERFACE *make_grid_intfc(
 	    break;
 	case EXPANDED_DUAL_GRID:
 	    set_dual_grid(&Dual_grid,comp_grid);
+	    //set_dual_grid2(&Dual_grid,comp_grid);    //Dan    FIXME
 	    set_expanded_grid(&Dual_grid,&topological_grid(grid_intfc));
 	    break;
 	default:
@@ -978,11 +979,11 @@ EXPORT	INTERFACE *make_grid_intfc(
 	    stop_clock("make_grid_intfc");
 	    return NULL;
 	}
-	/* 
-	   add this function to ensure interface topology 
-	   does not break down due to tolerance 
+	/*
+	   add this function to ensure interface topology
+	   does not break down due to tolerance
 	*/
-	/*adjust_grid_intfc_points(grid_intfc); */
+	//adjust_grid_intfc_points(grid_intfc);
 
 	if (debugging("make_grid_intfc"))
 	{
@@ -1027,7 +1028,7 @@ EXPORT	INTERFACE *make_grid_intfc(
 	    smin[i] = 0;
             smax[i] = topological_grid(grid_intfc).gmax[i];
 	}
-	
+
 	start_clock("insert_grid_intfc_crossings");
 	interpolate_intfc_states(grid_intfc) = YES;
 	insert_grid_intfc_crossings(grid_intfc);/* Main function */
@@ -1183,7 +1184,7 @@ LOCAL	int insert_grid_intfc_crossings2d(
 	int		ix1,ix2,iy1,iy2;
 	double		max_lenx,max_leny;
 	int   		n_new_intfc_points = 0;
-	POINT		*new_intfc_points[50];	
+	POINT		*new_intfc_points[50];
 	int		*gmax = rgr->gmax;
 				/*POTENTIAL BUG, static array size*/
 
@@ -1215,7 +1216,7 @@ LOCAL	int insert_grid_intfc_crossings2d(
 				*c,&crx_num,&First_cross_on_curve,rgr,
 				&n_new_intfc_points,new_intfc_points);
 
-	    	if (status != GOOD_STEP) 
+	    	if (status != GOOD_STEP)
 	    	{
 	    	    return status;
 	    	}
@@ -1363,7 +1364,7 @@ LOCAL	void count_crossings(
 			y_v += toly;
 		    else
 			y_v -= toly;
-		}	
+		}
 	    }
 
 	    if (x_h <= x_v)
@@ -1591,7 +1592,7 @@ LOCAL	int grid_crossings_on_segment(
 			y_v += toly;
 	    	    else
 			y_v -= toly;
-	    	}	
+	    	}
 	    }
 
 		/* NOTE: weight is a boolean    	   */
@@ -1830,7 +1831,7 @@ LOCAL	int grid_crossings_on_segment(
 	        }
 	    }
 	}
-	else if (iy1 != iy2) 
+	else if (iy1 != iy2)
 	{
 	    /* crossing of horizontal grid bond */
 
@@ -2156,7 +2157,7 @@ EXPORT	void show_line_components3d(
 }
 
 EXPORT	void show_the_grid_comp(
-	const char *msg, 
+	const char *msg,
 	INTERFACE  *intfc)
 {
 	int  i, tmin[3], tmax[3];
@@ -2174,7 +2175,7 @@ EXPORT	void show_the_grid_comp(
 	}
 
 	printf("#show_the_grid_comp %s\n", msg);
-	
+
 	show_grid_components(tmin,tmax,0,intfc);
 	show_grid_components(tmin,tmax,1,intfc);
 	show_grid_components(tmin,tmax,2,intfc);
@@ -2198,7 +2199,7 @@ LOCAL	void show_grid_components3d(
 	print_general_vector("h", gr.h, 3, "\n");
 	print_int_vector("smin", smin, 3, "\n");
 	print_int_vector("smax", smax, 3, "\n");
-	
+
 	if (idir == 0)
 	{
 	    for (ix = smin[0]; ix <= smax[0]; ++ix)
@@ -2223,7 +2224,7 @@ LOCAL	void show_grid_components3d(
 			    printf("%2d ",comp[d_index3d(ix,iy,iz,gmax)]);
 		    }
 		    printf("\n");
-		    if(iy == smax[1])    
+		    if(iy == smax[1])
 		    {
 		        printf("\n");
 		        continue;
@@ -2236,7 +2237,7 @@ LOCAL	void show_grid_components3d(
 		    	    printf("   ");
 		    	else if (nc == 1)
 		    	    printf(" - ");
-		    	else 
+		    	else
 		    	    printf(" * ");
 		    }
 		    printf("\n");
@@ -2267,7 +2268,7 @@ LOCAL	void show_grid_components3d(
 			    printf("%2d ",comp[d_index3d(ix,iy,iz,gmax)]);
 		    }
 		    printf("\n");
-		    if(iz == smax[2])    
+		    if(iz == smax[2])
 		    {
 		        printf("\n");
 		        continue;
@@ -2311,7 +2312,7 @@ LOCAL	void show_grid_components3d(
 			    printf("%2d ",comp[d_index3d(ix,iy,iz,gmax)]);
 		    }
 		    printf("\n");
-		    if(ix == smax[0])    
+		    if(ix == smax[0])
 		    {
 		        printf("\n");
 		        continue;

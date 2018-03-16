@@ -1078,6 +1078,22 @@ static  void contact_point_propagate_vd(
         (*front->vfunc)(front->vparams,front,oldp,oldhse,oldhs,vel);
         //printf("Leave front_>vfunc\n");
 
+        //For Hao's simulation only.    Dan
+        /*
+        double L[3], U[3];
+        double tol = 1e-4;
+        for (i = 0; i < dim; ++i)
+        {
+            L[i] = front->rect_grid->L[i];
+            U[i] = front->rect_grid->U[i];
+            if (fabs(Coords(oldp)[i]-L[i]) < tol ||
+                fabs(Coords(oldp)[i]-U[i]) < tol)
+                if (fabs(vel[i]) > 1e-12)
+                    vel[i] = 0.0;
+        }
+        vel[1] = 0;
+        */
+
         if (front->coordinate == 'R' || front->coordinate == 'r')
         {
             for (i = 0; i < dim; ++i)

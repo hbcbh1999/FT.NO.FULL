@@ -1343,6 +1343,7 @@ struct _LEVEL_FUNC_PACK {
 
 	/* For level set initialization */
         double (*func)(POINTER,double*);
+        double (*func1)(POINTER,double*);
         POINTER func_params;
 	/* For constrained level set initialization */
         boolean (*constr_func)(POINTER,double*);

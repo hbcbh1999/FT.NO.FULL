@@ -1817,6 +1817,42 @@ EXPORT double level_wave_func_cyl_sphere(
         return dist;
 }
 
+EXPORT double level_wave_func_Flat(
+        POINTER func_params,
+        double *coords)
+{
+        // Possible TODO: Remove unused header here
+        FOURIER_POLY *wave_params = (FOURIER_POLY*)func_params;
+        double arg,z,t,sigma,dist;
+        int i,j,num_modes,dim;
+        double *L = wave_params->L;
+        double *U = wave_params->U;
+        int min_n = wave_params->min_n;
+        int max_n = wave_params->max_n;
+        double A_sd = wave_params->A_sd;
+        double av_phase = wave_params->av_phase;
+        double P_sd = wave_params->P_sd;
+        double wv_num[1000][1000], A[1000];
+        double phase[1000];
+        double nu;
+        double angle = wave_params->contact_angle; // Contact Angle
+        double meniscus = wave_params->Meniscus; // position of Meniscus
+        int iii, jjj, n, m;
+        unsigned short int xsubi_a[3], xsubi_p[3];
+        double height1 = meniscus * 1.0 / tan(angle*1.0/180.0*PI);
+        double wv_len = wave_params->wv_len; // This is the most unstable wavelength.
+        double wave_len[2];// single mode wave_len for X and Y direction
+        double k_m, k_min, k_max, k_x, k_y;
+        int    min_m, max_m;
+        double x = coords[0];
+        double y = coords[1];
+        //printf("wv_len = %f in function %s\n", wv_len, __func__);
+
+        dim = wave_params->dim;
+        z = wave_params->z0;
+        dist = coords[dim-1] - z;
+        return dist;
+}
 
 // TODO && FIXME: No Fourier Node, No Bubble.
 EXPORT double level_wave_func_Meniscus(
@@ -1856,6 +1892,12 @@ EXPORT double level_wave_func_Meniscus(
 
         dim = wave_params->dim;
         z = wave_params->z0;
+        // this is for meniscus profile
+        double grav1 = 0.000981;
+        double rhod = wave_params->rhodiff;
+        double surfT = wave_params->surfTen;
+        double C = rhod * grav1 / surfT;
+        double l_c = 1.0 / sqrt(C);
 
         // if introduced here, perturbed boundary condition which makes adjustment of coordinates will produce errors on interface.
 /*
@@ -2000,15 +2042,10 @@ if (min_n != 0 && max_n != 0)
             else if (VERSIONTHREE)
             {
                 // This version of meniscus is for test ONLY. Specially for input file in-SY3dx, in which we consider a 2D like simulation.
-                if (x <= meniscus)
-                {
-                    dist = dist - dist_line_meniscus2Dlike(angle, meniscus, x);
+                //if (x <= meniscus)
+                    //dist = dist - dist_line_meniscus2Dlike(angle, meniscus, x);
+                    dist = dist - fabs(l_c * 1.0 / tan(angle*PI/180.0) * exp(-x/l_c));
                     return dist;
-                }
-                else
-                {
-                    return dist;
-                }
             }
         }
         else

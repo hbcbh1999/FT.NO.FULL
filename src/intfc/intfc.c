@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -82,7 +82,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *		Bond()			Allocates a BOND in current INTERFACE.
 *		bond_length()		Gives the length of a BOND that has been
 *					constructed with Bond().
-*		
+*
 *
 *		insert_point_in_bond()	Inserts a POINT in middle of a BOND.
 *		delete_start_of_bond()	Deletes POINT at start of BOND.
@@ -137,11 +137,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	NODE.
 *
 *		A CURVE joins a pair of NODES without intersecting
-*	another CURVE.  Thus an INTERFACE defines a decomposition 
-*	of the plane into disjoint connected regions, which we call 
-*	components.  Each component may be referenced by ft_assigning 
-*	it an integer value or COMPONENT.   Thus a CURVE is something 
-*	that connects a pair of NODES and has unique COMPONENTS on 
+*	another CURVE.  Thus an INTERFACE defines a decomposition
+*	of the plane into disjoint connected regions, which we call
+*	components.  Each component may be referenced by ft_assigning
+*	it an integer value or COMPONENT.   Thus a CURVE is something
+*	that connects a pair of NODES and has unique COMPONENTS on
 *	either side of it (because of the non_intersecting requirement).
 *
 *
@@ -150,7 +150,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 *
 *
-*		The code separates as much as possible the treatment 
+*		The code separates as much as possible the treatment
 *	of these high-level objects, from the treatment of low_level
 *	features such as the specific representation of the curve
 *	a CURVE represents.   Thus it should not be difficult to
@@ -159,7 +159,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 *		The current code represents the curve as piecewise-
 *	linear.   Thus a curve is represented as a linked list of
-*	linear BONDS.   
+*	linear BONDS.
 *
 *		A BOND connects two POINTS, its start and end, by
 *	a line segment, and in addition has pointers to both the
@@ -194,13 +194,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	make_interface(), then creates NODES as required using
 *	make_node() and lastly creates the CURVES using make_curve().
 *	In fact, since CURVES connect pairs of NODES, it is essential
-*	to use this strategy.   
+*	to use this strategy.
 *
 *
-*		POINTS are created using  Point(), and are then added 
+*		POINTS are created using  Point(), and are then added
 *	to CURVES using  insert_point_in_bond().
 *
-*		The routine  read_interface()  provides an automated way 
+*		The routine  read_interface()  provides an automated way
 *	of initializing an INTERFACE - it prompts interactively.   The
 *	routine  fprint_interface()  provides formatted printing of
 *	an INTERFACE in a readable format.   Then read_print_interface()
@@ -215,7 +215,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	one by one.   next_point() may be used simultaneously on
 *	any number of INTERFACES.
 *
-*		
+*
 *		The copy_... routines all work on the current interface,
 *	with the exception of copy_interface() which defines a new
 *	current interface.   If it is desired to modify two or more
@@ -229,7 +229,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 *		The routines  split_curve()  and  join_curves()  can
 *	be used to perform surgery on an INTERFACE.   split_curve()
-*	splits a CURVE at an internal POINT into two CURVES with a 
+*	splits a CURVE at an internal POINT into two CURVES with a
 *	common NODE.   join_curves()  joins a pair of CURVES which
 *	have a common NODE to form a single CURVE.   Both routines
 *	allow the COMPONENT specifications on the sides of the
@@ -267,15 +267,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *		((struct _MY_POINT *) p)->distance =
 *				hypot(Coords(p)[0],Coords(p)[1]);
 *	}
-*			
+*
 *
 *
 *
 *		4.  Storage Allocation Scheme:
 *
-*	The routines that create and modify INTERFACES all use a 
-*	common storage_allocator.   There are no restrictions 
-*	anywhere in the code on the number or sizes of INTERFACES, 
+*	The routines that create and modify INTERFACES all use a
+*	common storage_allocator.   There are no restrictions
+*	anywhere in the code on the number or sizes of INTERFACES,
 *	NODES, CURVES, BONDS or POINTS.   If the storage allocator
 *	runs out of space at some point, the routine that called
 *	it will return an error value, generally 0 or a NULL
@@ -295,8 +295,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	is needed, the low_level allocator is called to allocate
 *	a new large block (Chunk) of size ChunkSize(intfc).   The Chunks
 *	for a given interface are stored as a linked list.
-*	This procedure tends to keep each interface stored very 
-*	contiguosly and prevents unnecessary fragmentation in the 
+*	This procedure tends to keep each interface stored very
+*	contiguosly and prevents unnecessary fragmentation in the
 *	low_level storage allocator.
 *
 *	In addition, for internal purposes the code maintains a
@@ -313,7 +313,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	Finally the code uses a peculiar data structure called
 *	a set to represent dynamically growing and shrinking
 *	sets of NODES and CURVES.   These sets of pointers are
-*	manipulated using the routines  add_to_pointers()  and  
+*	manipulated using the routines  add_to_pointers()  and
 *	delete_from_pointers(), which in turn use a lower-level
 *	allocator called expand_set().
 *
@@ -374,7 +374,7 @@ LOCAL	void	split_tris_at_split_bond(POINT*,BOND*,CURVE*);
 *	large parts of an interface are stored contiguosly.   The use of
 *	Chunks makes it easy to deal with a dynamically changing interface
 *	without incurring major loss of contiguousness.   The lowest level
-*	storage allocator is only called occasionaly - whenever a new Chunk 
+*	storage allocator is only called occasionaly - whenever a new Chunk
 *	is required. Thus there is little overhead incurred by the low level
 *	storage scheme.   The actual dispensing of pieces of a chunk is done
 *	by the routine  store().
@@ -385,7 +385,7 @@ LOCAL	void	split_tris_at_split_bond(POINT*,BOND*,CURVE*);
 
 LOCAL struct Table *FirstIT = NULL;	/* The Interface Table List */
 LOCAL struct Table *LastIT = NULL;
-	  
+
 LOCAL struct Table *cur_IT = NULL;	/* The current interface table */
 
 LOCAL INTERFACE *cur_intfc = NULL;	/* The current interface */
@@ -557,9 +557,9 @@ EXPORT INTERFACE *i_copy_interface(
 	{
 	    new_intfc->num_points = intfc->num_points;
 	    max_pp_index(new_intfc) = max_pp_index(intfc);
-	    
+
 	    copy_all_surfaces(intfc,new_intfc);
-	
+
 	    /* two subdomain contact with each other */
 	    reset_nodes_posn(new_intfc);
 	}
@@ -639,7 +639,7 @@ LIB_LOCAL	POINT *i_read_point(
 
 	screen("Enter Left and Right Components for Point %d: ",i);
 	(void) Scanf("%d %d\n",&left,&right);
- 
+
 	p = make_point(coords,left,right);
 	user_read_point(intfc,p);
 	screen("\n");
@@ -715,7 +715,7 @@ LIB_LOCAL	CURVE	*i_read_curve(
 /*
 *			read_print_interface():
 *
-*	Initializes an INTERFACE by reading the output of a previous 
+*	Initializes an INTERFACE by reading the output of a previous
 *	print_interface() call.   Reads the next INTERFACE found
 *	in the file  file  and returns a pointer to the INTERFACE,
 *	or NULL if none is found.
@@ -750,7 +750,7 @@ EXPORT INTERFACE *read_print_interface(
 	}
 	if (!check_output(file))
 	{
-	    while ((((int)strlen(line)) < 12) 
+	    while ((((int)strlen(line)) < 12)
 	    		|| (line[0] == '#' && !isdigit(line[11]))
 	    		|| (line[0] != '#' && !isdigit(line[10])))
 	    {
@@ -887,7 +887,7 @@ EXPORT INTERFACE *read_print_interface(
 	    if (DEBUG)
 	        (void) printf("Got num_nodes = %d\n",Iaddr.num_nodes);
 	    uni_array(&Iaddr.nodes,Iaddr.num_nodes,sizeof(uint64_t));
-	    for (i = 0; i < Iaddr.num_nodes; ++i)  
+	    for (i = 0; i < Iaddr.num_nodes; ++i)
 	    {
 		if (!read_print_node(infc,io_type,Iaddr.nodes+i,overlay))
 		{
@@ -969,7 +969,7 @@ EXPORT INTERFACE *read_print_interface(
 	        }
 	    }
 	}
-	search_string = "Random number seeds"; 
+	search_string = "Random number seeds";
 	if (next_output_line_containing_string(file,search_string) != NULL)
 	{
 	    int xsubi[3];
@@ -1600,9 +1600,9 @@ EXPORT int i_delete_interface(
 
 	        /* Reset Current Interface: */
 	if (intfc==cur_intfc)
-	{ 
-	    cur_IT = NULL; 
-	    cur_intfc = NULL; 
+	{
+	    cur_IT = NULL;
+	    cur_intfc = NULL;
 	}
 
 	        /* Free the Chunks: */
@@ -1671,9 +1671,9 @@ EXPORT int i_delete_interface(
 
 	if (cur_intfc == NULL)
 	{
-	    cur_IT = LastIT; 
+	    cur_IT = LastIT;
 	    if (cur_IT != NULL)
-	        cur_intfc = cur_IT->interface; 
+	        cur_intfc = cur_IT->interface;
 	}
 	if (DEBUG)
 	    (void) printf("Left i_delete_interface()\n\n");
@@ -1872,7 +1872,7 @@ EXPORT NODE *i_copy_node(
 /*
 *			i_delete_node():
 *
-*	Deletes a node and its entry in its interface.   
+*	Deletes a node and its entry in its interface.
 *	Returns 1 if successful, or 0 if the node has some associated
 *	curves - in the latter case the node is not deleted.
 */
@@ -1938,7 +1938,7 @@ LIB_LOCAL void i_fprint_node(
 
 	(void) fprintf(file,"\tNode %llu:\n",node_number(node));
 	if (node == NULL)
-	{ 
+	{
 	    (void) fprintf(file,"\t\tNULL Node\n\t\tEnd Node\n");
 	    return;
 	}
@@ -1964,14 +1964,14 @@ LIB_LOCAL void i_fprint_node(
 	    (void) fprintf(file,"\n");
 	}
 	(void) fprintf(file,"\t\tIn_curves->  ");
-	if ((cur = node->in_curves) == NULL) 
+	if ((cur = node->in_curves) == NULL)
 	    (void) fprintf(file,"NULL");
-	else 
+	else
 	    while (*cur) (void) fprintf(file,"%llu ",curve_number(*cur++));
 	(void) fprintf(file,"\n");
 
 	(void) fprintf(file,"\t\tOut_curves-> ");
-	if ((cur = node->out_curves) == NULL) 
+	if ((cur = node->out_curves) == NULL)
 	    (void) fprintf(file,"NULL");
 	else
 	    while (*cur) (void) fprintf(file,"%llu ",curve_number(*cur++));
@@ -2161,7 +2161,7 @@ EXPORT CURVE *i_make_curve(
 	INTERFACE	*intfc;
 	size_t		size_curve;
 
-	if (start==NULL || end==NULL) 
+	if (start==NULL || end==NULL)
 	{
 	    if (DEBUG)
 	    (void) printf("start %llu end %llu make_curve returns NULL (1)\n",
@@ -2241,7 +2241,7 @@ EXPORT CURVE *i_make_curve(
 	curve->end = end;
 	if ((curve->first = Bond(start->posn,end->posn)) == NULL)
 	{
-	    return NULL; 
+	    return NULL;
 	}
 	if (intfc->dim == 2)
 	{
@@ -2305,7 +2305,7 @@ EXPORT CURVE *i_copy_curve(
 
 	        /* Copy over all of the POINTS: */
 
-	for (b=curve->first,bnew=new_curve->first; 
+	for (b=curve->first,bnew=new_curve->first;
 	        	b!=curve->last; b=b->next, bnew = bnew->next)
 	{
 	    if (insert_point_in_bond(copy_point(b->end),bnew,new_curve) !=
@@ -2337,7 +2337,7 @@ EXPORT CURVE *i_copy_curve(
 /*
 *			i_delete_curve():
 *
-*	Deletes a curve and its entry in its interface.   
+*	Deletes a curve and its entry in its interface.
 *	Deletes the curve from the in_curves and out_curves of its
 *	end-nodes.
 *	Returns 1 if successful, or 0  on error.
@@ -2350,7 +2350,7 @@ EXPORT int i_delete_curve(
 	INTERFACE *intfc;
 	int	  status = 1;
 
-	if (curve==NULL || curve->interface==NULL || 
+	if (curve==NULL || curve->interface==NULL ||
 	        		curve->interface->curves==NULL)
 	    return 0;
 
@@ -2535,17 +2535,17 @@ LIB_LOCAL void i_fprint_curve(
 	    (void) fprintf(file,"\n");
 	    (void) fprintf(file,"\t%d Pos_surfaces->  ",
 	    	        (int)Num_pos_surfaces_of_curve(curve));
-	    if ((surf = curve->pos_surfaces) == NULL) 
+	    if ((surf = curve->pos_surfaces) == NULL)
 	    	(void) fprintf(file,"NULL");
-	    else 
+	    else
 	    	while (*surf)
 	        (void) fprintf(file,"%llu ",surface_number(*surf++));
 	    (void) fprintf(file,"\n");
 	    (void) fprintf(file,"\t%d Neg_surfaces->  ",
 	    	        (int)Num_neg_surfaces_of_curve(curve));
-	    if ((surf = curve->neg_surfaces) == NULL) 
+	    if ((surf = curve->neg_surfaces) == NULL)
 	    (void) fprintf(file,"NULL");
-	    else 
+	    else
 	    while (*surf)
 	        (void) fprintf(file,"%llu ",surface_number(*surf++));
 	    (void) fprintf(file,"\n");
@@ -2614,7 +2614,7 @@ int	    k;
 boolean	    found;
 
 	printf("#change node bf\n");
-	
+
 	/*make sure node is the node of the closed curve c */
 	if(!is_closed_curve(c))
 	{
@@ -2667,7 +2667,7 @@ boolean	    found;
 	n->posn = p;
 	c->first->prev = c->last;
 	c->last->next = c->first;
-	
+
 	c->first = b->next;
 	c->first->prev = NULL;
 	c->last = b;
@@ -2690,7 +2690,7 @@ boolean	    found;
 *
 *	Note: This routine can produce BONDS of zero length.
 *
-*	Returns a pointer to the new pair of new curves, or 
+*	Returns a pointer to the new pair of new curves, or
 *	NULL on error.
 */
 
@@ -2708,7 +2708,7 @@ EXPORT CURVE **split_curve(
 	case 1:
 	case 2:
 	    return split_curve2d(p,bond,curve,ncomp1,pcomp1,ncomp2,pcomp2);
-	case 3:    
+	case 3:
 	    return split_curve3d(p,bond,curve,ncomp1,pcomp1,ncomp2,pcomp2);
 	default:
 	    printf("ERROR split_curve, invalid dimension %d\n", curve->interface->dim);
@@ -2827,7 +2827,7 @@ LOCAL  CURVE **split_curve2d(
 	curves[1]->first = c1first;
 	curves[1]->last = c1last;
 
-	if (curve->interface->dim == 2) 
+	if (curve->interface->dim == 2)
 	{
 	    negative_component(curves[0]) = ncomp1;
 	    positive_component(curves[0]) = pcomp1;
@@ -2890,7 +2890,7 @@ LOCAL  CURVE **split_curve2d(
 		    if (curve->orientation != 0)
 			curves[i]->orientation = curve->orientation;
 		    else
-			curves[i]->orientation = 
+			curves[i]->orientation =
 			    (area_of_closed_curve(curves[i]) > 0.0) ? 1 : -1;
 		}
 	    }
@@ -2994,13 +2994,13 @@ LOCAL  CURVE **split_curve3d(
 	    set_not_bdry(node);
 
 	    	/* Copy curves: */
-	
+
 	if (curve->interface->dim == 2)
 	{
 	    neg_comp = negative_component(curve);
 	    pos_comp = positive_component(curve);
 	}
-	
+
 	if ((curves[0] = make_curve(neg_comp,pos_comp,curve->start,node)) == NULL)
 	{
 	    printf("ERROR in split_curve: make_first curve fails.\n");
@@ -3008,7 +3008,7 @@ LOCAL  CURVE **split_curve3d(
 	}
 	curves[0]->first = curve->first;
 	curves[0]->last = bond;
-	
+
 	if ((curves[1] = make_curve(neg_comp,pos_comp,node,curve->end)) == NULL)
 	{
 	    printf("ERROR in split_curve: make second_curve fails.\n");
@@ -3016,8 +3016,8 @@ LOCAL  CURVE **split_curve3d(
 	}
 	curves[1]->first = bond->next;
 	curves[1]->last = curve->last;
-	
-	if (curve->interface->dim == 2) 
+
+	if (curve->interface->dim == 2)
 	{
 	    negative_component(curves[0]) = ncomp1;
 	    positive_component(curves[0]) = pcomp1;
@@ -3066,7 +3066,7 @@ LOCAL  CURVE **split_curve3d(
 		    if((*btris)->curve != NULL)
 		    	(*btris)->curve = curves[0];
 	    }
-	    
+
 	    for (b = curves[1]->first; b; b = b->next)
 	    {
 		for (btris = Btris(b); btris && *btris; ++btris)
@@ -3080,8 +3080,8 @@ LOCAL  CURVE **split_curve3d(
 	/* Count number of points on curves[0] && curves[1] */
 	curves[0]->num_points = num_points_on_curve(curves[0]);
 	curves[1]->num_points = num_points_on_curve(curves[1]);
-	
-	if (DEBUG) 
+
+	if (DEBUG)
 	      (void) printf("Left split_curve, returning %llu %llu\n\n",
 	    		 curve_number(curves[0]),
 	    		 curve_number(curves[1]));
@@ -3094,11 +3094,11 @@ LOCAL  CURVE **split_curve3d(
 /*
 *				join_curves():
 *
-*	Joins two curves that meet at a common node to form a 
+*	Joins two curves that meet at a common node to form a
 *	single curve.   The NODE's position, while still on the CURVE,
 *	ceases to be regarded as a NODE for that CURVE.  It
 *	is now simply an ordinary point of the CURVE.
-*	The resulting CURVE has COMPONENTS left, right on 
+*	The resulting CURVE has COMPONENTS left, right on
 *	either side.   This allows for changing topolgy.
 *
 *	Returns a pointer to the new curve if succesful or NULL
@@ -3131,7 +3131,7 @@ EXPORT CURVE *join_curves(
 	    *bond_at_join = NULL; /*Default*/
 
 	    /* Check consistency of data */
-	if (curve1==NULL || curve2==NULL || curve1->interface!=cur_intfc 
+	if (curve1==NULL || curve2==NULL || curve1->interface!=cur_intfc
 	    || curve1->interface!=curve2->interface
 	    || curve1->end!=curve2->start)
 	{
@@ -3196,7 +3196,7 @@ EXPORT CURVE *join_curves(
 	    *bond_at_join = curve2->first;
 	curve2->first->prev = curve1->last;
 	curve->num_points += (curve1->num_points + curve2->num_points - 3);
-	curve->interface->num_points += 
+	curve->interface->num_points +=
 	    (curve1->num_points + curve2->num_points - 3);
 
 	if (curve1->interface->dim == 3)
@@ -3313,7 +3313,7 @@ EXPORT CURVE *join_curves(
 	}
 	else if (curve1->interface->dim == 2)
 	{
-	    BOND *b = curve->first; 
+	    BOND *b = curve->first;
 	    b->start->hse = Hyper_surf_element(b);
 	    b->start->hs = Hyper_surf(curve);
 	    for (; b != NULL; b = b->next)
@@ -3328,7 +3328,7 @@ EXPORT CURVE *join_curves(
 		else if (curve2->orientation != 0)
 		    curve->orientation = curve2->orientation;
 		else
-		    curve->orientation = 
+		    curve->orientation =
 				(area_of_closed_curve(curve) > 0.0) ? 1 : -1;
 	    }
 	}
@@ -3365,8 +3365,8 @@ EXPORT BOND *i_Bond(
 	BOND		*b;
 
 	b = (BOND *) store(i_user_interface(cur_intfc).size_bond);
-	if (b == NULL) 
-	{ 
+	if (b == NULL)
+	{
 	    return NULL;
 	}
 	b->prev = b->next = NULL;
@@ -3388,7 +3388,7 @@ EXPORT BOND *i_Bond(
 *
 *       Allocates a point structure in the current interface and
 *       installs it in the point-list of the interface.  The
-*       point will have position  p  which may be NULL.  
+*       point will have position  p  which may be NULL.
 *
 *	This function is separate from i_Point() in order to support
 *	the component arguments, although i_Point() is used as the basic
@@ -3433,7 +3433,7 @@ EXPORT POINT *i_make_point(
 	        cur_intfc->points[i] = cur_intfc->points[i-1];
 	    cur_intfc->points[0] = newpoint;
 	}
-	    					    
+
 	cur_IT->max_comp = max(cur_IT->max_comp,max(neg_comp,pos_comp));
 	cur_IT->min_comp = min(cur_IT->min_comp,min(neg_comp,pos_comp));
 	++cur_intfc->num_points;
@@ -3486,7 +3486,7 @@ EXPORT POINT *i_Point(
 *	in a function.  Generally points allocated by this routine
 *	should not be inserted into an interface, although this is
 *	not an error.  Point() should be used whenever a new point
-*	is needed to insert into an interface. 
+*	is needed to insert into an interface.
 *	This function differs from Point() in that the storage allocated
 *	is static and will not be lost upon removal of an interface.
 *	It thus provides a means for the allocation of point structures
@@ -3805,12 +3805,12 @@ EXPORT	POINT *i_average_points(
 *       Deletes a point and its entry in its interface.
 *       Returns 1 if successful, or 0 if not.
 */
- 
- 
+
+
 EXPORT int i_delete_point(
 	POINT		*point)
 {
- 
+
 	INTERFACE *intfc;
 	POINT	  **p;
 	int       n;
@@ -3835,7 +3835,7 @@ EXPORT int i_delete_point(
 			  "point->interface->points is NULL\n");
 	    return 0;
 	}
- 
+
 	if (intfc->dim != 1)
 	    return 1;
 
@@ -3849,7 +3849,7 @@ EXPORT int i_delete_point(
 			  "point not on interface\n");
 	    return 0;
 	}
-	    
+
 	status = delete_from_ordered_pointers(point,&intfc->points);
 	if (Hyper_surf(point) != NULL)
 	{
@@ -3861,7 +3861,7 @@ EXPORT int i_delete_point(
 	intfc->modified = YES;
 	if (intfc->dim == 1)
 	    Hyper_surf(point)->interface = NULL;
- 
+
 	point->interface = NULL;
 	return (status == FUNCTION_FAILED) ? 0 : 1;
 }		/*end i_delete_point*/
@@ -3871,13 +3871,13 @@ EXPORT int i_delete_point(
 *
 *       Prints a Point.
 */
- 
+
 LIB_LOCAL void i_fprint_point(
 	FILE		*file,
 	POINT		*point)
 {
 	int		dim;
- 
+
 	(void) fprintf(file,"\tPoint %llu:\n",point_number(point));
 	if (point == NULL)
 	{
@@ -3911,7 +3911,7 @@ LIB_LOCAL void i_fprint_point(
 	    (void) fprintf(file,"%s\n",is_bdry(point) ?
 	                   "Boundary Point" : "Interior Point");
 	}
- 
+
 	user_fprint_point(file,point);
 	(void) fprintf(file,"\tEnd Point\n\n");
 }		/*end i_fprint_point*/
@@ -3923,7 +3923,7 @@ LIB_LOCAL void i_fprint_point(
 *
 *	Inserts point p into a bond b on a curve c.   The bond is changed
 *	into two bonds with the point at their common point.
-*	Returns 1 if successful, or 0 on error.   Errors occur if p,b or 
+*	Returns 1 if successful, or 0 on error.   Errors occur if p,b or
 *	c is NULL or if space cannot be allocated for a new bond.
 */
 
@@ -3934,8 +3934,8 @@ EXPORT boolean i_insert_point_in_bond(
 {
 	BOND		*bnew;
 
-	if ((p==NULL) || (b==NULL) || (c==NULL) || (bnew=Bond(p,b->end))==NULL) 
-	    return FUNCTION_FAILED; 
+	if ((p==NULL) || (b==NULL) || (c==NULL) || (bnew=Bond(p,b->end))==NULL)
+	    return FUNCTION_FAILED;
 
 	bnew->prev = b;
 	if (b->next != NULL)
@@ -3987,7 +3987,7 @@ LOCAL	void split_tris_at_split_bond(
 	int	  i, is, ie;
 	int	  bside, aside;
 	int	  bdry;
-	
+
 	if (intfc->dim != 3)
 	    return;
 
@@ -4076,7 +4076,7 @@ LOCAL	void split_tris_at_split_bond(
 	    }
 
 	    insert_tri_at_tail_of_list(nt,surf);
-	    
+
 	    if (is_side_bdry(t,aside))
 	    {
 		BOND_TRI *bt = Bond_tri_on_side(t,aside);
@@ -4104,7 +4104,7 @@ LOCAL	void split_tris_at_split_bond(
 /*
 *			i_delete_start_of_bond():
 *
-*	Deletes the point at the start of bond b on curve c.   
+*	Deletes the point at the start of bond b on curve c.
 *	Deletes the whole bond b.   It is an error to delete the
 *	first POINT on a CURVE (i.e. a NODE) by this routine.
 *	Returns 1 on success or 0 on error - b and c must be non-NULL.
@@ -4121,7 +4121,7 @@ EXPORT boolean i_delete_start_of_bond(
 	{
 	    (void) printf("WARNING in i_delete_start_of_bond(), "
 			  "can't delete single tri surface\n");
-	    return FUNCTION_FAILED; 
+	    return FUNCTION_FAILED;
 	}
 
 	b->prev->end = b->end;
@@ -4157,7 +4157,7 @@ EXPORT boolean i_delete_start_of_bond(
 /*
 *			i_delete_end_of_bond():
 *
-*	Deletes the point at the end of bond b on curve c.   
+*	Deletes the point at the end of bond b on curve c.
 *	Deletes the whole bond b.   It is an error to delete the
 *	last POINT on a CURVE (i.e. a NODE) by this routine.
 *	Returns 1 on success or 0 on error - b and c must be non-NULL.
@@ -4169,13 +4169,13 @@ EXPORT boolean i_delete_end_of_bond(
 {
 
 	if (b==NULL || c==NULL || b->next==NULL)
-	    return FUNCTION_FAILED; 
+	    return FUNCTION_FAILED;
 
 	if (single_tri_surface_on_bond(b))
 	{
 	    (void) printf("WARNING in i_delete_end_of_bond(), "
 			  "can't delete single tri surface\n");
-	    return FUNCTION_FAILED; 
+	    return FUNCTION_FAILED;
 	}
 
 	b->next->start = b->start;
@@ -4227,7 +4227,7 @@ LOCAL	boolean single_tri_surface_on_bond(
 	static const int flag = BIN_SIDE01|BIN_SIDE12|BIN_SIDE20;
 	for (bt = Btris(b); bt && *bt; ++bt)
 	    if (Boundary_tri((*bt)->tri) == flag)
-		return YES; 
+		return YES;
 	return NO;
 }		/*end single_tri_surface_on_bond*/
 
@@ -4333,7 +4333,7 @@ LOCAL	boolean	reset_tris_at_deleted_bond(
 *
 *		  s - Surface containing the polygon being retriangulated.
 *
-*	nb_bond_tri - Neighoring BOND_TRI's.  If the ith edge of the 
+*	nb_bond_tri - Neighoring BOND_TRI's.  If the ith edge of the
 *		      polygon is a bond (ie the edge from v[i] to v[(i+1)%nv]
 *		      is a BOND,  then the BOND_TRI defining the link from
 *		      bond to tri is contained in nb_bond_tri[i].  Otherwise
@@ -4986,7 +4986,7 @@ LOCAL	boolean is_tangled_polygon(
 	      dy1 = y1e - y1s;
 	      dx10s = x1s - x0s;
 	      dy10s = y1s - y0s;
-  
+
 	      den = dx1*dy0 - dx0*dy1;
 	      if (den < eps)
 		return NO;
@@ -5489,7 +5489,7 @@ EXPORT	int side_of_tri_with_bond(
 *
 *	Called via the macro next_point().
 *
-*	Returns through its last three arguments the next point on a 
+*	Returns through its last three arguments the next point on a
 *	specified interface.   "Next Point" is defined as follows:
 *
 *	Before a TRUE call to next_point() on a given INTERFACE, it
@@ -5499,8 +5499,8 @@ EXPORT	int side_of_tri_with_bond(
 *			(void) next_point(intfc,NULL,NULL,NULL);
 *
 *	At the first call to next_point(intfc,..) following such
-*	initialization the point returned is the first point on the 
-*	first hypersurface of intfc.   
+*	initialization the point returned is the first point on the
+*	first hypersurface of intfc.
 *
 *	Otherwise, if the last point returned was not at the
 *	end of a hypersurface, then the next point on that hypersurface
@@ -5519,12 +5519,12 @@ EXPORT	int side_of_tri_with_bond(
 *
 *	In three space dimensions *HS is a surface containing P,  and *HSE
 *	is a triangle on that surface with P as a vertex.
-*	
+*
 *	next_point()  may be freely intermixed with calls to
 *	next_bond()  and  next_curve().
 *
 *	next_point  returns either 1 when the next point is a valid point,
-*	or 0 if there is no remaining point, or if an error occurs.  
+*	or 0 if there is no remaining point, or if an error occurs.
 */
 
 /*ARGSUSED*/
@@ -5613,16 +5613,16 @@ LIB_LOCAL boolean next_point2d(
 	        *P = NULL;
 	        *HSE = NULL;
 	        *HS = NULL;
-	        return NO; 			
+	        return NO;
 	    }
 	    else
 		T->cur_bond = (*T->cur_curve)->first;
 	}
-	else    
+	else
 	    T->cur_bond = T->cur_bond->next;	/* Go to Next Bond */
 
 	*HS = Hyper_surf(*(T->cur_curve));
-	if (T->cur_bond == NULL) 	
+	if (T->cur_bond == NULL)
 	{
 	    *P = (*(T->cur_curve))->last->end;	/* P at End of Curve */
 	    *HSE = Hyper_surf_element((*(T->cur_curve))->last);
@@ -5695,7 +5695,7 @@ EXPORT boolean next_bond(
 	    else
 	    	T->cur_bond = (*T->cur_curve)->first;
 	}
-	else    
+	else
 	    T->cur_bond = T->cur_bond->next;	/* Go to Next Bond */
 
 	*B = T->cur_bond;
@@ -6014,7 +6014,7 @@ EXPORT	POINTER	init_table_Store(
 /*
 *			Store():
 *
-*	Calls store() but leaves the current_interface()->modified 
+*	Calls store() but leaves the current_interface()->modified
 *	flag unchanged.
 */
 
@@ -6116,7 +6116,7 @@ LOCAL	void	ReturnChunksToFreeList(
 EXPORT	const char *i_boundary_type_as_string(
 	int b_type)
 {
-	static char s[256]; 
+	static char s[256];
 	switch (b_type)
 	{
 	case SUBDOMAIN_BOUNDARY:
@@ -6459,7 +6459,7 @@ EXPORT	void	order_interface(
 		{
 		    for (i=j,btris=Btris(bb); btris+i && btris[i]; ++i)
 		    {
-		    
+
 			if((btris[i])->surface == (btris0[j])->surface && i != j)
 			{
 			    tmpbtri = btris[i];
@@ -6473,14 +6473,14 @@ EXPORT	void	order_interface(
 }
 
 /*
- * delete one surface s and all curves ONLY related to s, and all nodes only related to 
+ * delete one surface s and all curves ONLY related to s, and all nodes only related to
  * deleted curves
- */ 
+ */
 
 EXPORT void  delete_scn(
 	SURFACE  *s)
 {
-INTERFACE	*intfc = s->interface; 
+INTERFACE	*intfc = s->interface;
 SURFACE		*surf;
 CURVE		**c, **curves_to_delete;
 NODE		**n, **nodes_to_delete;
@@ -6491,7 +6491,7 @@ BOND		*bs;
 	    printf("ERROR delete_scn, delete surface %p failed.\n", s);
 	    clean_up(ERROR);
 	}
-	
+
 	/*ref: cut_out_curves_in_buffer */
 	/*it will only delete subdomain curves */
 	curves_to_delete = NULL;
@@ -6504,7 +6504,7 @@ BOND		*bs;
 	    if(bs == NULL)
 	        add_to_pointers(*c, &curves_to_delete);
 	}
-	
+
 	for(c=curves_to_delete; c && *c; c++)
 	    if (!delete_curve(*c))
 	    {
@@ -6543,34 +6543,34 @@ EXPORT  void  reset_nodes_posn(
 	{
 	    if((*c)->first->start != (*c)->last->end)
 		continue;
-	    if((*c)->first->start == (*c)->start->posn && 
+	    if((*c)->first->start == (*c)->start->posn &&
 	       (*c)->last->end == (*c)->end->posn)
 		continue;
 
-	    if((*c)->first->start != (*c)->start->posn && 
+	    if((*c)->first->start != (*c)->start->posn &&
 	       (*c)->last->end == (*c)->end->posn)
 	    {
 	        /*DEBUG_TMP printf("#reset_nodes_posn,  fixed start node. Curve %d\n",  */
 					/*DEBUG_TMP curve_number(*c)); */
-		
-		if (!delete_from_pointers((*c),&((*c)->start->out_curves)) || 
+
+		if (!delete_from_pointers((*c),&((*c)->start->out_curves)) ||
 		     !add_to_pointers((*c),&((*c)->end->out_curves)) )
 		    printf("WARNING in reset_nodes_posn, can not delete/add"
 		    	   "a out_curve from/to a node\n");
-		
+
 		(*c)->start = (*c)->end;
 	    }
-	    else if((*c)->first->start == (*c)->start->posn && 
+	    else if((*c)->first->start == (*c)->start->posn &&
 	    	(*c)->last->end != (*c)->end->posn)
 	    {
 	        /*DEBUG_TMP printf("#reset_nodes_posn,  fixed end node. Curve %d\n",  */
 					/*DEBUG_TMP curve_number(*c)); */
-		
+
 		if ( !delete_from_pointers((*c),&((*c)->end->in_curves)) ||
 		     !add_to_pointers((*c),&((*c)->start->in_curves)) )
 		    printf("WARNING in reset_nodes_posn, can not delete/add"
 		    	   "a in_curve from/to a node\n");
-	
+
 		(*c)->end = (*c)->start;
 	    }
 	    else

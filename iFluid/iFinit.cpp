@@ -310,12 +310,18 @@ static void initRSSYIntfc(
             printf("NO harm done Warning! NO surface tension was considered! More Implementation/Consideration Needed.\n");
             // clean_up(ERROR); // Too aggressive for non surface tension simulation
         }
-
+        level_func_params.surfTen = surfacetension;
+        level_func_params.rhodiff = fabs(rhop1 - rhop2);// this ONLY serves to pass grav parameter. NOT a good practice
+        double C = fabs(rhop1-rhop2) * 0.000981 / surfacetension;
+        double l_c = 1.0 / sqrt(C);
+        double height = l_c * 1.0 / tan(level_func_params.contact_angle*PI/180);
+        printf("Initial meniscus tip height is about %f\n", height);
         level_func_pack->func_params = (POINTER)&level_func_params;
         /* After this assignment, using level_func_pack->func &
          * level_func_pack->func_params to make level surface */
 
-        level_func_pack->func = level_wave_func_Meniscus;
+        level_func_pack->func1 = level_wave_func_Meniscus;
+        level_func_pack->func = level_wave_func_Flat;
         fclose(infile);
 }       /* end initRSSYIntfc */
 

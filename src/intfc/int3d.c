@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	Copyright 1999 by The University at Stony Brook, All rights reserved.
 *
 *		3D Interface Data Structures and Surgery on Surfaces
-*	
+*
 *	     We want to describe an interface in 3 dimensions.	 The
 *	main  application  is to represent discontinuous fluid flow.
 *	In this case the surface  must	have  distinguishable  sides
@@ -41,13 +41,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	oriented,  and	its  orientation  will	be  specified by the
 *	orientation of the triangles which define  it.	 It  follows
 *	that the boundary of each surface is oriented.
-*	
+*
 *	     The boundary is an interface of 1D objects (CURVEs) and
 *	0D  objects  (NODEs).  The curves have an intrinsic orienta-
 *	tion, due to their description as a doubly linked list,	 and
 *	this  orientation may agree or disagree with the orientation
 *	defined by the surface they bound.
-*	
+*
 *	     We will frequently have to consider the local structure
 *	of the interface in the neighborhood of a single curve. At a
 *	single curve, the surfaces which  bound	 it,  together	with
@@ -70,14 +70,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	ments  which  meet at the common point in a different topol-
 *	ogy, but they will not make all four curve fragments part of
 *	a single connected simple curve.
-*	
+*
 *	     There is  no  assumption  that  a	SURFACE	 bound	some
 *	volume, although this will often be the case.  In particular
 *	there is no assumption that the sides of surfaces  are	ade-
 *	quately	 labeled  by the components.  The components provide
 *	an efficient, but in general incomplete description  of	 the
 *	orientation (side) information for each surface.
-*	
+*
 *	     It is natural to assume that the boundary of a  surface
 *	consists of some number of simple closed curves. In contrast
 *	to the case of curves in a 2D interface, we  would  like  to
@@ -92,7 +92,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	form  of  "slits",  i.e.   as  a  single  curve, not closed,
 *	"drawn" on the surface.	 As before, such an open  curve	 may
 *	consist of several CURVEs, meeting at common NODEs.
-*	
+*
 *	     The "slit" CURVEs do not derive an orientation from the
 *	SURFACE they bound, or more precisely, thay have both orien-
 *	tations, according to the neighboring  triangles,  which  on
@@ -100,7 +100,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	Thus  these  CURVEs  occur  in	both  the   pos_curves	 and
 *	neg_curves   lists  and	 the  SURFACE  occurs  in  both	 the
 *	pos_surfaces and the neg_surfaces lists of the CURVE.
-*	
+*
 *	     The reason that the slits are needed  has	to  do	with
 *	intersections.	 We want to resolve any generic intersection
 *	which can arise	 between  valid	 interfaces.   SURFACEs	 are
@@ -114,7 +114,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	The intersection is either topologically a circle, or it  is
 *	a  line	 segment, i.e. a slit.	Thus the slits arise generi-
 *	cally and are needed in the resolution of intersections.
-*	
+*
 *	     In summary, the boundary of a surface is  an  arbitrary
 *	number	(perhaps  zero) of simple closed curves and an arbi-
 *	trary number of trees of curves. A tree is a  general  graph
@@ -122,19 +122,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	most once and the collection of trees cannot add a cycle  to
 *	the rest of the boundary. Here each curve may be represented
 *	by one or more CURVEs.
-*	
+*
 *	     There is no restriction that the CURVEs of an INTERFACE
 *	arise  as boundaries of SURFACEs. In particular there can be
 *	CURVEs but no SURFACEs in an interface.
-*	
+*
 *	     We require each  SURFACE  to  be  connected,  and	thus
 *	define a SURFACE to be a connected component of (interface -
 *	topological 1D and 0D bdries).
-*	
+*
 *	     Surgery on a SURFACE or INTERFACE concerns the  joining
 *	or  disconnecting  of SURFACEs along common CURVEs or NODEs.
 *	Let us consider typical problems.
-*	
+*
 *	     SURFACEs may intersect, or a single SURFACE may  inter-
 *	sect itself.  Such a situation is excluded by the definition
 *	of an INTERFACE, but it may arise anyway.  The	goal  is  to
@@ -150,14 +150,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	or more pieces. Further surgery may be required on a problem
 *	dependent  basis,  after  this geometrical resolution of the
 *	intersections.
-*	
-*	
+*
+*
 *	     The data structure which defines the intersection is  a
 *	CROSS,	and  each CROSS is a curve together with information
 *	about which surface triangles it crosses, on which surfaces.
 *	Also  whether  and  where  the intersection curves cross and
 *	attaach to boundary CURVEs is significant and will be noted.
-*	
+*
 *	     The first operation is to resolve the  triangles  which
 *	define	the  surface,  so  that	 the intersection curve lies
 *	along triangle boundaries. This routine is similar in struc-
@@ -169,7 +169,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	of lower level routines, such as  split_tringle_along_line()
 *	and    the    inverse	 of    this   low   level   routine,
 *	merge_triangles(), will be needed.
-*	
+*
 *	     The remaining surgery operation and its inverse is most
 *	easily	understood  from  its analog in a 2D INTERFACE. This
 *	would be merge_nodes() and  the	 inverse  divide_node.	 The
@@ -180,7 +180,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	ft_assign	some  of them to a new node n1 and the rest to a new
 *	node n2.  For a 3D INTERFACE, the routines could  be  called
 *	merge_curve() and divide_curve().
-*	
+*
 *	     How is one to determine if an additional boundary curve
 *	will  disconnect a surface? We think of the curves and their
 *	endpoints as defining a	 graph.	  The  boundary	 curves	 and
@@ -202,11 +202,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	operations. It does not seem  likely  that  this  number  of
 *	operations  will  be a problem, but if it is, the components
 *	can be stored.
-*	
+*
 *	     The surface will be described geometrically as  a	col-
 *	lection	 of  triangles.	  A number of topics related to tri-
 *	angulation will be discussed.
-*	
+*
 *	1. Triangulation of an interface  described  in	 some  other
 *	fashion,  such	as  by	analytic  equations,  and the global
 *	retriangulation of a surface already described in  terms  of
@@ -214,7 +214,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	this topic.  We favor using a frontal strategy to sweep	 out
 *	an  interface,	and  to add triangles from an outer boundary
 *	inward.
-*	
+*
 *	2. Local improvements in a triangulation,  to  achieve	e.g.
 *	better aspect ratios, or designated local refinements.	This
 *	is also a previously considered topic.	It is  necessary  to
@@ -222,10 +222,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	tions, as well as a strategy for using a sequence of elemen-
 *	tary  operations  to  improve the fittness of a surface tri-
 *	angulation.
-*	
+*
 *	3. Resolution of a tangled interface, and the  specification
 *	of the required new triangluation.
-*	
+*
 *	4. Access to the points and triangles and storage.  In order
 *	to  be able to access the points exactly once during a sweep
 *	through the triangles, we  assume  that	 the  triangles	 are
@@ -240,7 +240,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *	of  surface  points.   It appears that a double linked list,
 *	with storage in the interface storage space is the best	 way
 *	to store the triangles.
-*	
+*
 *	5. Structured vs unstructured triangulations.	Unstructured
 *	triangulations	will be used for all surfaces, except possi-
 *	bly for the surfaces lying on the  external  boundary.	 The
@@ -324,7 +324,7 @@ EXPORT SURFACE *i_make_surface(
 *	THE BELOW ASSUMPTION VIOLATES OBJECT ORIENTED DESIGN
 *	AND MUST BE REMOVED.
 *	It is assumed that the tri index numbers for the surface have
-*	already been set before this routine is called, by a call to 
+*	already been set before this routine is called, by a call to
 *	set_tri_array_numbers.
 *
 *	Returns a pointer to the new surface or NULL on error.
@@ -338,7 +338,7 @@ EXPORT SURFACE *i_copy_surface(
 	boolean    copy_triangles)
 {
 	SURFACE		*news;
-	
+
 	debug_print("copy_surface","Entered copy_surface()\n");
 	if (s == NULL)
 	    return NULL;
@@ -378,7 +378,7 @@ LOCAL	void copy_tris(
 	int		i, j;
 	int		h_size;
 	P_LINK		*hash_table;
-	
+
 	debug_print("copy_tris","Entered copy_tris\n");
 
 		/* Allocate Tmp Storage for Copied Tris */
@@ -423,7 +423,7 @@ LOCAL	void copy_tris(
 	    	ntris[i]->prev = ntris[i-1];
 	    	ntris[i-1]->next = ntris[i];
 	    }
-	}	
+	}
 
 		/* Install Linked List in Surface */
 
@@ -439,13 +439,13 @@ LOCAL	void copy_tris(
 	    	if (is_side_bdry(ntris[i],j))
 		    continue;
 	    	Tri_on_side(ntris[i],j) =
-		    (Tri_on_side(oldtri,j) != NULL) ? 
+		    (Tri_on_side(oldtri,j) != NULL) ?
 			ntris[Tri_index(Tri_on_side(oldtri,j))] : NULL;
 	    }
 	}
 
 		/*Set Boundary Bonds of Tris  */
-	
+
 	/*The code assume all curves are already copied to news in the SAME order */
 	/*as in s. Two cases */
 	/*(1) copy_buffer_surface calls the function in the following order */
@@ -457,10 +457,10 @@ LOCAL	void copy_tris(
 	/*(2) i_copy_interface */
 	/*    before calling copy_all_surfaces, i_copy_interface copies all the curves */
 
-	for (oldc = s->pos_curves, newc = news->pos_curves; 
+	for (oldc = s->pos_curves, newc = news->pos_curves;
 	     oldc && *oldc; ++oldc, ++newc)
 	{
-	    for (bond=(*oldc)->first, nbond=(*newc)->first; bond; 
+	    for (bond=(*oldc)->first, nbond=(*newc)->first; bond;
 	         bond = bond->next, nbond = nbond->next)
 	    {
 		for (btris = Btris(bond); btris && *btris; ++btris)
@@ -471,14 +471,14 @@ LOCAL	void copy_tris(
 		    newtri = ntris[Tri_index((*btris)->tri)];
 		    newbtri = link_tri_to_bond(NULL,newtri,news,nbond,*newc);
 		    assign_btri_states(newbtri, *btris);
-		} 
+		}
 	    }
 	}
 
-	for (oldc = s->neg_curves, newc = news->neg_curves; 
+	for (oldc = s->neg_curves, newc = news->neg_curves;
 	     oldc && *oldc; ++oldc, ++newc)
 	{
-	    for (bond=(*oldc)->first, nbond=(*newc)->first; bond; 
+	    for (bond=(*oldc)->first, nbond=(*newc)->first; bond;
 	         bond = bond->next, nbond = nbond->next)
 	    {
 		for (btris = Btris(bond); btris && *btris; ++btris)
@@ -489,14 +489,14 @@ LOCAL	void copy_tris(
 		    newtri = ntris[Tri_index((*btris)->tri)];
 		    newbtri = link_tri_to_bond(NULL,newtri,news,nbond,*newc);
 		    assign_btri_states(newbtri, *btris);
-		} 
+		}
 	    }
 	}
 
 	for (i = 0, oldtri = first_tri(s); i < s->num_tri;
 				++i, oldtri = oldtri->next)
 	    Tri_workspace(oldtri) = (POINTER) ntris[i];
-	
+
 	free(ntris);
 	free(hash_table);
 
@@ -531,7 +531,7 @@ LIB_LOCAL void copy_all_surfaces(
 	    CURVE **pos_curves, **neg_curves;
 	    int i;
 
-	    for (i = 0, pos_curves = (*ps)->pos_curves; 
+	    for (i = 0, pos_curves = (*ps)->pos_curves;
 	    	pos_curves && *pos_curves; ++pos_curves, ++i)
 	    {
 	    	for (pnc = intfc2->curves, pc = intfc1->curves;
@@ -541,14 +541,14 @@ LIB_LOCAL void copy_all_surfaces(
 			break;
 		}
 		if (!(pc && *pc))
-		{ 
+		{
 		    return;
 		}
 		npos_curves[i] = *pnc;
 	    }
 	    npos_curves[i] = NULL;
 
-	    for (i = 0, neg_curves = (*ps)->neg_curves; 
+	    for (i = 0, neg_curves = (*ps)->neg_curves;
 	    	neg_curves && *neg_curves; ++neg_curves, ++i)
 	    {
 	    	for (pnc = intfc2->curves, pc = intfc1->curves;
@@ -558,9 +558,9 @@ LIB_LOCAL void copy_all_surfaces(
 		        break;
 		}
 	    	if (!(pc && *pc))
-		{ 
-		    return; 	
-		}	
+		{
+		    return;
+		}
 	    	nneg_curves[i] = *pnc;
 	    }
 	    nneg_curves[i] = NULL;
@@ -707,7 +707,7 @@ EXPORT	boolean	i_undo_insert_point_in_tri(
 	if (update_neighbor_tris(Tri_neighbor(tri20)+2,tri20,tri,2) !=
 	    FUNCTION_SUCCEEDED)
 	    return FUNCTION_FAILED;
-	
+
 	remove_tri_from_surface(tri12,s,NO);
 	remove_tri_from_surface(tri20,s,NO);
 	s->interface->num_points--;
@@ -786,6 +786,9 @@ EXPORT	boolean	i_insert_point_in_tri_side(
 	    return insert_point_in_bond(p,bt->bond,bt->curve);
 	}
 	nbr_tri = Tri_on_side(tri,side);
+    // TODO ** FIXME:
+    //if (nbr_tri==NULL)
+    //    return FUNCTION_SUCCEEDED;
 	for (nbr_side = 0; nbr_side < 3; ++nbr_side)
 	    if (Tri_on_side(nbr_tri,nbr_side) == tri)
 		break;
@@ -820,7 +823,7 @@ EXPORT	boolean	i_insert_point_in_tri_side(
 	pp[nbr_siden] = Point_of_tri(nbr_tri)[nbr_siden];
 	pp[nbr_sidep] = Point_of_tri(nbr_tri)[nbr_sidep];
 	neighbor[nbr_side] =
-	    (Point_of_tri(tri)[side] == Point_of_tri(nbr_tri)[nbr_side]) ? 
+	    (Point_of_tri(tri)[side] == Point_of_tri(nbr_tri)[nbr_side]) ?
 	    (POINTER) new_tri : (POINTER) tri;
 	neighbor[nbr_siden] = Neighbor_on_side(nbr_tri,nbr_siden);
 	neighbor[nbr_sidep] = (POINTER) nbr_tri;
@@ -985,6 +988,9 @@ LOCAL  boolean update_neighbor_tris(
 	else /* nb is a tri */
 	{
 	    TRI *nb_tri = nb->tri;
+        //TODO ** FIXME, HAO
+        //if (nb_tri == NULL)
+        //    return FUNCTION_SUCCEEDED;
 	    for (i = 0; i < 3; ++i)
 	    {
 	        if (Tri_on_side(nb_tri,i) == old_t)
@@ -1005,7 +1011,7 @@ EXPORT	void	insert_tri_at_head_of_list(
 	int i;
 	tri->next = first_tri(s);
 	first_tri(s)->prev = tri;
-	first_tri(s) = tri;	
+	first_tri(s) = tri;
 	first_tri(s)->prev = head_of_tri_list(s);
 	++s->num_tri;
 	for (i = 0; i < 3; ++i)
@@ -1315,7 +1321,7 @@ LIB_LOCAL SURFACE *read_print_surface(
 	}
 
 	uni_array(&new_pts,npts,sizeof(POINT *));
-	for (j = 0; j < npts; ++j) 
+	for (j = 0; j < npts; ++j)
 	{
 	    new_pts[j] = Point(NULL);
 	    Index_of_point(new_pts[j]) = j;
@@ -1383,7 +1389,7 @@ LIB_LOCAL SURFACE *read_print_surface(
 		(void) read_binary_real_array(Coords(Point_of_tri(tri)[2]),
 		                              3,io_type);
 	    }
-	    Tri_index(tri) = j;	
+	    Tri_index(tri) = j;
 	    set_normal_of_tri(tri);
 	}
 
@@ -1427,7 +1433,7 @@ LIB_LOCAL SURFACE *read_print_surface(
 	        debug_print("restart","Left read_print_surface\n");
 	    	return NULL;
 	    }
-	    
+
 	    /**************IMPORTANT NOTE*****************************/
 	    /*
 	    *	The construction below makes the implicit assumption
@@ -1621,7 +1627,7 @@ EXPORT void null_tri_array_numbers(
 	    for (tri=first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
 		Tri_index(tri) = 0;
 }		/*end null_tri_array_numbers*/
-	
+
 EXPORT void print_tri(
 	TRI	  *tri,
 	INTERFACE *intfc)
@@ -1644,7 +1650,7 @@ LIB_LOCAL void fprint_tri(
 
 	if (tri == NULL)
 	{
-	    (void) fprintf(file,"NULL Triangle\n"); 
+	    (void) fprintf(file,"NULL Triangle\n");
 	    return;
 	}
 	(void) fprintf(file,"Tri = %llu\n",tri_number(tri,intfc));
@@ -1672,20 +1678,20 @@ LIB_LOCAL void fprint_tri(
 	(void) fprintf(file,"Tri = %llu ",tri_number(tri,intfc));
 	for (side = 0; side < 3; ++side)
 	{
-	    if (is_side_bdry(tri,side))             
+	    if (is_side_bdry(tri,side))
 	        (void) fprintf(file,"Bond%2s = %llu",sideno[side],
 			       bond_number(Bond_on_side(tri,side),intfc));
 
-	    else if (Tri_on_side(tri,side) == NULL) 
+	    else if (Tri_on_side(tri,side) == NULL)
 	        (void) fprintf(file,"Tri%2s  =       NULL",sideno[side]);
 
-	    else                                        
+	    else
 	        (void) fprintf(file,"Tri%2s  = %llu",sideno[side],
 			       tri_number(Tri_on_side(tri,side),intfc));
 	    (void) fprintf(file,"%s",sep[side]);
 	}
 
-	(void) fprintf(file,"Boundary = %2d ",Boundary_tri(tri));	    
+	(void) fprintf(file,"Boundary = %2d ",Boundary_tri(tri));
 	(void) fprintf(file,"bdry12 = %3s ",
 		       is_side01_a_bond(tri)? "YES" : "NO");
 	(void) fprintf(file,"bdry23 = %3s ",
@@ -1734,7 +1740,7 @@ LIB_LOCAL void fprint_tri(
 	(void) fprintf(file,"\n");
 }		/*end fprint_tri*/
 
-	
+
 
 /*
 *			fprint_triangle_numbers():
@@ -1757,7 +1763,7 @@ LOCAL void fprint_triangle_numbers(
 
 	if (tri == NULL)
 	{
-	    (void) fprintf(file,"NULL Triangle\n"); 
+	    (void) fprintf(file,"NULL Triangle\n");
 	    return;
 	}
 	(void) fprintf(file,"\tTri %d Borders",Tri_index(tri));
@@ -1838,8 +1844,8 @@ LOCAL void fprint_tris_on_surface(
 *	This routine prints the bond addresses and for each bond,
 *	the bounding tris in angle order.  The tris are printed in terms of
 *	their index number in the double linked list (ie distance from first)
-*	in the surface they belong to.	It is assumed that these index numbers 
-*	are already set before this routine is called, by a call to 
+*	in the surface they belong to.	It is assumed that these index numbers
+*	are already set before this routine is called, by a call to
 *	set_tri_array_numbers for each surface in question.
 */
 
@@ -1851,7 +1857,7 @@ LIB_LOCAL void fprint_tris_on_curve(
 	BOND_TRI	**btris;
 	char		s[20];
 	int		i;
- 
+
 	(void) fprintf(file,"\n");
 	b = curve->first;
 	(void) fprintf(file,"\tOrdered tri indices\n");
@@ -1959,7 +1965,7 @@ EXPORT	boolean curve_is_in_surface_bdry(
 
 /*
 *		install_curve_in_surface_bdry():
-*	
+*
 *	Assigns the boundary pointers correctly.
 */
 
@@ -2002,7 +2008,7 @@ EXPORT void install_curve_in_surface_bdry(
 
 /*
 *		remove_curve_from_surface_bdry():
-*	
+*
 *	Deletes the boundary pointers correctly.
 */
 
@@ -2065,7 +2071,7 @@ EXPORT boolean next_tri(
 	    if (*++(T->cur_surface) == NULL)
 	    {
 	    	*t = NULL;	*s = NULL;
-	    	return NO;			
+	    	return NO;
 	    }
 	    else
 	        T->cur_tri = first_tri(*T->cur_surface);
@@ -2206,7 +2212,7 @@ LIB_LOCAL boolean next_point3d(
 	{
 	    if (T->cur_bond==NULL)
 	    {
-	    	if (*++(T->cur_curve) == NULL)  
+	    	if (*++(T->cur_curve) == NULL)
 	    	{
 		    /*After here, np_do_n_curs==NO and np_do_p_curs==NO */
 		    /*will begin to loop over tris */
@@ -2570,12 +2576,12 @@ EXPORT	BOND_TRI *i_link_tri_to_bond(
 		   "of tri shares common points with bond\n");
 	    /*print_tri(tri,s->interface);  can not print_tri here */
 	    p = Point_of_tri(tri);
-	    
+
 	    print_tri_coords(tri);
 	    printf("%llu\n", point_number(p[0]));
 	    printf("%llu\n", point_number(p[1]));
 	    printf("%llu\n", point_number(p[2]));
-	    
+
 	    print_bond(b);
 	    printf("tri bond %p %p\n", tri, b);
 
@@ -2929,8 +2935,8 @@ LOCAL void add_bdry_curve_to_hash_table(
 	for (c1=s1->pos_curves, c2=s2->pos_curves; c2 && *c2; ++c1, ++c2)
 	{
 	    b1 = (*c1)->first;	b2 = (*c2)->first;
-	    
-	    
+
+
 	    p = (POINT*)find_from_hash_table((POINTER)b1->start,
 				             hash_table,h_size);
 	    if (p == NULL)
@@ -2938,7 +2944,7 @@ LOCAL void add_bdry_curve_to_hash_table(
 				         hash_table,h_size);
 	    else
 		b2->start = p;
-		
+
 	    for (; b1 && b2; b1=b1->next, b2=b2->next)
 	    {
 	    	p = (POINT*)find_from_hash_table((POINTER)b1->end,
@@ -2957,7 +2963,7 @@ LOCAL void add_bdry_curve_to_hash_table(
 	for (c1=s1->neg_curves, c2=s2->neg_curves; c2 && *c2; ++c1, ++c2)
 	{
 	    b1 = (*c1)->first;	b2 = (*c2)->first;
-	    
+
 	    p = (POINT*)find_from_hash_table((POINTER)b1->start,
 	    		                     hash_table,h_size);
 	    if (p == NULL)
@@ -2967,7 +2973,7 @@ LOCAL void add_bdry_curve_to_hash_table(
 		b2->start = p;
 	    for (; b1 && b2; b1=b1->next, b2=b2->next)
 	    {
-	    	
+
 
 	    	p = (POINT*)find_from_hash_table((POINTER)b1->end,
 				                 hash_table,h_size);

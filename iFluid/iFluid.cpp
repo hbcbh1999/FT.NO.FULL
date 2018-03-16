@@ -260,6 +260,11 @@ int main(int argc, char **argv)
 	if (debugging("trace"))
 	    printf("Passed FT_InitVeloFunc()\n");
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",front.interf,NO,0,666,'r');
+    //exit(-1);
+    //debugdan    FIXME
+
         if (!isVd)
 	    l_cartesian->initMesh();
         else
@@ -346,7 +351,15 @@ int main(int argc, char **argv)
                 }
                 else if (level_func_pack.is_RS_SY) //for Smeeton-Youngs experiment
                 {
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",front.interf,NO,0,1,'r');
+    //exit(-1);
+    //debugdan    FIXME
                     l_cartesian->setInitialCondition_RSSY_vd(&level_func_pack);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",front.interf,NO,0,2,'r');
+    //exit(-1);
+    //debugdan    FIXME
                     if (debugging("trace"))
                         printf("Passed setInitialCondition_RSSY_vd()\n");
                 }
@@ -395,7 +408,7 @@ static  void ifluid_driver(
 	{
             if (debugging("trace"))
                 (void) printf("\nEnter FT_RedistMesh(front) in Zeroth step\n");
-	    FT_RedistMesh(front);
+	    //FT_RedistMesh(front);
             if (debugging("trace"))
                 (void) printf("Leave FT_RedistMesh(front) in Zeroth step\n");
 	}
@@ -409,7 +422,7 @@ static  void ifluid_driver(
                         "l_cartesian->max_dt = %f\n",front->dt, l_cartesian->max_dt);
         // TODO && FIXME: Install Reflection Boundary Condition Constraint
         //((Incompress_Solver_Smooth_3D_Cartesian*)l_cartesian)->enforceReflectionState();
-         FT_Propagate(front);
+         //FT_Propagate(front);
 
 	    if (debugging("trace"))
                 (void) printf("Zeroth step: Calling ifluid solve()\n");
@@ -486,6 +499,11 @@ static  void ifluid_driver(
         // only calculate velocity variance, and then exit
         const boolean onlyCalcVeloVar = NO;
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",front->interf,NO,0,10,'r');
+    //exit(-1);
+    //debugdan    FIXME
+
         for (;;)
         {
             /* compute and print terminal velocity, top and bottom of interior surface, alpha, and theta for RT simulation*/
@@ -510,6 +528,10 @@ static  void ifluid_driver(
             // TODO && FIXME: Reflection Boundary Condition
             //((Incompress_Solver_Smooth_3D_Cartesian*)l_cartesian)->enforceReflectionState();
             FT_Propagate(front);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",front->interf,NO,0,666,'r');
+    //exit(-1);
+    //debugdan    FIXME
             stop_clock("FT_Propagate");
 
             sum_num_reduction = front->num_reduction;
@@ -765,7 +787,7 @@ static  void ifluid_driver(
 	    }
 	    if (debugging("trace"))
                 (void) printf("After print output()\n");
-            if (FT_IsMovieFrameTime(front))
+            if (FT_IsMovieFrameTime(front))    //debugdan    FIXME
 	    {
                 //print P-node/state files for making plot
                 l_cartesian->printInteriorVelocity(out_name);

@@ -2187,7 +2187,19 @@ LOCAL int preserve_front_advance_front3d(
                 long_alloc_view(stdout);
             }
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",(*newfront)->interf,NO,0,40,'r');
+    //exit(0);
+    printf("DEBUGDAN: before propagate_3d_front, ");
+    check_num_of_tris(front->interf);
+    //debugdan    FIXME
 	status = propagate_3d_front(wave,front,*newfront,dt,dt_frac,NO);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",(*newfront)->interf,NO,0,41,'r');
+    //exit(0);
+    printf("DEBUGDAN: after propagate_3d_front, ");
+    check_num_of_tris((*newfront)->interf);
+    //debugdan    FIXME
 
             if (debugging("storage"))
             {
@@ -2319,15 +2331,29 @@ LOCAL int preserve_front_advance_front3d(
             }
 
 
+    //debugdan    FIXME
+    printf("DEBUGDAN: before redistribute(*newfront), ");
+    check_num_of_tris((*newfront)->interf);
+    printf("DEBUGDAN: do_redist = %d.\n", do_redist);
+    //debugdan    FIXME
+
 	interpolate_intfc_states((*newfront)->interf) = YES;
 	switch (redistribute(*newfront,do_redist,NO))
 	{
 	case GOOD_REDISTRIBUTION:
 	    Redistribution_count(front) = Redistribution_count(*newfront); /* NEEDS DOCUMENT */
 	    status = GOOD_STEP;
+    //debugdan    FIXME
+    printf("DEBUGDAN: after redistribute(*newfront), GOOD_REDISTRIBUTION, ");
+    check_num_of_tris((*newfront)->interf);
+    //debugdan    FIXME
 	    break;
 
 	case UNABLE_TO_UNTANGLE:
+        //debugdan    FIXME
+        //vtk_interface_plot("testdan",(*newfront)->interf,NO,0,42,'r');
+        //exit(0);
+        //debugdan    FIXME
 	    *dt_frac *= TIME_STEP_REDUCTION_FACTOR(front->interf);
 	    status = MODIFY_TIME_STEP;
 	    (void) printf("WARNING in %s(), UNABLE_TO_UNTANGLE, "
@@ -2363,6 +2389,10 @@ LOCAL int preserve_front_advance_front3d(
 	    clean_up(ERROR);
 	    break;
 	}
+    //debugdan    FIXME
+    printf("DEBUGDAN: after redistribute(*newfront), ");
+    check_num_of_tris((*newfront)->interf);
+    //debugdan    FIXME
 	if (status == GOOD_STEP)
 	    reset_normal_on_intfc((*newfront)->interf);
 	if (debugging("final_front"))
@@ -2556,6 +2586,10 @@ LOCAL int preserve_front_advance_front3d(
         }
         printf("Number of bad tris after redistribute() for proc #%d ts=%d: %d %d %d %d\n", pp_mynode(),(*newfront)->step,nt,nf,nl,ns);
 
+    //debugdan    FIXME
+    printf("DEBUGDAN: check again, ");
+    check_num_of_tris((*newfront)->interf);
+    //debugdan    FIXME
 
 
 
@@ -2695,10 +2729,18 @@ LOCAL int propagate_3d_front(
                 long_alloc_view(stdout);
             }
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",(newfront)->interf,NO,0,51,'r');
+    //exit(0);
+    //debugdan    FIXME
 	    if (front->_point_propagate != NULL)
                 propagate_surface_points(front,newfront,wave,dt,V);
 	    else if (front->surface_propagate != NULL)
 	        surface_propagate(front,newfront,wave,dt,V); /* f_surface_propagate called */
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",(newfront)->interf,NO,0,52,'r');
+    //exit(0);
+    //debugdan    FIXME
 
             if (debugging("storage"))
             {
@@ -2790,6 +2832,10 @@ LOCAL int propagate_3d_front(
                 long_alloc_view(stdout);
             }
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",(newfront)->interf,NO,0,53,'r');
+    //exit(0);
+    //debugdan    FIXME
 	if (!scatter_front(newfront))
 	{
 	    stop_clock("scatter_front");
@@ -2815,6 +2861,10 @@ LOCAL int propagate_3d_front(
 
 	    return MODIFY_TIME_STEP;
 	}
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",(newfront)->interf,NO,0,54,'r');
+    //exit(0);
+    //debugdan    FIXME
 
 	stop_clock("scatter_front");
 
@@ -3576,8 +3626,9 @@ LOCAL void propagate_surface_points(
         while (next_point(intfc_old,&oldp,&oldhse,&oldhs) &&
              next_point(intfc_new,&newp,&newhse,&newhs))
         {
-	    if(Boundary_point(newp))
-	     	continue;
+            //debugdan    FIXME
+	    //if(Boundary_point(newp))
+	    // 	continue;
 	    point_propagate(front,wave,oldp,newp,oldhse,oldhs,dt,V); /* ifluid_point_propagate_vd called */
 	}
 

@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -188,9 +188,9 @@ EXPORT	boolean make_bdry_surfaces(
 	for (i = 0; i < blk_info.num_surfs; ++i)
         {
 	    last_tri(blk_info.surfs[i]) = blk_info.cur_tris[i];
-	    last_tri(blk_info.surfs[i])->next = 
+	    last_tri(blk_info.surfs[i])->next =
 	    		tail_of_tri_list(blk_info.surfs[i]);
-	    first_tri(blk_info.surfs[i])->prev = 
+	    first_tri(blk_info.surfs[i])->prev =
 	    		head_of_tri_list(blk_info.surfs[i]);
 	}
 
@@ -205,6 +205,50 @@ EXPORT	boolean make_bdry_surfaces(
 	return YES;
 }	/* end make_bdry_surfaces */
 
+EXPORT void     redoComponent(
+	RECT_GRID   *rgr,
+	INTERFACE   *intfc,
+	COMPONENT   neg_comp,
+	COMPONENT   pos_comp,
+	double       (*func)(POINTER,double*),
+        POINTER     func_params,
+	SURFACE     **s)
+{
+	int		i,num_crx, *gmax;
+	RECT_GRID	dual_gr;
+	SURFACE		*surf;
+	EG_CRX		Eg_crx;
+	BLK_INFO	blk_info;
+	static BLK_CRX  *blk_crx;
+        INTERFACE       *save_intfc;
+
+        save_intfc = current_interface();
+        set_current_interface(intfc);
+	if (blk_crx == NULL)
+	    blk_crx = alloc_blk_crx(NO);
+
+	zero_scalar(&Eg_crx,sizeof(EG_CRX));
+
+	set_grid_for_surface_construction(&dual_gr,rgr);
+	gmax = dual_gr.gmax;
+	tri_array(&Eg_crx.comp,gmax[0]+1,gmax[1]+1,gmax[2]+1,
+			sizeof(COMPONENT));
+
+	reset_domain_comp(Eg_crx.comp,dual_gr);
+	assign_two_comp_domain(func,func_params,Eg_crx.comp,
+				dual_gr,neg_comp,pos_comp);
+	/* Set component on each corner for dual grid */
+	num_crx = count_crx_through_comp(gmax,Eg_crx.comp);
+
+	alloc_grid_crx_mem(&Eg_crx,gmax,num_crx,NO);
+	/* Until now, just the number of crossings is calculated */
+
+	num_crx = install_grid_crx(func,func_params,&Eg_crx,dual_gr,
+				neg_comp,pos_comp);
+	/* Use the level function to calculate crossing positions */
+
+	surf = make_surface(neg_comp,pos_comp,NULL,NULL);/* call f_make_surface */
+}
 
 /*******************************************************************
 *       This function make a surface described by the function     *
@@ -273,7 +317,7 @@ EXPORT boolean make_level_surface(
 
 	for (i = 0; i < num_crx; ++i)
 	    Eg_crx.crx_store[i].s = surf;
-	
+
 	make_grid_surfaces(blk_crx,&Eg_crx,gmax,NO);
 	/* Using marching cube to construct the surface */
 
@@ -299,6 +343,8 @@ EXPORT boolean make_level_surface(
         *s = surf;      //Dan
         interface_reconstructed(intfc) = YES;   //Dan
 	set_current_interface(save_intfc);
+        //vtk_interface_plot("be4",intfc,NO,0,0,'r');
+        //exit(-1);
 	//return (surf == NULL) ? NO : YES;
         return YES;
 }	/* end make_level_surface */
@@ -382,7 +428,7 @@ LOCAL	boolean install_bdry_objects(
 	    {
 	    	for (k = 0; k < 2; ++k)
 		{
-		    if (i != 2) 
+		    if (i != 2)
 		    	corners[i][j][k] = NULL;
 		    edges[i][j][k] = NULL;
 		}
@@ -417,7 +463,7 @@ LOCAL	boolean install_bdry_objects(
             if (buffered_boundary_type(intfc->rect_bdry_type[2][k]) ||
 		intfc->rect_bdry_type[2][k] == MIXED_TYPE_BOUNDARY)
 		surf_count--;
-	    if (surf_count < 2) 
+	    if (surf_count < 2)
 		node_flag[i][j][k] = NO;
 	}
 
@@ -453,8 +499,8 @@ LOCAL	boolean install_bdry_objects(
 				if (corners[j][ii][jj] == NULL &&
 				    node_flag[j][ii][jj] == YES)
 				*/
-				if (corners[j][ii][jj] == NULL) 
-				    corners[j][ii][jj] = 
+				if (corners[j][ii][jj] == NULL)
+				    corners[j][ii][jj] =
 				    	make_node(Point(coords));
 			    	nodes[ii][jj] = corners[j][ii][jj];
 				break;
@@ -463,10 +509,10 @@ LOCAL	boolean install_bdry_objects(
 				if (corners[jj][j][ii] == NULL &&
 				    node_flag[jj][j][ii] == YES)
 				*/
-				if (corners[jj][j][ii] == NULL) 
+				if (corners[jj][j][ii] == NULL)
 				    corners[jj][j][ii]
 					= make_node(Point(coords));
-			    	nodes[ii][jj] = corners[jj][j][ii]; 
+			    	nodes[ii][jj] = corners[jj][j][ii];
 				break;
 			    case 2:
 				/*
@@ -476,7 +522,7 @@ LOCAL	boolean install_bdry_objects(
 				if (corners[ii][jj][j] == NULL)
 				    corners[ii][jj][j]
 					= make_node(Point(coords));
-			    	nodes[ii][jj] = corners[ii][jj][j]; 
+			    	nodes[ii][jj] = corners[ii][jj][j];
 			    }
 			    if (nodes[ii][jj] != NULL)
 			    {
@@ -596,7 +642,7 @@ LOCAL	boolean install_bdry_objects(
 
 		    if (edge_flag[(i+1)%3][1][j] == YES)
 		    {
-		      if (edges[(i+1)%3][1][j] == NULL) 
+		      if (edges[(i+1)%3][1][j] == NULL)
 		      {
 			ns = nodes[1][1]; ne = nodes[0][1];
 		        edges[(i+1)%3][1][j] = make_curve(NO_COMP,
@@ -643,7 +689,7 @@ LOCAL	boolean install_bdry_objects(
 
 		    if (edge_flag[(i+2)%3][j][0] == YES)
 		      {
-		      if (edges[(i+2)%3][j][0] == NULL) 
+		      if (edges[(i+2)%3][j][0] == NULL)
 		      {
 			ns = nodes[0][1]; ne = nodes[0][0];
 		    	edges[(i+2)%3][j][0] = make_curve(NO_COMP,
@@ -1081,38 +1127,38 @@ LOCAL int count_bdry_coner_crx(
 	}
 	if (comp[1][1][1] != comp[0][1][1] &&
 	    comp[1][1][1] != comp[1][0][1] &&
-	    comp[1][1][1] != comp[1][1][0]) 
+	    comp[1][1][1] != comp[1][1][0])
 	    ++num_crx;
 	if (comp[gmax[0]-1][1][1] != comp[gmax[0]][1][1] &&
 	    comp[gmax[0]-1][1][1] != comp[gmax[0]-1][0][1] &&
-	    comp[gmax[0]-1][1][1] != comp[gmax[0]-1][1][0]) 
+	    comp[gmax[0]-1][1][1] != comp[gmax[0]-1][1][0])
 	    ++num_crx;
 	if (comp[1][gmax[1]-1][1] != comp[0][gmax[1]-1][1] &&
 	    comp[1][gmax[1]-1][1] != comp[1][gmax[1]][1] &&
-	    comp[1][gmax[1]-1][1] != comp[1][gmax[1]-1][0]) 
+	    comp[1][gmax[1]-1][1] != comp[1][gmax[1]-1][0])
 	    ++num_crx;
 	if (comp[1][1][gmax[2]-1] != comp[0][1][gmax[2]-1] &&
 	    comp[1][1][gmax[2]-1] != comp[1][0][gmax[2]-1] &&
-	    comp[1][1][gmax[2]-1] != comp[1][1][gmax[2]]) 
+	    comp[1][1][gmax[2]-1] != comp[1][1][gmax[2]])
 	    ++num_crx;
 	if (comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]][gmax[1]-1][1] &&
 	    comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]-1][gmax[1]][1] &&
-	    comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]-1][gmax[1]-1][0]) 
+	    comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]-1][gmax[1]-1][0])
 	    ++num_crx;
 	if (comp[1][gmax[1]-1][gmax[2]-1] != comp[0][gmax[1]-1][gmax[2]-1] &&
 	    comp[1][gmax[1]-1][gmax[2]-1] != comp[1][gmax[1]][gmax[2]-1] &&
-	    comp[1][gmax[1]-1][gmax[2]-1] != comp[1][gmax[1]-1][gmax[2]]) 
+	    comp[1][gmax[1]-1][gmax[2]-1] != comp[1][gmax[1]-1][gmax[2]])
 	    ++num_crx;
 	if (comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]][1][gmax[2]-1] &&
 	    comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]-1][0][gmax[2]-1] &&
-	    comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]-1][1][gmax[2]]) 
+	    comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]-1][1][gmax[2]])
 	    ++num_crx;
-	if (comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] != 
+	if (comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] !=
 	    comp[gmax[0]][gmax[1]-1][gmax[2]-1] &&
-	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] != 
+	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] !=
 	    comp[gmax[0]-1][gmax[1]][gmax[2]-1] &&
-	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] != 
-	    comp[gmax[0]-1][gmax[1]-1][gmax[2]]) 
+	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] !=
+	    comp[gmax[0]-1][gmax[1]-1][gmax[2]])
 	    ++num_crx;
 
 	return num_crx;
@@ -1166,8 +1212,8 @@ LOCAL int install_bdry_corner_crx(
 			m = (j == 0) ? 0 : gmax[1]-1;
 			n = (j == 0) ? 0 : 1;
 		    	z_curve_crx[0][m][k] = x_crx[0][j][k];
-		    	z_curve_crx[0][m][k]->c = 
-				(z_curve_crx[0][m][k]->c == NULL) ? 
+		    	z_curve_crx[0][m][k]->c =
+				(z_curve_crx[0][m][k]->c == NULL) ?
 				edges[2][0][n] : NULL;
 		    }
 		    if (k == 0 || k == gmax[2])
@@ -1175,7 +1221,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (k == 0) ? 0 : gmax[2]-1;
 			n = (k == 0) ? 0 : 1;
 		    	y_curve_crx[0][j][m] = x_crx[0][j][k];
-		    	y_curve_crx[0][j][m]->c = 
+		    	y_curve_crx[0][j][m]->c =
 				(y_curve_crx[0][j][m]->c == NULL) ?
 				edges[1][n][0] : NULL;
 		    }
@@ -1201,7 +1247,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (j == 0) ? 0 : gmax[1]-1;
 			n = (j == 0) ? 0 : 1;
 		    	z_curve_crx[gmax[0]-1][m][k] = x_crx[gmax[0]-1][j][k];
-		    	z_curve_crx[gmax[0]-1][m][k]->c = 
+		    	z_curve_crx[gmax[0]-1][m][k]->c =
 				(z_curve_crx[gmax[0]-1][m][k]->c == NULL) ?
 				edges[2][1][n] : NULL;
 		    }
@@ -1210,7 +1256,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (k == 0) ? 0 : gmax[2]-1;
 			n = (k == 0) ? 0 : 1;
 		    	y_curve_crx[gmax[0]-1][j][m] = x_crx[gmax[0]-1][j][k];
-		    	y_curve_crx[gmax[0]-1][j][m]->c = 
+		    	y_curve_crx[gmax[0]-1][j][m]->c =
 				(y_curve_crx[gmax[0]-1][j][m]->c == NULL) ?
 				edges[1][n][1] : NULL;
 		    }
@@ -1247,7 +1293,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (i == 0) ? 0 : gmax[0]-1;
 			n = (i == 0) ? 0 : 1;
 		    	z_curve_crx[m][0][k] = y_crx[i][0][k];
-		    	z_curve_crx[m][0][k]->c = 
+		    	z_curve_crx[m][0][k]->c =
 				(z_curve_crx[m][0][k]->c == NULL) ?
 				edges[2][n][0] : NULL;
 		    }
@@ -1256,7 +1302,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (k == 0) ? 0 : gmax[2]-1;
 			n = (k == 0) ? 0 : 1;
 		    	x_curve_crx[i][0][m] = y_crx[i][0][k];
-		    	x_curve_crx[i][0][m]->c = 
+		    	x_curve_crx[i][0][m]->c =
 				(x_curve_crx[i][0][m]->c == NULL) ?
 				edges[0][0][n] : NULL;
 		    }
@@ -1282,7 +1328,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (i == 0) ? 0 : gmax[0]-1;
 			n = (i == 0) ? 0 : 1;
 		    	z_curve_crx[m][gmax[1]-1][k] = y_crx[i][gmax[1]-1][k];
-		    	z_curve_crx[m][gmax[1]-1][k]->c = 
+		    	z_curve_crx[m][gmax[1]-1][k]->c =
 				(z_curve_crx[m][gmax[1]-1][k]->c == NULL) ?
 				edges[2][n][1] : NULL;
 		    }
@@ -1291,7 +1337,7 @@ LOCAL int install_bdry_corner_crx(
 			m = (k == 0) ? 0 : gmax[2]-1;
 			n = (k == 0) ? 0 : 1;
 		    	x_curve_crx[i][gmax[1]-1][m] = y_crx[i][gmax[1]-1][k];
-		    	x_curve_crx[i][gmax[1]-1][m]->c = 
+		    	x_curve_crx[i][gmax[1]-1][m]->c =
 				(x_curve_crx[i][gmax[1]-1][m]->c == NULL) ?
 				edges[0][1][n] : NULL;
 		    }
@@ -1328,8 +1374,8 @@ LOCAL int install_bdry_corner_crx(
 		    	m = (i == 0) ? 0 : gmax[0]-1;
 		    	n = (i == 0) ? 0 : 1;
 			y_curve_crx[m][j][0] = z_crx[i][j][0];
-			y_curve_crx[m][j][0]->c = 
-				(y_curve_crx[m][j][0]->c == NULL) ? 
+			y_curve_crx[m][j][0]->c =
+				(y_curve_crx[m][j][0]->c == NULL) ?
 				edges[1][0][n] : NULL;
 		    }
 		    if (j == 0 || j == gmax[1])
@@ -1337,7 +1383,7 @@ LOCAL int install_bdry_corner_crx(
 		    	m = (j == 0) ? 0 : gmax[1]-1;
 		    	n = (j == 0) ? 0 : 1;
 			x_curve_crx[i][m][0] = z_crx[i][j][0];
-			x_curve_crx[i][m][0]->c = 
+			x_curve_crx[i][m][0]->c =
 				(x_curve_crx[i][m][0]->c == NULL) ?
 				edges[0][n][0] : NULL;
 		    }
@@ -1363,7 +1409,7 @@ LOCAL int install_bdry_corner_crx(
 		    	m = (i == 0) ? 0 : gmax[0]-1;
 		    	n = (i == 0) ? 0 : 1;
 			y_curve_crx[m][j][gmax[2]-1] = z_crx[i][j][gmax[2]-1];
-			y_curve_crx[m][j][gmax[2]-1]->c = 
+			y_curve_crx[m][j][gmax[2]-1]->c =
 				(y_curve_crx[m][j][gmax[2]-1]->c == NULL) ?
 				edges[1][1][n] : NULL;
 		    }
@@ -1372,7 +1418,7 @@ LOCAL int install_bdry_corner_crx(
 		    	m = (j == 0) ? 0 : gmax[1]-1;
 		    	n = (j == 0) ? 0 : 1;
 			x_curve_crx[i][m][gmax[2]-1] = z_crx[i][j][gmax[2]-1];
-			x_curve_crx[i][m][gmax[2]-1]->c = 
+			x_curve_crx[i][m][gmax[2]-1]->c =
 				(x_curve_crx[i][m][gmax[2]-1]->c == NULL) ?
 				edges[0][n][1] : NULL;
 		    }
@@ -1659,59 +1705,59 @@ LOCAL int install_bdry_corner_crx(
 
 	if (comp[1][1][1] != comp[0][1][1] &&
 	    comp[1][1][1] != comp[1][0][1] &&
-	    comp[1][1][1] != comp[1][1][0]) 
+	    comp[1][1][1] != comp[1][1][0])
 	{
 	    crx_store[num_crx].p = corners[0][0][0]->posn;
 	    node_crx[0][0][0] = &crx_store[num_crx++];
 	}
 	if (comp[gmax[0]-1][1][1] != comp[gmax[0]][1][1] &&
 	    comp[gmax[0]-1][1][1] != comp[gmax[0]-1][0][1] &&
-	    comp[gmax[0]-1][1][1] != comp[gmax[0]-1][1][0]) 
+	    comp[gmax[0]-1][1][1] != comp[gmax[0]-1][1][0])
 	{
 	    crx_store[num_crx].p = corners[1][0][0]->posn;
 	    node_crx[gmax[0]-1][0][0] = &crx_store[num_crx++];
 	}
 	if (comp[1][gmax[1]-1][1] != comp[0][gmax[1]-1][1] &&
 	    comp[1][gmax[1]-1][1] != comp[1][gmax[1]][1] &&
-	    comp[1][gmax[1]-1][1] != comp[1][gmax[1]-1][0]) 
+	    comp[1][gmax[1]-1][1] != comp[1][gmax[1]-1][0])
 	{
 	    crx_store[num_crx].p = corners[0][1][0]->posn;
 	    node_crx[0][gmax[1]-1][0] = &crx_store[num_crx++];
 	}
 	if (comp[1][1][gmax[2]-1] != comp[0][1][gmax[2]-1] &&
 	    comp[1][1][gmax[2]-1] != comp[1][0][gmax[2]-1] &&
-	    comp[1][1][gmax[2]-1] != comp[1][1][gmax[2]]) 
+	    comp[1][1][gmax[2]-1] != comp[1][1][gmax[2]])
 	{
 	    crx_store[num_crx].p = corners[0][0][1]->posn;
 	    node_crx[0][0][gmax[2]-1] = &crx_store[num_crx++];
 	}
 	if (comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]][gmax[1]-1][1] &&
 	    comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]-1][gmax[1]][1] &&
-	    comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]-1][gmax[1]-1][0]) 
+	    comp[gmax[0]-1][gmax[1]-1][1] != comp[gmax[0]-1][gmax[1]-1][0])
 	{
 	    crx_store[num_crx].p = corners[1][1][0]->posn;
 	    node_crx[gmax[0]-1][gmax[1]-1][0] = &crx_store[num_crx++];
 	}
 	if (comp[1][gmax[1]-1][gmax[2]-1] != comp[0][gmax[1]-1][gmax[2]-1] &&
 	    comp[1][gmax[1]-1][gmax[2]-1] != comp[1][gmax[1]][gmax[2]-1] &&
-	    comp[1][gmax[1]-1][gmax[2]-1] != comp[1][gmax[1]-1][gmax[2]]) 
+	    comp[1][gmax[1]-1][gmax[2]-1] != comp[1][gmax[1]-1][gmax[2]])
 	{
 	    crx_store[num_crx].p = corners[0][1][1]->posn;
 	    node_crx[0][gmax[1]-1][gmax[2]-1] = &crx_store[num_crx++];
 	}
 	if (comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]][1][gmax[2]-1] &&
 	    comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]-1][0][gmax[2]-1] &&
-	    comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]-1][1][gmax[2]]) 
+	    comp[gmax[0]-1][1][gmax[2]-1] != comp[gmax[0]-1][1][gmax[2]])
 	{
 	    crx_store[num_crx].p = corners[1][0][1]->posn;
 	    node_crx[gmax[0]-1][0][gmax[2]-1] = &crx_store[num_crx++];
 	}
-	if (comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] != 
+	if (comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] !=
 	    comp[gmax[0]][gmax[1]-1][gmax[2]-1] &&
-	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] != 
+	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] !=
 	    comp[gmax[0]-1][gmax[1]][gmax[2]-1] &&
-	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] != 
-	    comp[gmax[0]-1][gmax[1]-1][gmax[2]]) 
+	    comp[gmax[0]-1][gmax[1]-1][gmax[2]-1] !=
+	    comp[gmax[0]-1][gmax[1]-1][gmax[2]])
 	{
 	    crx_store[num_crx].p = corners[1][1][1]->posn;
 	    node_crx[gmax[0]-1][gmax[1]-1][gmax[2]-1] = &crx_store[num_crx++];
@@ -1775,7 +1821,7 @@ EXPORT	int count_crx_through_comp(
 
 /* The criterion to judge a curve_crx is as following:
 *   1. exactly 3 components are found on four vertices;
-*   2. components on diagonal postions are distinct, say: 
+*   2. components on diagonal postions are distinct, say:
 *          comp[0][0] != comp[1][1]
 *          comp[0][1] != comp[1][0]
 */
@@ -2045,7 +2091,7 @@ LOCAL	void assign_two_comp_domain(
 		    if (comp[i][j][k] != NO_COMP) continue;
 		    if ((*func)(func_params,coords) > 0)
 		    	comp[i][j][k] = pos_comp;
-		    else 
+		    else
 		    	comp[i][j][k] = neg_comp;
 		}
 	    }
@@ -2054,9 +2100,9 @@ LOCAL	void assign_two_comp_domain(
 
 
 EXPORT 	double dumbbell_func(
-        POINTER func_params,         
+        POINTER func_params,
 	double *coords)
-{         
+{
 	DUMBBELL_PARAMS *d_params = (DUMBBELL_PARAMS*)func_params;
         double x0,x1,y,z,f0,f1,R,rr;
         double arg;
@@ -2069,8 +2115,8 @@ EXPORT 	double dumbbell_func(
         rr  = d_params->rr;
 
         f0 = x0+sqrt(R*R-rr*rr);
-        f1 = x1-sqrt(R*R-rr*rr); 
-        if (coords[0]<f0)         
+        f1 = x1-sqrt(R*R-rr*rr);
+        if (coords[0]<f0)
             arg = sqrt(sqr(coords[0]-x0)+sqr(coords[1]-y)+sqr(coords[2]-z))-R;
         else if(coords[0] > f1)
             arg = sqrt(sqr(coords[0]-x1)+sqr(coords[1]-y)+sqr(coords[2]-z))-R;
@@ -2217,7 +2263,7 @@ LOCAL	boolean face_crx_in_dir(
 	{
 	    for (k = 0; k < 3; ++k)
 	    	coords[k] = coords1[k];
-	    coords[(dir+1)%3] = 0.5*(coords1[(dir+1)%3] + 
+	    coords[(dir+1)%3] = 0.5*(coords1[(dir+1)%3] +
 	    		coords2[(dir+1)%3]);
 	    f1 = (*func1)(func1_params,coords);
 	    f2 = (*func2)(func2_params,coords);
@@ -2228,7 +2274,7 @@ LOCAL	boolean face_crx_in_dir(
 
 	    for (k = 0; k < 3; ++k)
 	    	coords[k] = coords1[k];
-	    coords[(dir+2)%3] = 0.5*(coords1[(dir+2)%3] + 
+	    coords[(dir+2)%3] = 0.5*(coords1[(dir+2)%3] +
 	    		coords2[(dir+1)%3]);
 	    f1 = (*func1)(func1_params,coords);
 	    f2 = (*func2)(func2_params,coords);
@@ -2252,7 +2298,7 @@ EXPORT	void make_grid_surfaces(
 	BLK_TRI	      *bm,****blk_mem,*blk_mem_store;
 	static CURVE  **new_c=NULL;
 	static int    tnc, *n_c = NULL;
-	    
+
 
 	num_blk = 0;
 	for (i = 0; i < gmax[0]; ++i)
@@ -2317,10 +2363,10 @@ EXPORT	void make_grid_surfaces(
 	    uni_array(&new_c, MAX_NUM_CURVES,  sizeof(CURVE*));
 	    uni_array(&n_c, MAX_NUM_CURVES, sizeof(int));
 	}
-    
+
 	tnc = make_curves_from_blk(new_c, n_c, gmax,blk_mem,eg_crx->curves,
 					eg_crx->num_curves);
-	
+
 	/* tnc >= eg_crx->num_curves, if they are not equal,  */
 	/* at least one curve is cut into two pieces. */
 	if(tnc != eg_crx->num_curves)
@@ -2331,7 +2377,7 @@ EXPORT	void make_grid_surfaces(
 		eg_crx->curves[i] = new_c[i];
 	    eg_crx->num_curves = tnc;
 	}
-	
+
 	for (i = 0; i < gmax[0]; ++i)
 	{
 	    for (j = 0; j < gmax[1]; ++j)
@@ -2350,7 +2396,7 @@ EXPORT	void make_grid_surfaces(
 		}
 	    }
 	}
-	
+
 	/*#bjet  */
 	for (i = 0; i < eg_crx->num_curves; ++i)
 	    reorder_curve_link_list(eg_crx->curves[i]);
@@ -2372,7 +2418,7 @@ int	k, j;
 
 	firstb = lastb = b;
 	firstb->next = firstb->prev = NULL;
-	
+
 	/*two for loops, because after one bond is added to the curve,  */
 	/*the curve is changed. */
 	for(j=0; j < num_bonds; j++)
@@ -2427,7 +2473,7 @@ int	k, j;
 
 	c->first = firstb;
 	c->last = lastb;
-	
+
 	c->num_points = num_points_on_curve(c);
 }
 
@@ -2448,10 +2494,10 @@ BOND  *firstb, *lastb;
                 screen("delete_from_pointers() 1 failed\n");
                 clean_up(ERROR);
             }
-            
+
 	    delete_node(c->start);
             c->start = c->end;
-            
+
 	    if (!add_to_pointers(c, &(c->start)->out_curves))
             {
                 screen("ERROR in reset_nodes(), ");
@@ -2476,9 +2522,9 @@ BOND  *firstb, *lastb;
                 screen("delete_from_pointers() 3 failed\n");
                 clean_up(ERROR);
             }
-            
+
 	    c->start = make_node(firstb->start);
-           
+
 	    if (!add_to_pointers(c, &(c->start)->out_curves))
             {
                 screen("ERROR in reset_nodes(), ");
@@ -2492,7 +2538,7 @@ BOND  *firstb, *lastb;
                 clean_up(ERROR);
             }
         }
-	
+
 	c->start->posn = firstb->start;
 	c->end->posn = lastb->end;
 }
@@ -2514,7 +2560,7 @@ EXPORT  int  make_curves_from_blk(
 	CURVE  *c;
 	NODE   *ns, *ne;
 
-	DEBUG_ENTER(stitch_curves_of_blk) 
+	DEBUG_ENTER(stitch_curves_of_blk)
 
 	alloc_bn = max(gmax[0],max(gmax[1],gmax[2]));
 	uni_array(&newb, alloc_bn*alloc_bn, sizeof(BOND*));
@@ -2534,38 +2580,38 @@ EXPORT  int  make_curves_from_blk(
 		    {
                         if(blk_mem[i][j][k] != NULL)
 			{
-			   if(blk_mem[i][j][k]->bonds[nc] != NULL) 
+			   if(blk_mem[i][j][k]->bonds[nc] != NULL)
 			   {
-			       newb[num_bonds] = blk_mem[i][j][k]->bonds[nc];	  
+			       newb[num_bonds] = blk_mem[i][j][k]->bonds[nc];
 			       /*printf("#newb %d   %d %d %d \n", newb[num_bonds], i, j, k); */
-			       
+
 			       num_bonds ++;
 			       if(num_bonds == alloc_bn)
 			       {
-				   BOND  **newb2;    
+				   BOND  **newb2;
 				   alloc_bn += 100;
 				   uni_array(&newb2, alloc_bn, sizeof(BOND*));
 				   ft_assign(newb2, newb,sizeof(BOND*)*num_bonds);
 				   free(newb);
-				   newb = newb2; 
+				   newb = newb2;
 			       }
 			   }
-			   
+
 			   /*#bjetbond The second bond for the curve. */
-			   if(blk_mem[i][j][k]->bonds1[nc] != NULL) 
+			   if(blk_mem[i][j][k]->bonds1[nc] != NULL)
 			   {
-			       newb[num_bonds] = blk_mem[i][j][k]->bonds1[nc];	   
+			       newb[num_bonds] = blk_mem[i][j][k]->bonds1[nc];
 			       /*printf("#newba %d   %d %d %d \n", newb[num_bonds], i, j, k); */
-			       
+
 			       num_bonds ++;
 			       if(num_bonds == alloc_bn)
 			       {
-				   BOND  **newb2;    
+				   BOND  **newb2;
 				   alloc_bn += 100;
 				   uni_array(&newb2, alloc_bn, sizeof(BOND*));
 				   ft_assign(newb2, newb,sizeof(BOND*)*num_bonds);
 				   free(newb);
-				   newb = newb2; 
+				   newb = newb2;
 			       }
 			   }
 			} /*if blk_mem */
@@ -2574,7 +2620,7 @@ EXPORT  int  make_curves_from_blk(
             }
 
 	    /*printf("#curves %llu #num bond = %d\n", curve_number(curves[nc]), num_bonds); */
-	    
+
 	    if(newb[0] == NULL)
 	    {
 	        curves[nc]->num_points = 0;
@@ -2590,28 +2636,28 @@ EXPORT  int  make_curves_from_blk(
 	    {
 	        tmpb = newb[ind];
 		newb[ind] = NULL;
-		
+
 		if(ind == 0)
 		{
 		    c = curves[nc];
-		    stitch_bonds(c, tmpb, newb, num_bonds);	
+		    stitch_bonds(c, tmpb, newb, num_bonds);
 	            reset_nodes(c);
 		}
 		else
 		{
 		    ns = make_node(tmpb->start);
 		    ne = make_node(tmpb->end);
-		    
+
 		    c = copy_curve(curves[nc],ns,ne);
                     /*keep this infomation for later use */
 		    c->number = curves[nc]->number;
-		    
+
 		    c->start->posn = tmpb->start;
                     c->end->posn = tmpb->end;
-		    
-		    stitch_bonds(c, tmpb, newb, num_bonds);	
+
+		    stitch_bonds(c, tmpb, newb, num_bonds);
 	            reset_nodes(c);
-	
+
 	            for (s = curves[nc]->pos_surfaces; s && *s; ++s)
 		        install_curve_in_surface_bdry(*s,c,POSITIVE_ORIENTATION);
 	            for (s = curves[nc]->neg_surfaces; s && *s; ++s)
@@ -2629,17 +2675,17 @@ EXPORT  int  make_curves_from_blk(
 		new_curves[c_ind] = c;
 		c_ind++;
 		n_c[nc]++;
-	       
+
 	        /*printf("#c_ind %d  n_pt %d\n", c_ind, c->num_points); */
 		for(ind=0; ind < num_bonds; ind++)
 	            if(newb[ind] != NULL)
 		        break;
 	    }
 	}
-	
+
 	free(newb);
-	
-	DEBUG_LEAVE(stitch_curves_of_blk) 
+
+	DEBUG_LEAVE(stitch_curves_of_blk)
 	return c_ind;
 }	/* end stitch_curves_of_blk */
 
@@ -2653,8 +2699,8 @@ LOCAL void stitch_curves_of_blk(
 	int    nc, i, j, k;
 	int    num_bonds, alloc_bn;
 	BOND   *b, **newb, *firstb, *lastb;
-        
-	DEBUG_ENTER(stitch_curves_of_blk) 
+
+	DEBUG_ENTER(stitch_curves_of_blk)
 
 	alloc_bn = max(gmax[0],max(gmax[1],gmax[2]));
 	uni_array(&newb, alloc_bn, sizeof(BOND*));
@@ -2671,18 +2717,18 @@ LOCAL void stitch_curves_of_blk(
 		    {
                         if(blk_mem[i][j][k] != NULL)
 			{
-			   if(blk_mem[i][j][k]->bonds[nc] != NULL) 
+			   if(blk_mem[i][j][k]->bonds[nc] != NULL)
 			   {
-			       newb[num_bonds] = blk_mem[i][j][k]->bonds[nc];	   
+			       newb[num_bonds] = blk_mem[i][j][k]->bonds[nc];
 			       num_bonds ++;
 			       if(num_bonds == alloc_bn)
 			       {
-				   BOND  **newb2;    
+				   BOND  **newb2;
 				   alloc_bn += 10;
 				   uni_array(&newb2, alloc_bn, sizeof(BOND*));
 				   ft_assign(newb2, newb,sizeof(BOND*)*num_bonds);
 				   free(newb);
-				   newb = newb2; 
+				   newb = newb2;
 			       }
 			       /* xcjia fall2006 */
 			       {
@@ -2690,7 +2736,7 @@ LOCAL void stitch_curves_of_blk(
 			       }
 			       /* end */
 			   }
-			   
+
 			}
                     }
 		}
@@ -2705,7 +2751,7 @@ LOCAL void stitch_curves_of_blk(
 
 	    firstb = lastb = newb[0];
 	    firstb->next = firstb->prev = NULL;
-	    
+
 	    for(j =1; j < num_bonds; j++)
 	    {
 		for(k =1; k < num_bonds; k++)
@@ -2904,7 +2950,7 @@ LOCAL void stitch_curves_of_blk(
 	}
 	free(newb);
 
-	DEBUG_LEAVE(stitch_curves_of_blk) 
+	DEBUG_LEAVE(stitch_curves_of_blk)
 }	/* end stitch_curves_of_blk */
 
 EXPORT	SURFACE *prompt_make_level_surface(
@@ -2919,7 +2965,7 @@ EXPORT	SURFACE *prompt_make_level_surface(
 
         screen("Enter two integers as the negative and positive components: ");
         Scanf("%d %d\n",&neg_comp,&pos_comp);
-                                                                                
+
 	screen("Enter the level surface options\n");
 	screen("Supported level interface types are \n"
 	       "\tDumbbell (d)\n"
@@ -3029,7 +3075,7 @@ LOCAL 	POINTER init_ellipsoid_params(
 	Scanf("%f %f %f\n",&params.cen[0],&params.cen[1],&params.cen[2]);
 	screen("Enter the three radii of the ellipsoid: ");
 	Scanf("%f %f %f\n",&params.rad[0],&params.rad[1],&params.rad[2]);
-	
+
 	return (POINTER)&params;
 }	/* end init_ellipsoid_params */
 
@@ -3069,7 +3115,7 @@ LOCAL 	POINTER init_hyperboloid_params(
 	screen("The hyperboloid equation is x^2/a^2 + y^2/b^2 - z^2/c^2 = 1\n");
 	screen("Enter the three parameters a, b, and c: ");
 	Scanf("%f %f %f\n",&params.rad[0],&params.rad[1],&params.rad[2]);
-	
+
 	return (POINTER)&params;
 }	/* end init_hyperboloid_params */
 
@@ -3085,7 +3131,7 @@ LOCAL 	POINTER init_paraboloid_params(
 	screen("The paraboloid equation is x^2/a^2 + y^2/b^2 - z = 0\n");
 	screen("Enter the two parameters a, and b: ");
 	Scanf("%f %f %f\n",&params.rad[0],&params.rad[1]);
-	
+
 	return (POINTER)&params;
 }	/* end init_paraboloid_params */
 
@@ -3121,7 +3167,7 @@ LOCAL 	POINTER init_sine_wave_params(
             Scanf("%f\n",&fpoly.phase[i]);
             fpoly.phase[i] *= PI/180.0;
         }
-	
+
 	return (POINTER)&fpoly;
 }	/* end init_sine_wave_params */
 
@@ -3137,7 +3183,7 @@ LOCAL 	POINTER init_i_random_pert_params(
 	Scanf("%f\n",&z0);
 	fpoly = get_fourier_random(gr->L,gr->U,3,"");
 	fpoly->z0 = z0;
-	
+
 	return (POINTER)fpoly;
 }	/* end init_random_pert_params */
 
@@ -3248,7 +3294,7 @@ EXPORT	void prompt_make_comp3_surfaces(
 
 	screen("Enter three integers as three components: ");
 	Scanf("%d %d %d\n",&comp0,&comp1,&comp2);
-	
+
 	screen("Enter the coordinates of the first ellipsoid center: ");
 	Scanf("%f %f %f\n",&cen1[0],&cen1[1],&cen1[2]);
 	screen("Enter the three radii of the first ellipsoid: ");
@@ -3268,7 +3314,7 @@ EXPORT	void prompt_make_comp3_surfaces(
 	    clean_up(ERROR);
 	}
 }	/* end prompt_make_comp3_surfaces */
-	
+
 
 EXPORT 	void prompt_make_bdry_surfaces(
 	INTERFACE *intfc,
@@ -3335,12 +3381,12 @@ EXPORT  void print_blk_crx(
 		      {
 		          (void) printf("blk_crx->crx[%d][%d][%d]->p ",k,i,j);
 			  (void) printf("on the surface[%llu]\n",
-				surface_number(blk_crx->crx[k][i][j]->s));  
+				surface_number(blk_crx->crx[k][i][j]->s));
 		          print_general_vector("p",
-			  	Coords(blk_crx->crx[k][i][j]->p),3,"\n");	  
+			  	Coords(blk_crx->crx[k][i][j]->p),3,"\n");
 		      }
 		  }
-	     
+
          (void) printf("curve_crx in the block\n");
 	 for(i =0; i < 3; i++)
 	     for(j =0; j < 2; j++)
@@ -3445,6 +3491,13 @@ EXPORT 	void set_grid_for_surface_construction(
 		gmax[i] += dual_gr->ubuf[i] + 1;
 	    }
 	}
+    // TODO ** FIXME: HAO Interface
+    for (i = 0; i < dim-1; i++)
+    {
+         L[i] = L[i] + 0.5 * dual_gr->h[i];
+         U[i] = U[i] - 0.5 * dual_gr->h[i];
+         gmax[i] = gmax[i] - 1;
+    }
 	set_rect_grid(L,U,dual_gr->GL,dual_gr->GU,NULL,NULL,gmax,
 			dim,&rgr->Remap,dual_gr);
 }	/* end set_grid_for_surface_construction */
@@ -3493,7 +3546,7 @@ int	dir1;
 	    crx[dir1] = crds[0][dir1] + tol*h[dir1];
 	if(crds[2][dir1] - crx[dir1] < tol*h[dir1])
 	    crx[dir1] = crds[2][dir1] - tol*h[dir1];
-	
+
 	dir1 = (dir+2)%3;
 	if(crx[dir1] - crds[0][dir1] < tol*h[dir1])
 	    crx[dir1] = crds[0][dir1] + tol*h[dir1];
@@ -3544,7 +3597,7 @@ LOCAL	int install_grid_crx_from_comp(
 			    clean_up(ERROR);
 			}
 			fix_seg_crx_in_dir(crds_crx, coords1, coords2, h, 0);
-		
+
 			crx_store[n_crx].p = Point(crds_crx);
 			x_crx[i][j][k] = &crx_store[n_crx++];
 		    }
@@ -3573,7 +3626,7 @@ LOCAL	int install_grid_crx_from_comp(
 			    clean_up(ERROR);
 			}
 			fix_seg_crx_in_dir(crds_crx, coords1, coords2, h, 1);
-			
+
 			crx_store[n_crx].p = Point(crds_crx);
 			y_crx[i][j][k] = &crx_store[n_crx++];
 		    }
@@ -3602,7 +3655,7 @@ LOCAL	int install_grid_crx_from_comp(
 			    clean_up(ERROR);
 			}
 			fix_seg_crx_in_dir(crds_crx, coords1, coords2, h, 2);
-			
+
 			crx_store[n_crx].p = Point(crds_crx);
 			z_crx[i][j][k] = &crx_store[n_crx++];
 		    }
@@ -3630,7 +3683,7 @@ LOCAL	boolean grid_crx_from_comp(
 	ft_assign(coords1, crds1, dim*FLOAT);
 	ft_assign(coords2, crds2, dim*FLOAT);
 	ft_assign(crx_crds, crds1, dim*FLOAT);
-	
+
 	f1 = (*func)(func_params,coords1);
 	f2 = (*func)(func_params,coords2);
 
@@ -3641,7 +3694,7 @@ LOCAL	boolean grid_crx_from_comp(
 	{
 	    crx_crds[dir] = 0.5*(coords1[dir] + coords2[dir]);
 	    fm = (*func)(func_params, crx_crds);
-	    
+
 	    if(fm == f1)
 	    	coords1[dir] = crx_crds[dir];
 	    else  if(fm == f2)
@@ -3652,7 +3705,7 @@ LOCAL	boolean grid_crx_from_comp(
 		clean_up(ERROR);
 	    }
 	}
-	
+
 	return YES;
 }	/* end grid_line_crx_in_dir  */
 
@@ -3696,7 +3749,7 @@ int	i, dir1, dir2;
 double	crds1[3];
 
 	for(i=0; i<4; i++)
-	    if( (*func)(func_params, coords[i]) == 
+	    if( (*func)(func_params, coords[i]) ==
 	        (*func)(func_params, coords[(i+1)%4]) )
 	        break;
 
@@ -3717,15 +3770,15 @@ double	crds1[3];
 	    dir1 = (dir + 2)%3;
 	    dir2 = (dir + 1)%3;
 	}
-	
-	if(!grid_crx_from_comp(func, func_params, 3, 
+
+	if(!grid_crx_from_comp(func, func_params, 3,
 			       coords[(i+3)%4], coords[i], crds1, dir2))
 	{
 	    printf("ERROR face_crx_from_comp, no crx in first direction %d\n", dir2);
 	    printf("dir = %d, i = %d\n", dir, i);
 	    clean_up(ERROR);
 	}
-	if(!grid_crx_from_comp(func, func_params, 3, 
+	if(!grid_crx_from_comp(func, func_params, 3,
 			       coords[(i+2)%4], coords[(i+3)%4], face_crx, dir1))
 	{
 	    printf("ERROR face_crx_from_comp, no crx in second direction %d\n", dir1);
@@ -3733,7 +3786,7 @@ double	crds1[3];
 	}
 
 	face_crx[dir2] = crds1[dir2];
-	
+
 	if(debugging("face_crx_from_comp"))
 	{
 	    printf("%d  %d  %d\n",i, dir1, dir2);
@@ -3763,9 +3816,9 @@ int	i, dir1, dir2;
 
 	for(i=0; i<4; i++)
 	{
-	    crds[i][dir]  = L[dir]  +  (ip[dir] + inc[i][0])*h[dir]; 
-	    crds[i][dir1]  = L[dir1]  +  (ip[dir1] + inc[i][1])*h[dir1]; 
-	    crds[i][dir2]  = L[dir2]  +  (ip[dir2] + inc[i][2])*h[dir2]; 
+	    crds[i][dir]  = L[dir]  +  (ip[dir] + inc[i][0])*h[dir];
+	    crds[i][dir1]  = L[dir1]  +  (ip[dir1] + inc[i][1])*h[dir1];
+	    crds[i][dir2]  = L[dir2]  +  (ip[dir2] + inc[i][2])*h[dir2];
 	}
 
 }
@@ -3788,7 +3841,7 @@ LOCAL  int install_grid_curve_crx_from_comp(
 	BBI_POINT  ****z_curve_crx = eg_crx->z_curve_crx;
 	BBI_POINT  *crx_store = eg_crx->crx_store;
 	COMPONENT  ***comp = eg_crx->comp;
-	
+
 	bi_array(&face_coords, 4, 3, FLOAT);
 
 	n_curve_crx = 0;
@@ -3830,15 +3883,15 @@ LOCAL  int install_grid_curve_crx_from_comp(
 		for (j = 0; j <= gmax[1]; ++j)
 		{
 	            ip[1] = j;
-		    
+
 		    if (is_curve_crx(comp[i][j][k],comp[i][j][k+1],
 		            comp[i+1][j][k],comp[i+1][j][k+1]))
 		    {
 		        set_face_coords(face_coords, ip, L, h, 1);
 			face_crx_from_comp(face_crds_crx,func,func_params,face_coords,1);
-			
+
 			fix_face_crx_in_dir(face_crds_crx, face_coords, h, 1);
-			
+
 			crx_store[*n_crx].p = Point(face_crds_crx);
     	 	        y_curve_crx[i][j][k] = &crx_store[(*n_crx)++];
 			n_curve_crx++;
@@ -3857,15 +3910,15 @@ LOCAL  int install_grid_curve_crx_from_comp(
 		for (k = 0; k <= gmax[2]; ++k)
 		{
 		    ip[2] = k;
-		    
+
 		    if (is_curve_crx(comp[i][j][k],comp[i+1][j][k],
 		            comp[i][j+1][k],comp[i+1][j+1][k]))
-		    {   
+		    {
 			set_face_coords(face_coords, ip, L, h, 2);
 			face_crx_from_comp(face_crds_crx,func,func_params,face_coords,2);
-			
+
 			fix_face_crx_in_dir(face_crds_crx, face_coords, h, 2);
-	
+
 			crx_store[*n_crx].p = Point(face_crds_crx);
 			z_curve_crx[i][j][k] = &crx_store[(*n_crx)++];
 			n_curve_crx++;
@@ -3903,7 +3956,7 @@ LOCAL	int	make_surfaces_from_crx(
 	bi_array(&mem_ind, num_crx, 5, INT);
 	/*#bjet ASSUME */
 	get_default_fluid_comp(&comp1,&comp2,intfc);
-	
+
 	set_current_interface(intfc);
 
 	num = 0;
@@ -3922,12 +3975,12 @@ LOCAL	int	make_surfaces_from_crx(
 	                    continue;
 	                if (iz == gmax[2] && dir[i] == UPPER)
 	                    continue;
-		
+
 			c1 = comp[ix][iy][iz];
-			c2 = dir[i] == EAST ? comp[ix+1][iy][iz] : 
-			     dir[i] == NORTH ? comp[ix][iy+1][iz] : 
+			c2 = dir[i] == EAST ? comp[ix+1][iy][iz] :
+			     dir[i] == NORTH ? comp[ix][iy+1][iz] :
 			     comp[ix][iy][iz+1];
-			if(c1 == c2)	
+			if(c1 == c2)
 			    continue;
 
 			for(j=0; j<nea; j++)
@@ -3938,7 +3991,7 @@ LOCAL	int	make_surfaces_from_crx(
 			{
 			    ea[j][2] = 0;
 			    /*use assumption ea[j][0] is in fluid */
-			  
+
 			    /*c2: pos  c1: neg */
 			    if(c2 < c1)
 			    {
@@ -3953,7 +4006,7 @@ LOCAL	int	make_surfaces_from_crx(
 				c2 = c1;
 				c1 = ctmp;
 			    }
-		   
+
 			    ea[j][0] = c2;
 			    ea[j][1] = c1;
 
@@ -3987,10 +4040,10 @@ LOCAL	int	make_surfaces_from_crx(
 	    iy = mem_ind[i][1];
 	    iz = mem_ind[i][2];
 	    d = mem_ind[i][3];
-	    
-	    s_crx = d == EAST ? x_crx[ix][iy][iz] : 
+
+	    s_crx = d == EAST ? x_crx[ix][iy][iz] :
 		    d == NORTH ? y_crx[ix][iy][iz] : z_crx[ix][iy][iz];
-	    
+
 	    s_crx->s = news[mem_ind[i][4]];
 	}
 
@@ -4007,11 +4060,11 @@ LOCAL	int	make_surfaces_from_crx(
 	    for(i=0; i<nea; i++)
 	        eg_crx->surfaces[i] = news[i];
 	}
-	
+
 	free(mem_ind);
 
 	set_current_interface(sav_intfc);
-	
+
 	DEBUG_LEAVE(make_surfaces_from_crx);
 
 	return nea;
@@ -4019,7 +4072,7 @@ LOCAL	int	make_surfaces_from_crx(
 
 
 LOCAL	int  make_curves_from_crx(
-	INTERFACE	*intfc, 
+	INTERFACE	*intfc,
 	EG_CRX	        *eg_crx,
 	int             *gmax,
 	int		num_curve_crx)
@@ -4039,15 +4092,15 @@ LOCAL	int  make_curves_from_crx(
 	CURVE		*newc[MAX_CURVE];
 	POINT		*pt[MAX_CURVE][2];
 	int             nsurf=0, scnt[MAX_CURVE];
-	
+
         DEBUG_ENTER(make_curves_from_crx)
-	
+
 	if(sarr == NULL)
 	    bi_array(&sarr, MAX_CURVE, 3, sizeof(O_SURFACE));
 	bi_array(&mem_ind, num_curve_crx, 5, INT);
 
 	set_wall_flag_for_surface(intfc);
-	
+
 	num = 0;
 	for (iz = 0; iz <= gmax[2]; ++iz)
 	for (iy = 0; iy <= gmax[1]; ++iy)
@@ -4071,9 +4124,9 @@ LOCAL	int  make_curves_from_crx(
 		      if(c_crx == NULL)   continue;
 		      for(j=0; j<4; j++)
 		      {
-		          s_crx = j%2 == 0 ? 
-			  (j == 0 ? y_crx[ix][iy][iz] : y_crx[ix][iy][iz+1]) : 
-			  (j == 1 ? z_crx[ix][iy+1][iz] : z_crx[ix][iy][iz]); 
+		          s_crx = j%2 == 0 ?
+			  (j == 0 ? y_crx[ix][iy][iz] : y_crx[ix][iy][iz+1]) :
+			  (j == 1 ? z_crx[ix][iy+1][iz] : z_crx[ix][iy][iz]);
 			  if(s_crx == NULL)  continue;
 			  sp[k] = s_crx->s;
 			  k++;
@@ -4084,9 +4137,9 @@ LOCAL	int  make_curves_from_crx(
 		      if(c_crx == NULL)   continue;
 		      for(j=0; j<4; j++)
 		      {
-		          s_crx = j%2 == 0 ? 
-			  (j == 0 ? z_crx[ix][iy][iz] : z_crx[ix+1][iy][iz]) : 
-			  (j == 1 ? x_crx[ix][iy][iz+1] : x_crx[ix][iy][iz]); 
+		          s_crx = j%2 == 0 ?
+			  (j == 0 ? z_crx[ix][iy][iz] : z_crx[ix+1][iy][iz]) :
+			  (j == 1 ? x_crx[ix][iy][iz+1] : x_crx[ix][iy][iz]);
 			  if(s_crx == NULL)   continue;
 			  sp[k] = s_crx->s;
 			  k++;
@@ -4097,9 +4150,9 @@ LOCAL	int  make_curves_from_crx(
 		      if(c_crx == NULL)   continue;
 		      for(j=0; j<4; j++)
 		      {
-		          s_crx = j%2 == 0 ? 
-			  (j == 0 ? x_crx[ix][iy][iz] : x_crx[ix][iy+1][iz]) : 
-			  (j == 1 ? y_crx[ix+1][iy][iz] : y_crx[ix][iy][iz]); 
+		          s_crx = j%2 == 0 ?
+			  (j == 0 ? x_crx[ix][iy][iz] : x_crx[ix][iy+1][iz]) :
+			  (j == 1 ? y_crx[ix+1][iy][iz] : y_crx[ix][iy][iz]);
 			  if(s_crx == NULL)   continue;
 			  sp[k] = s_crx->s;
 			  k++;
@@ -4114,7 +4167,7 @@ LOCAL	int  make_curves_from_crx(
 		}
 
 		k = add_to_o_surfaces(sarr,&nsurf,sp);
-		
+
 		/*use crx_num to store the cruve index  */
 
 		if(k == -1)
@@ -4137,17 +4190,17 @@ LOCAL	int  make_curves_from_crx(
 	}
 
 	for(i=0; i<nsurf; i++)
-	{    
+	{
 	    if(scnt[i] !=2)
 	    {
 	        printf("ERROR make_wall_curves, only one curve crx, "
 		       "impossible.\n");
 	        clean_up(ERROR);
 	    }
-	    
+
 	    ns = make_node(pt[i][0]);
 	    ne = make_node(pt[i][1]);
-	    
+
 	    newc[i] = make_curve(NO_COMP, NO_COMP, ns, ne);
 	    newc[i]->last = NULL;
 	    newc[i]->first = NULL;
@@ -4164,14 +4217,14 @@ LOCAL	int  make_curves_from_crx(
 	    iy = mem_ind[i][1];
 	    iz = mem_ind[i][2];
 	    d = mem_ind[i][3];
-	    
-	    c_crx = d == EAST ? x_curve_crx[ix][iy][iz] : 
-		    d == NORTH ? y_curve_crx[ix][iy][iz] : 
+
+	    c_crx = d == EAST ? x_curve_crx[ix][iy][iz] :
+		    d == NORTH ? y_curve_crx[ix][iy][iz] :
 		    z_curve_crx[ix][iy][iz];
-	    
+
 	    c_crx->c = newc[mem_ind[i][4]];
 	}
-	
+
 	/*Assign eg_crx */
 	if(nsurf == 0)
 	{
@@ -4185,11 +4238,11 @@ LOCAL	int  make_curves_from_crx(
 	    for(i=0; i<nsurf; i++)
 	        eg_crx->curves[i] = newc[i];
 	}
-	
+
 	free(mem_ind);
-        
+
 	DEBUG_LEAVE(make_curves_from_crx)
-	
+
 	return nsurf;
 }
 
@@ -4203,7 +4256,7 @@ EXPORT	void show_comp(
 	double *h = gr.h;
 
 	printf("gmax=%d %d %d\n", gmax[0], gmax[1], gmax[2]);
-	
+
 	for (i = 0; i <= gmax[0]; ++i)
 	{
 	    printf("ix = %d\n", i);
@@ -4217,7 +4270,7 @@ EXPORT	void show_comp(
 	    }
 	    printf("\n");
 	}
-	
+
 	/*
 	for (k = gmax[2]; k >= 0; --k)
 	{
@@ -4254,35 +4307,35 @@ EXPORT boolean make_surfaces_from_comp(
 	int		is = 0;
 	int             ic = 0;
 
-	if (blk_crx == NULL) 
+	if (blk_crx == NULL)
 	{
 	    blk_crx = alloc_blk_crx(NO);
 	}
-        
+
 	zero_scalar(&Eg_crx,sizeof(EG_CRX));
 	set_grid_for_surface_construction(&dual_gr,rgr);
 
 	gmax = dual_gr.gmax;
 	tri_array(&Eg_crx.comp,gmax[0]+1,gmax[1]+1,gmax[2]+1,
 			sizeof(COMPONENT));
-        
+
 	reset_domain_comp(Eg_crx.comp,dual_gr);
 	assign_comp(func, func_params, Eg_crx.comp, dual_gr);
 
 	num_crx = count_crx_through_comp(gmax,Eg_crx.comp);
-	
+
 	alloc_grid_crx_mem(&Eg_crx,gmax,num_crx,YES);
 	num_crx = install_grid_crx_from_comp(func,func_params,&Eg_crx,
 				dual_gr,0);
 
-	num_curve_crx = install_grid_curve_crx_from_comp(func, func_params, 
+	num_curve_crx = install_grid_curve_crx_from_comp(func, func_params,
 			&Eg_crx, dual_gr, &num_crx);
 
 	is = make_surfaces_from_crx(intfc,&Eg_crx,gmax,num_crx - num_curve_crx);
 	ic = make_curves_from_crx(intfc,&Eg_crx,gmax,num_curve_crx);
 
 	blk_info.num_curves = ic;
-       	if (ic != 0) 
+       	if (ic != 0)
 	{
             uni_array(&blk_info.curves, ic, sizeof(CURVE*));
 	    for(i = 0; i < ic; i++)
@@ -4301,31 +4354,31 @@ EXPORT boolean make_surfaces_from_comp(
 	    }
 	}
 
-	blk_crx->blk_info = &blk_info; 
+	blk_crx->blk_info = &blk_info;
 	make_grid_surfaces(blk_crx,&Eg_crx,gmax,YES);
-	
+
 	/*after the above function, the num_curves  */
 	/*and curves in Eg_crx are changed */
 
         for (i = 0; i < blk_info.num_surfs; ++i)
 	{
 	    last_tri(blk_info.surfs[i]) = blk_info.cur_tris[i];
-	    last_tri(blk_info.surfs[i])->next = 
+	    last_tri(blk_info.surfs[i])->next =
 	                tail_of_tri_list(blk_info.surfs[i]);
-	    first_tri(blk_info.surfs[i])->prev = 
+	    first_tri(blk_info.surfs[i])->prev =
 	                head_of_tri_list(blk_info.surfs[i]);
 	}
 
 	for (i = 0; i < blk_info.num_surfs; ++i)
 	    reset_intfc_num_points(blk_info.surfs[i]->interface);
-	
+
 	*num_surfs = is;
 	*num_curves = Eg_crx.num_curves;
 	for (i = 0; i < blk_info.num_surfs; i++)
 	    s[i] = blk_info.surfs[i];
 	for (i = 0; i < Eg_crx.num_curves; i++)
 	    c[i] = Eg_crx.curves[i];
-	
+
 	free_grid_crx_mem(&Eg_crx,YES);
 	free(Eg_crx.comp);
 
@@ -4428,9 +4481,9 @@ EXPORT boolean read_sdl_surface(
 	    tris[i] = make_tri(points[i1],points[i2],points[i3],
 	    			NULL,NULL,NULL,NO);
 	    tris[i]->surf = surf;
-	    points[i1]->num_tris++; 
-	    points[i2]->num_tris++; 
-	    points[i3]->num_tris++; 
+	    points[i1]->num_tris++;
+	    points[i2]->num_tris++;
+	    points[i3]->num_tris++;
 	    num_point_tris += 3;
 	    for (j = 0; j < 3; ++j)
 	    {
@@ -4452,7 +4505,7 @@ EXPORT boolean read_sdl_surface(
 	}
 	for (i = 0; i < num_tris; ++i)
 	{
-	    if (i != 0) 
+	    if (i != 0)
 	    {
 	    	tris[i]->prev = tris[i-1];
 	    	tris[i-1]->next = tris[i];
@@ -4645,7 +4698,7 @@ EXPORT boolean read_vtk_surface(
         }
 	for (i = 0; i < num_tris; ++i)
         {
-	    if (i != 0) 
+	    if (i != 0)
 	    {
 	    	tris[i]->prev = tris[i-1];
 	    	tris[i-1]->next = tris[i];

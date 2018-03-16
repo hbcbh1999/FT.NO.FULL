@@ -779,6 +779,7 @@ IMPORT  double  level_wave_func_two_sphere(POINTER,double*);
 IMPORT  double  level_wave_func_center_sphere(POINTER,double*);
 // Smeeton Young's Meniscus
 IMPORT  double  level_wave_func_Meniscus(POINTER,double*);
+IMPORT  double  level_wave_func_Flat(POINTER,double*);
 IMPORT	double 	level_circle_func(POINTER,double*);
 //for RSRV case
 IMPORT  double  random_pert_vd_func(POINTER,double*);
@@ -793,6 +794,9 @@ IMPORT	double 	projectile_func(POINTER,double*);
 /*      imksurf.c */
 IMPORT  boolean 	make_bdry_surfaces(INTERFACE*,RECT_GRID*);
 IMPORT	boolean    make_level_surface(RECT_GRID*,INTERFACE*,COMPONENT,COMPONENT,
+                        double (*func)(POINTER,double*),POINTER,
+                        SURFACE**);
+IMPORT	void       redoComponent(RECT_GRID*,INTERFACE*,COMPONENT,COMPONENT,
                         double (*func)(POINTER,double*),POINTER,
                         SURFACE**);
 IMPORT  boolean    make_comp3_surfaces(RECT_GRID*,COMPONENT,COMPONENT,COMPONENT,

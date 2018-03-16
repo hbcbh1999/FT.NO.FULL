@@ -2482,6 +2482,12 @@ LIB_LOCAL boolean make_tri_lists(
 
 	    total_num_of_tri_blocks = 0;
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,11,'r');
+    //exit(-1);
+    //debugdan    FIXME
+
+/*
 	    if (interface_reconstructed(intfc) == YES)
             {
                 for (s = intfc->surfaces; s && *s; ++s)
@@ -2490,9 +2496,17 @@ LIB_LOCAL boolean make_tri_lists(
 		    {
                         blocks_on_grid_based_tri(t,T->num_of_tris,
 				T->compon3d,top_grid,intfc);
+                        //debugdan    FIXME
+                        printf("TRI: %lf %lf %lf - %lf %lf %lf - %lf %lf %lf\n",
+                                Coords(Point_of_tri(t)[0])[0], Coords(Point_of_tri(t)[0])[1], Coords(Point_of_tri(t)[0])[2],
+                                Coords(Point_of_tri(t)[1])[0], Coords(Point_of_tri(t)[1])[1], Coords(Point_of_tri(t)[1])[2],
+                                Coords(Point_of_tri(t)[2])[0], Coords(Point_of_tri(t)[2])[1], Coords(Point_of_tri(t)[2])[2]);
+                        //debugdan    FIXME
 		    }
+                //exit(-1);    //debugdan    FIXME
             }
             else
+*/    //Dan    FIXME
 	    {
 	        for (s = intfc->surfaces; s && *s; ++s)
 	        {
@@ -2860,9 +2874,10 @@ LOCAL void blocks_on_tri(
 	    i_diff[i] = imax[i] - imin[i] + 1;
 	}
 
-	if(is_tri_outside(intfc, t, grid))
-	    for(i=0; i<3; ++i)
-		i_diff[i] = 0;
+    //for Hao's simulation.    Dan    FIXME
+//	if(is_tri_outside(intfc, t, grid))
+//	    for(i=0; i<3; ++i)
+//		i_diff[i] = 0;
 
 	if (i_diff[0] > 10)
 	{

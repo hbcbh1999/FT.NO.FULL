@@ -120,7 +120,7 @@ struct _FBOX {
 };
 
 typedef struct _FBOX FBOX;
-	
+
 	boolean	box_sect(
 	double	fbox1[2][3],
 	double	fbox2[2][3],
@@ -129,7 +129,7 @@ typedef struct _FBOX FBOX;
 	int	i;
 
 	for(i=0; i<3; i++)
-	    if(fbox1[1][i] + tol < fbox2[0][i] || 
+	    if(fbox1[1][i] + tol < fbox2[0][i] ||
 	       fbox2[1][i] + tol < fbox1[0][i])
 		return NO;
 
@@ -245,14 +245,14 @@ void	show_tris_bound_tris(char*,char*,TRI**,int,INTERFACE*);
 		    Fbox.f[1][j] = -1.0;
 		}
 	    }
-	    
+
 	    pp_all_gather((POINTER)&Fbox,sizeof(FBOX),(POINTER)fbox,sizeof(FBOX));
-	    
+
 	    for(j=0; j<nproc; j++)
 	    {
 		if(fbox[j].f[0][0] >= fbox[j].f[1][0])
 		    continue;
-		
+
 		num++;
 		box->next = (FBOX *)store(sizeof(FBOX));
 		box->next->prev = box;
@@ -272,7 +272,7 @@ void	show_tris_bound_tris(char*,char*,TRI**,int,INTERFACE*);
 	tol = 1.0e-6*min3(gr->h[0], gr->h[1], gr->h[2]);
 	fboxes = Box.next;
 	box_merged = YES;
-	
+
 	while(box_merged)
 	{
 	    box_merged = NO;
@@ -287,7 +287,7 @@ void	show_tris_bound_tris(char*,char*,TRI**,int,INTERFACE*);
 			nbox->prev->next = nbox->next;
 			if (nbox->next != NULL)
 			    nbox->next->prev = nbox->prev;
-			
+
 			box_merged = YES;
 			break;
 		    }
@@ -320,7 +320,7 @@ void	show_tris_bound_tris(char*,char*,TRI**,int,INTERFACE*);
 	num = 0;
 	for(box=fboxes; box!=NULL; box=box->next)
 	{
-	    print_general_vector("l", box->f[0], 3, "\n"); 
+	    print_general_vector("l", box->f[0], 3, "\n");
 	    print_general_vector("r", box->f[1], 3, "\n");
 
 	    printf("#size %d: ", num);
@@ -362,12 +362,12 @@ if(debugging("smotribox"))
 	{
 	    char	fname[500];
 	    FILE	*fp;
-	    
+
 	    add_to_debug("box_intfc");
 	    sprintf(fname, "box_tris_%d.plt", pp_mynode());
-	    
+
 	    printf("#show tris in box %s\n", fname);
-	    
+
 	    fp = fopen(fname, "w");
 	    fprintf(fp,"TITLE = \"tecplot tris\"\n"
 		     "VARIABLES = \"x\", \"y\", \"z\"\n");
@@ -382,9 +382,9 @@ if(debugging("smotribox"))
 	    show_tris_bound_tris("con", fname, tris, nt, intfc);
 
 	    smooth_tris(tris, nt);
-	    
+
 	    show_tris_bound_tris("smo_con", fname, tris, nt, intfc);
-	    
+
 	    remove_from_debug("box_intfc");
 	}
 }
@@ -412,13 +412,13 @@ EXPORT	boolean	merge_near_interface(
 	static int 	**ips = NULL;
 
 	DEBUG_ENTER(merge_near_interface)
-	
+
 	if(ips == NULL)
 	    stat_matrix(&ips,MAX_NUM_UNPHY_IP,3,INT);
 
 	//printf("#front grid\n");
 	//print_rectangular_grid(comp_grid);
-	
+
 	//printf("#intfc grid\n");
 	//print_rectangular_grid(computational_grid(intfc));
 
@@ -440,14 +440,14 @@ EXPORT	boolean	merge_near_interface(
 	    smin[i] = 0;
             smax[i] = gmax[i];
 	}
-	
+
 	start_clock("insert_grid_crossings3d");
-	
+
 	interpolate_intfc_states(intfc) = YES;
 	insert_grid_intfc_crossings(intfc);
 
 	stop_clock("insert_grid_crossings3d");
-	
+
 	//if (!repair_intfc3d_in_box(intfc,smin,smax,front))
 	//{
 	//    interpolate_intfc_states(intfc) = sav_intrp;
@@ -461,26 +461,26 @@ EXPORT	boolean	merge_near_interface(
 	n_reg_node = (gmax[0]+1)*(gmax[1]+1)*(gmax[2]+1);
 	for (i = 0; i < n_reg_node; ++i)
 	    comp[i] = NO_COMP;
-	
+
 	adjust_crossings(smin,smax,intfc);
 	fill_comp_from_prev_intfc(intfc, smin, smax);
-	
+
 	fill_physical_comps(smin, smax, gmax, intfc);
 
 	fill_comp_with_component3d(smin,smax,gmax,intfc);
-	
+
 	//if(front->step == 3780)
 	//    add_to_debug("dbmgtris");
 
 	//merge_near_tri_pairs(smin, smax, intfc);
-	
+
 	num_ip = record_unphysical_ips(smin,smax,intfc,ips);
 
 	if (num_ip > MAX_NUM_UNPHY_IP) {
 	    printf("Stack overflow: num_ip > MAX_NUM_UNPHY_IP, where num_ip = %d.", num_ip);
 	    clean_up(ERROR);
 	}
-	
+
 	set_use_rect_tris(NO);
 //merge
 	smooth_tris_in_boxes(smin, smax, ips, num_ip, intfc);
@@ -494,13 +494,13 @@ EXPORT	boolean	merge_near_interface(
 	reset_intfc_num_points(intfc);
 	topological_grid(intfc) = gr_save;
         free_crx_storage(intfc);
-	
+
 	front->interf = copy_interface(intfc);
-	
+
 	delete_interface(intfc);
-	
+
 	DEBUG_LEAVE(merge_near_interface)
-	
+
 	return YES;
 }
 
@@ -537,7 +537,7 @@ boolean    check_two_tris_cond(TRI*,TRI*,INTERFACE*);
 
 /*
 boolean	check_two_tris_cond(TRI*,TRI*,INTERFACE*);
-	
+
 	void merge_near_tri_pairs(
 	int      *smin,
         int      *smax,
@@ -582,10 +582,10 @@ boolean	check_two_tris_cond(TRI*,TRI*,INTERFACE*);
 			next_ip_in_dir(ip,dir[i],ipn,smin,smax);
 
 			//no unphysical crxings on the edge.
-			if(comp[d_index3d(ip[0],ip[1],ip[2],gmax)] == NO_COMP || 
+			if(comp[d_index3d(ip[0],ip[1],ip[2],gmax)] == NO_COMP ||
 			   comp[d_index3d(ipn[0],ipn[1],ipn[2],gmax)] == NO_COMP)
 			    continue;
-			
+
 			k = seg_index3d(ix,iy,iz,dir[i],gmax);
 	                nc = T->seg_crx_count[k];
 
@@ -596,13 +596,13 @@ boolean	check_two_tris_cond(TRI*,TRI*,INTERFACE*);
 			{
 			    list1 = T->seg_crx_lists[k][j];
 	                    crx1 = T->crx_store+list1;
-			    
+
 			    list1 = T->seg_crx_lists[k][j+1];
 	                    crx2 = T->crx_store+list1;
-			    
-			    dist = distance_between_positions(Coords(crx1->pt), 
+
+			    dist = distance_between_positions(Coords(crx1->pt),
 			    	Coords(crx2->pt), 3);
-			    
+
 	    		    if(!check_two_tris_cond(crx1->tri, crx2->tri, intfc))
 				continue;
 
@@ -631,7 +631,7 @@ boolean	check_two_tris_cond(TRI*,TRI*,INTERFACE*);
 	    return;
 
 	qsort((POINTER)crx_pairs, num, sizeof(CRX_PAIR), compare_crx_pair);
-	
+
 	if(NO)
 	{
 	    char	fname[500];
@@ -640,7 +640,7 @@ boolean	check_two_tris_cond(TRI*,TRI*,INTERFACE*);
 
 	    uni_array(&tris, num*2, sizeof(TRI*));
 	    sprintf(fname, "merge_tris_%d.plt", pp_mynode());
-	   
+
 	    for(i=0; i<num; i++)
 	    {
 		crx1 = crx_pairs[i].crx1;
@@ -724,7 +724,7 @@ EXPORT	boolean	repair_intfc_at_crossings3d(
 	    smin[i] = 0;
             smax[i] = topological_grid(intfc).gmax[i];
 	}
-	
+
 	start_clock("insert_grid_intfc_crossings");
 	interpolate_intfc_states(intfc) = YES;
 	insert_grid_intfc_crossings(intfc);
@@ -777,7 +777,7 @@ EXPORT	boolean	repair_intfc_at_crossings3d(
 	set_size_of_intfc_state(sizest);
 	set_copy_intfc_states(YES);
 	front->interf = copy_interface(intfc);
-	
+
 	delete_interface(intfc);
 	print_storage("After copy_interface","crx_store");
 
@@ -844,7 +844,7 @@ EXPORT	boolean	rebuild_intfc_at_crossings3d2(
 
 	for (i = 0; i < 3; ++i)
 	{
-	    smin[i] = 0;	
+	    smin[i] = 0;
 	    smax[i] = topological_grid(intfc).gmax[i]; /*expanded_dual_grid*/
             if (Dual_grid.lbuf[i] != 0)
 		smin[i] += Dual_grid.lbuf[i] - 1;
@@ -855,7 +855,7 @@ EXPORT	boolean	rebuild_intfc_at_crossings3d2(
 	    else if (curves_on_bdry_side(i,1,intfc) == YES)
 	        smax[i] -= 1;
 	}
-	
+
 	extend_boundary_side(intfc,smin,smax,gr);
 
 	make_interface_topology_lists(intfc);
@@ -863,7 +863,7 @@ EXPORT	boolean	rebuild_intfc_at_crossings3d2(
 
 	start_clock("insert_grid_crossings3d");
 	interpolate_intfc_states(intfc) = YES;
-	
+
 	insert_grid_intfc_crossings(intfc);
 	stop_clock("insert_grid_crossings3d");
 	print_storage("After insert_grid_crossings3d","crx_store");
@@ -980,20 +980,20 @@ LOCAL	boolean track_comp_and_repair3d(
 	//print_rectangular_grid(gr);
 
 	// see function track_comp_through_crxings3d
-	
+
 	adjust_crossings(smin,smax,intfc);
 	fill_comp_from_prev_intfc(intfc, smin, smax);
-	
+
 	fill_physical_comps(smin,smax,gmax,intfc);
 
 	//print_edge_crossings(smin, smax, intfc);
-	
+
 	fill_comp_with_component3d(smin,smax,gmax,intfc);
 
 	if(debugging("compcrx"))
 	{
 	    int  tmin[3] = {0, 12, 20}, tmax[3] = {2, 14, 22};
-	    
+
 	    printf("#check comp physical\n");
 
 	    show_grid_components(tmin,tmax,0,intfc);
@@ -1039,7 +1039,7 @@ LOCAL	boolean track_comp_and_repair3d(
         //rm_bad_crxs_in_box(smin,smax,ips,num_ip,boxes,intfc);
 
 	communicate_box_recon(boxes, intfc, fr);
-	
+
 	if(debugging("mergecrx"))
 	{
 	    //remove_from_debug("mergecrx");
@@ -1062,7 +1062,7 @@ void	communicate_box_recon(
 	RECT_BOX	*pb;
 
 	set_current_interface(intfc);
-	
+
 	//if(debugging("newrecon"))
 	{
 	  rbox_communication_boxes(boxes, fr);
@@ -1084,12 +1084,12 @@ void	communicate_box_recon(
 	    printf("bmax = %-2d  %-2d  %-2d\n",pb->bmax[0],
 		   pb->bmax[1],pb->bmax[2]);
 
-	    printf("bmin = %15.8e, %15.8e, %15.8e\n", 
-		    L[0] + h[0]*pb->bmin[0], L[1] + h[1]*pb->bmin[1], 
+	    printf("bmin = %15.8e, %15.8e, %15.8e\n",
+		    L[0] + h[0]*pb->bmin[0], L[1] + h[1]*pb->bmin[1],
 		    L[2] + h[2]*pb->bmin[2]);
-	    
-	    printf("bmax = %15.8e, %15.8e, %15.8e\n", 
-		    L[0] + h[0]*pb->bmax[0], L[1] + h[1]*pb->bmax[1], 
+
+	    printf("bmax = %15.8e, %15.8e, %15.8e\n",
+		    L[0] + h[0]*pb->bmax[0], L[1] + h[1]*pb->bmax[1],
 		    L[2] + h[2]*pb->bmax[2]);
 
 	    if (!grid_based_box_untangle(intfc,pb, NO))
@@ -1100,12 +1100,12 @@ void	communicate_box_recon(
 	        return;
 	    }
 	    printf("After calling grid_based_box_untangle()\n");
-	    
+
 	    box_index++;
 	}
-	
+
 	//DEBUG_TMP check_normal_on_intfc(intfc);
-	
+
 	if (debugging("box_intfc"))
 	{
 	    remove_from_debug("box_intfc");
@@ -1137,20 +1137,20 @@ LOCAL	boolean track_comp_and_set_boxes(
 	//print_rectangular_grid(gr);
 
 	// see function track_comp_through_crxings3d
-	
+
 	adjust_crossings(smin,smax,intfc);
 	fill_comp_from_prev_intfc(intfc, smin, smax);
-	
+
 	fill_physical_comps(smin,smax,gmax,intfc);
 
 	//print_edge_crossings(smin, smax, intfc);
-	
+
 	fill_comp_with_component3d(smin,smax,gmax,intfc);
 
 	if(debugging("compcrx"))
 	{
 	    int  tmin[3] = {0, 12, 20}, tmax[3] = {2, 14, 22};
-	    
+
 	    printf("#check comp physical\n");
 
 	    show_grid_components(tmin,tmax,0,intfc);
@@ -1173,14 +1173,14 @@ LOCAL	boolean track_comp_and_set_boxes(
 	    set_use_rect_tris(NO);
 	    //add_to_debug("box_intfc");
         }
-	
+
 	//make the boxes for lgb reconstruction.
 	if(!set_reconstruction_boxes(smin,smax,ips,num_ip,&boxes,intfc))
 	{
 	    DEBUG_LEAVE(track_comp_and_set_boxes)
 	    return FUNCTION_FAILED;
 	}
-	
+
 	if(!communicate_boxes(boxes, fr))
 	{
 	    DEBUG_LEAVE(track_comp_and_set_boxes)
@@ -1208,7 +1208,7 @@ EXPORT	boolean	check_normal_on_intfc(
 	    for (t = first_tri(*s); !at_end_of_tri_list(t,*s); t = t->next)
 	    {
 		nor = Tri_normal(t);
-		if(isnan(Mag3d(nor)) || 
+		if(isnan(Mag3d(nor)) ||
 		   (nor[0] == 0.0 && nor[1] == 0.0 && nor[2] == 0.0))
 		{
 		    printf("ERROR check_normal_on_intfc,  "
@@ -1259,7 +1259,9 @@ LOCAL	boolean grid_based_box_untangle(
 	RECT_BOX 	*box,
 	boolean		tri_tag)
 {
-	SURFACE	**surfs;
+	// FIXME ** TODO
+    //vtk_interface_plot("testdan",intfc,NO,0,6666,'r');
+    SURFACE	**surfs;
 	RECT_GRID *gr;
 	int 	*gmax,*smin,*smax;
 	TRI	*tri, *last_tris[20];
@@ -1271,16 +1273,16 @@ LOCAL	boolean grid_based_box_untangle(
 	double	hmin;
 	FILE 	*file;
 	char 	dname[100],fname[100];
-	
+
 	DEBUG_ENTER(grid_based_box_untangle)
-	
+
 	gr = box->grid;
 	smin = box->bmin;
 	smax = box->bmax;
 	gmax = gr->gmax;
 	hmin = min3(gr->h[0], gr->h[1], gr->h[2]);
 	set_tri_area_tol(hmin*hmin*1.0e-12);
-	
+
 	for(i=0; i<3; i++)
 	{
 	    kmin[i] = max(smin[i]-1, 0);
@@ -1294,7 +1296,7 @@ LOCAL	boolean grid_based_box_untangle(
 
 	if(total_nt == 0)
 	    return FUNCTION_SUCCEEDED;
-	
+
 	max_n_new = total_nt*6;
 	uni_array(&test_tris,total_nt,sizeof(TRI*));
 	uni_array(&ref_tris,total_nt,sizeof(TRI*));
@@ -1302,25 +1304,25 @@ LOCAL	boolean grid_based_box_untangle(
 	uni_array(&in_tris,total_nt*3,sizeof(TRI*));
 	uni_array(&deg_tris,total_nt,sizeof(TRI*));
 	uni_array(&new_tris, max_n_new, sizeof(TRI*));
-	
+
 	//getting tris directly from the intfc. When there are two rect boxes
-	//the new generated tris are not in the intfc table, getting tris 
+	//the new generated tris are not in the intfc table, getting tris
 	//from intfc table may skip these tris.
-	num_test_tris = tris_set_in_top_box(test_tris, total_nt, 
+	num_test_tris = tris_set_in_top_box(test_tris, total_nt,
 					    kmin, kmax, intfc);
-	
+
 	if(debugging("box_intfc"))
 	{
 	    TRI	*sect_tris[5000];
 	    int	nstris;
 	    static int	cnt = 0;
-	    
+
 	    sprintf(fname,"lgb_debug%d_%s_%d.plt", cnt,
 	    	right_flush(pp_mynode(),PP_NODE_FIELD_WIDTH), box_index);
-	    
+
 	    cnt++;
 	    printf("\n Enter grid_based_box_untangle, file name: %s\n", fname);
-	    
+
 	    if(pp_mynode() == 6)
 		set_shift_for_tecplot(0.0, -1.0, 0.0);
 	    else
@@ -1330,10 +1332,10 @@ LOCAL	boolean grid_based_box_untangle(
 	    file = fopen(fname,"w");
 	    //tecplot_show_box_tri("test_tris", box,test_tris,num_test_tris,file);
 	    fclose(file);
-	   
+
 	    //output tris with intersection.
 	    nstris = tris_intersection(sect_tris, test_tris, num_test_tris);
-	    
+
 	    tecplot_debug_tris("sect_tris", fname, sect_tris, nstris, intfc);
 	}
 
@@ -1342,26 +1344,26 @@ LOCAL	boolean grid_based_box_untangle(
 	for(i=0; i<num_test_tris; i++)
 	{
 	    tri = test_tris[i];
-	    if(skip_bdry_tri(tri) || !tri_in_box(tri,intfc,box) || 
+	    if(skip_bdry_tri(tri) || !tri_in_box(tri,intfc,box) ||
 	       (tri_tag && skip_tag_tri(tri)))
 		continue;
 	    if(!tri_recorded(tri,ref_tris,num_ref_tris))
 		ref_tris[num_ref_tris++] = tri;
 	}
 	tecplot_debug_tris("ref_tris", fname, ref_tris, num_ref_tris, intfc);
-	
+
 	//finding out_tris
 
 	num_out_tris = bound_tris_set(out_tris, ref_tris, num_ref_tris);
 
 	//tecplot_debug_tris("out_trisa", fname, out_tris, num_out_tris,intfc);
-	
+
 	//removing ref_tris
 	for(i=0; i<num_ref_tris; i++)
 	    remove_tri_from_surface(ref_tris[i],ref_tris[i]->surf,NO);
-	
+
 	tecplot_debug_tris("out_tris", fname, out_tris, num_out_tris,intfc);
-	
+
 	if (debugging("box_intfc"))
 	{
 	    file = fopen(fname,"a");
@@ -1388,24 +1390,24 @@ LOCAL	boolean grid_based_box_untangle(
 	    i++;
 	}
 	tecplot_debug_tris("in_tris", fname, in_tris, num_in_tris,intfc);
-	
-	//NOTE: The following part only has relations with in_tris, out_tris, 
+
+	//NOTE: The following part only has relations with in_tris, out_tris,
 	//ref_tris. It can be extended to a more general form.
 	//sep double loops for out_tris
-	printf("#count in out ref tris  %d %d %d \n", 
+	printf("#count in out ref tris  %d %d %d \n",
 		 num_in_tris, num_out_tris, num_ref_tris);
-	
-	sep_common_point_from_loop(out_tris, num_out_tris, 
+
+	sep_common_point_from_loop(out_tris, num_out_tris,
 				   ref_tris, &num_ref_tris, intfc);
-	tecplot_debug_tris("sep comm pt out_tris", fname, 
+	tecplot_debug_tris("sep comm pt out_tris", fname,
 			   out_tris, num_out_tris,intfc);
-	
+
 	if(debugging("comm_pt_inout"))
 	{
 	    num_new_tris = 0;
-	    num_new_tris = merge_tris_set(new_tris, num_new_tris, 
+	    num_new_tris = merge_tris_set(new_tris, num_new_tris,
 					  out_tris, num_out_tris);
-	    num_new_tris = merge_tris_set(new_tris, num_new_tris, 
+	    num_new_tris = merge_tris_set(new_tris, num_new_tris,
 					  in_tris, num_in_tris);
 	    printf("#check in and out common point.\n");
 	    if(!check_valid_tris(new_tris, num_new_tris, intfc))
@@ -1420,64 +1422,64 @@ LOCAL	boolean grid_based_box_untangle(
 
 	//remove degenerated loops
 	num_deg_tris = 0;
-	num_in_tris = seal_all_loops_wo_constraint(deg_tris, &num_deg_tris, 
+	num_in_tris = seal_all_loops_wo_constraint(deg_tris, &num_deg_tris,
 					in_tris, num_in_tris, 1, YES);
 	tecplot_debug_tris("in_tris deg", fname, in_tris, num_in_tris,intfc);
-	
-	num_out_tris = seal_all_loops_wo_constraint(deg_tris, &num_deg_tris, 
+
+	num_out_tris = seal_all_loops_wo_constraint(deg_tris, &num_deg_tris,
 					out_tris, num_out_tris, 1, YES);
-	tecplot_debug_tris("out_tris deg", fname, 
+	tecplot_debug_tris("out_tris deg", fname,
 			     out_tris, num_out_tris, intfc);
-	
+
 	tecplot_debug_tris("deg_tris", fname, deg_tris, num_deg_tris, intfc);
 
 	//linking suitable pairs
 	if(debugging("pairsfix"))
 	{
-	    num_new_tris = linking_tris_with_pairs_fix(new_tris, max_n_new, 
-		out_tris, num_out_tris, in_tris, num_in_tris, 
+	    num_new_tris = linking_tris_with_pairs_fix(new_tris, max_n_new,
+		out_tris, num_out_tris, in_tris, num_in_tris,
 		ref_tris, num_ref_tris, intfc);
 
 	}
 	else
 	{
-	    num_new_tris = linking_tris_with_pairs(new_tris, max_n_new, 
-		out_tris, num_out_tris, in_tris, num_in_tris, 
+	    num_new_tris = linking_tris_with_pairs(new_tris, max_n_new,
+		out_tris, num_out_tris, in_tris, num_in_tris,
 		ref_tris, num_ref_tris);
 	}
 
-	tecplot_debug_tris("new_tris pairs", fname, 
+	tecplot_debug_tris("new_tris pairs", fname,
 			   new_tris, num_new_tris, intfc);
 
 	//merge all current tris, do not merge deg_tris because they do not have
 	//null sides
-	num_new_tris = merge_tris_set(new_tris, num_new_tris, 
+	num_new_tris = merge_tris_set(new_tris, num_new_tris,
 				      in_tris, num_in_tris);
-	num_new_tris = merge_tris_set(new_tris, num_new_tris, 
+	num_new_tris = merge_tris_set(new_tris, num_new_tris,
 				      out_tris, num_out_tris);
-	tecplot_debug_tris("merge in out new tris", fname, 
+	tecplot_debug_tris("merge in out new tris", fname,
 			    new_tris, num_new_tris, intfc);
 
 	//removing all linking non-null edges in loops
-	num_new_tris = sep_common_edge_from_tris(&sep_new_tris, new_tris, 
+	num_new_tris = sep_common_edge_from_tris(&sep_new_tris, new_tris,
 						 num_new_tris, intfc);
 	tecplot_debug_tris("sep comm edge merge", fname,
 			    sep_new_tris, num_new_tris, intfc);
 
 	//sealing all the null loops
 	num_seal_tris = 0;
-	num_new_tris = seal_all_loops_wo_constraint(new_tris, &num_seal_tris, 
+	num_new_tris = seal_all_loops_wo_constraint(new_tris, &num_seal_tris,
 					sep_new_tris, num_new_tris, 1, NO);
-	
+
 	tecplot_debug_tris("seal_all_loops sep_new_tris", fname,
 			     sep_new_tris, num_new_tris, intfc);
 	tecplot_debug_tris("seal_all_loops new_tris", fname,
 			     new_tris, num_seal_tris, intfc);
 
 	//combining everything
-	num_new_tris = merge_tris_set(new_tris, num_seal_tris, 
+	num_new_tris = merge_tris_set(new_tris, num_seal_tris,
 				      sep_new_tris, num_new_tris);
-	num_new_tris = merge_tris_set(new_tris, num_new_tris, 
+	num_new_tris = merge_tris_set(new_tris, num_new_tris,
 				      deg_tris, num_deg_tris);
 
 	//smoothing in_tris because they are grid based
@@ -1510,11 +1512,11 @@ delete_s:
 		goto delete_s;
 	    }
 
-	//check_print_intfc("After grid_based_box_untangle", "gb_un_af", 's', 
+	//check_print_intfc("After grid_based_box_untangle", "gb_un_af", 's',
 	//		intfc, 1, 1, NO);
 
 	free_these(6,test_tris,ref_tris,in_tris,out_tris,new_tris,deg_tris);
-	
+
 	DEBUG_LEAVE(grid_based_box_untangle)
 	return FUNCTION_SUCCEEDED;
 }	// end grid_based_box_untangle
@@ -1604,7 +1606,7 @@ boolean	compute_average_point(SMOOTH_PARA*,POINT*,TRI*,SURFACE*,SMOOTH_TOL*);
 
 	s = tris[0]->surf;
 	num = 0;
-	
+
 	//Compute the the parameters in each point
 	for(k=0; k<num_tris; k++)
 	{
@@ -1618,7 +1620,7 @@ boolean	compute_average_point(SMOOTH_PARA*,POINT*,TRI*,SURFACE*,SMOOTH_TOL*);
 		Index_of_point(p) = 1;
 		if(!compute_average_point(&smooth_que[num], p,tri,s,&stol))
 		    continue;
-		
+
 		num++;
 	    }
 	}
@@ -1641,7 +1643,7 @@ boolean	compute_average_point(SMOOTH_PARA*,POINT*,TRI*,SURFACE*,SMOOTH_TOL*);
 	POINT	*midp, *pt, *ptn;
 	TRI	*tri, *new_tri, *new_tri1, *prev_tri;
 	SURFACE	*surf = null_tris[0]->surf;
-	
+
 	tmp_n = 0;
 
 	//find the center point
@@ -1654,31 +1656,31 @@ boolean	compute_average_point(SMOOTH_PARA*,POINT*,TRI*,SURFACE*,SMOOTH_TOL*);
 	}
 	for(j=0; j<3; j++)
 	    avep[j] /= num_null_sides;
-	
+
 	tri = null_tris[0];
 	side = null_sides[0];
-	
+
 	//TMP copy the states from the first point, otherwise sl, sr will be NULL
 	midp = copy_point(Point_of_tri(tri)[side]);
 	ft_assign(Coords(midp), avep, 3*FLOAT);
-	
+
 	printf("#seal_null_loop is called. num_null_sides = %d\n", num_null_sides);
 	print_general_vector("avep= ", avep, 3, "\n");
-	
+
 	for(i=0; i<num_null_sides; i++)
 	{
 	    tri = null_tris[i];
 	    side = null_sides[i];
 	    pt = Point_of_tri(tri)[side];
 	    ptn = Point_of_tri(tri)[Next_m3(side)];
-	    
+
 	    new_tri = make_tri(midp, ptn, pt, NULL, NULL, NULL, NO);
-	    
+
 	    tmp_tris[tmp_n++] = new_tri;
-	    
+
 	    //link with the tri on the loop
 	    link_neighbor_tris(new_tri, tri);
-	    
+
 	    //DEBUG_TMP printf("#seal null %d\n", i);
 
 	    //link with the new tri
@@ -1691,11 +1693,11 @@ boolean	compute_average_point(SMOOTH_PARA*,POINT*,TRI*,SURFACE*,SMOOTH_TOL*);
 
 		sprintf(s, "seal_null_%d", pp_mynode());
 		printf("ERROR in seal_null_loop, two new tris do not share points, filename %s.\n", s);
-	
+
 		fp = fopen(s, "w");
 		tecplot_show_null_tris(null_tris, pts, num_null_sides, fp);
 		fclose(fp);
-	
+
 		clean_up(ERROR);
 	    }
 
@@ -1763,7 +1765,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 	FILE *file;
 	char fname[100];
 	double *h,*L,crx_coord[2],min_dist_buffer2 = HUGE;
-	
+
 	tmp_n = 0;
 
 	L = gr.L;
@@ -1784,13 +1786,13 @@ LOCAL   boolean seal_strip_with_tris_once(
 	    test = NO;
 	    min_dist_buffer2 = HUGE;
 	    crx_buffer2 = NO;
-	   
+
 	    //try to determine from which triangle we begin to seal the null loop
 	    for (i = 0; i < new_num_null_sides; ++i)
 	    {
 		i_in  = (i+1)%new_num_null_sides;
 		in_tri   = null_tris[i_in];
-		if (null_tris[i] == in_tri) 
+		if (null_tris[i] == in_tri)
 		    continue;
 		if (new_num_null_sides <= 5)
 		{
@@ -1815,7 +1817,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 		p3 = Point_of_tri(null_tris[i])[Prev_m3(null_sides[i])];
 		p1 = Point_of_tri(null_tris[i_in])[Next_m3(null_sides[i_in])];
 		p2 = Point_of_tri(null_tris[i_in])[Prev_m3(null_sides[i_in])];
-		
+
 		//never use 3 in_tri points to get a triangle, otherwise the tri will be on a face of a block.
 		if (status_in)
 		    if (tri_recorded(null_tris[i],in_tris,num_in_tris) &&
@@ -1833,7 +1835,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 		if (two_points_share_side(p0, null_tris[i], p1,
 		              (null_tris[i]->surf)->interface) == 1)
 		    continue;
-		
+
 		if (two_points_share_side(p0, null_tris[i], p2,
 		           (null_tris[i]->surf)->interface) == -1 &&
 			   new_num_null_sides > 5)
@@ -1842,7 +1844,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 		           (null_tris[i]->surf)->interface) == 1 &&
 			   new_num_null_sides > 5)
 	            continue;   //this is not the bad case  (4)
-		
+
 		if (two_points_share_side(p3, null_tris[i], p1,
 		           (null_tris[i]->surf)->interface) == -1 &&
 			             new_num_null_sides > 5)
@@ -1851,7 +1853,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 		           (null_tris[i]->surf)->interface) == 1 &&
 			              new_num_null_sides > 5)
 		    continue;   //same as (4)
-		
+
 		dist1 = distance_between_positions(Coords(p0),Coords(p1),3);
 		//seal from min dist two points and from the buffer zone
 		for (j = 0; j < 3; j++)
@@ -1872,7 +1874,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 			    min_dist_buffer2 = dist1;
 			}
 		    }
-		    
+
 		    //always crx_buffer2 = NO;
 		    //if a tri lies between two procs, we construct it first.
 		    if (!crx_buffer2)
@@ -1931,10 +1933,10 @@ LOCAL   boolean seal_strip_with_tris_once(
 
 	    new_tri = make_tri(p0,p1,p2,NULL,(POINTER)in_tri,
 	                    (POINTER)base_tri,NO);
-	    
+
 	    tmp_tris[tmp_n++] = new_tri;
 
-	    
+
 	    insert_tri_at_tail_of_list(new_tri,surf);
 	    link_neighbor_tris(new_tri,in_tri);
 	    link_neighbor_tris(new_tri,base_tri);
@@ -1962,9 +1964,9 @@ LOCAL   boolean seal_strip_with_tris_once(
 
 		new_tri = make_tri(p0,p1,p2,(POINTER)base_tri,
 		                (POINTER)out_tri,(POINTER)in_tri,NO);
-	        
+
 	        tmp_tris[tmp_n++] = new_tri;
-		
+
 		insert_tri_at_tail_of_list(new_tri,surf);
 		link_neighbor_tris(new_tri,in_tri);
 		link_neighbor_tris(new_tri,out_tri);
@@ -1984,7 +1986,7 @@ LOCAL   boolean seal_strip_with_tris_once(
 	}
 
 	return FUNCTION_SUCCEEDED;
-	
+
 }  /*end seal_strip_with_tris_once*/
 
 
@@ -2010,7 +2012,7 @@ LOCAL	boolean seal_strip_with_tris(
 	SURFACE *surf;
 	FILE *file;
 	char fname[100];
-	
+
 
 	if (debugging("box_intfc"))
 	{
@@ -2058,13 +2060,13 @@ LOCAL	boolean seal_strip_with_tris(
 	    out_tri  = null_tris[i_out];
 	    in_side  = null_sides[i_in];
 	    out_side = null_sides[i_out];
-	    
+
 	    check_tri_and_neighbor(out_tri);
-	    
+
       	    vi = Point_of_tri(in_tri)[null_sides[i_in]];
 	    vo = Point_of_tri(out_tri)[Next_m3(null_sides[i_out])];
 	    surf = base_tri->surf;
-	
+
 	if (debugging("box_intfc"))
 	{
 	    uni_array(&debug_tris,300,sizeof(TRI*));
@@ -2087,13 +2089,13 @@ LOCAL	boolean seal_strip_with_tris(
 		p0 = vi;
 		p1 = vo;
 		p2 = Point_of_tri(in_tri)[Next_m3(in_side)];
-		new_tri = make_tri(p0,p1,p2,(POINTER)base_tri,	
+		new_tri = make_tri(p0,p1,p2,(POINTER)base_tri,
 		    		NULL,(POINTER)in_tri,NO);
 	    	insert_tri_at_tail_of_list(new_tri,surf);
 		link_neighbor_tris(new_tri,in_tri);
 		link_neighbor_tris(new_tri,base_tri);
 		if (debugging("box_intfc"))
-		{    
+		{
 		    debug_tris[num_newtris++] = new_tri;
 		    sprintf(fname,"%s-debug-%d.list",base_name,
 				    num_newtris-num_null_sides);
@@ -2112,7 +2114,7 @@ LOCAL	boolean seal_strip_with_tris(
 		    break;
 		}
 	    }
-	    else if (((null_tris[i_out] == 
+	    else if (((null_tris[i_out] ==
 	    	null_tris[(i_out-1+num_null_sides)%num_null_sides])||
 		    (null_tris[i_base] == null_tris[i_in])) && count == 0)
 	    {
@@ -2151,23 +2153,23 @@ LOCAL	boolean seal_strip_with_tris(
 		p0 = vi;
 		p1 = vo;
 		p2 = Point_of_tri(in_tri)[Next_m3(in_side)];
-		new_tri = make_tri(p0,p1,p2,(POINTER)base_tri,	
+		new_tri = make_tri(p0,p1,p2,(POINTER)base_tri,
 		    		NULL,(POINTER)in_tri,NO);
 	    	insert_tri_at_tail_of_list(new_tri,surf);
 		link_neighbor_tris(new_tri,in_tri);
 		link_neighbor_tris(new_tri,base_tri);
 
-	
+
  		if (debugging("box_intfc"))
                 {
                     debug_tris[num_newtris++] = new_tri;
-                    sprintf(fname,"%s-debug-%d.list",base_name, 
+                    sprintf(fname,"%s-debug-%d.list",base_name,
 				    num_newtris-num_null_sides);
                     file = fopen(fname,"w");
                     gview_show_box_tri(box,debug_tris,num_newtris,file);
                     fclose(file);
                 }
-	
+
 		vi = p2;
 	    	i_in  = (i_in+1)%num_null_sides;
 		in_tri = null_tris[i_in];
@@ -2192,7 +2194,7 @@ LOCAL	boolean seal_strip_with_tris(
  		if (debugging("box_intfc"))
                 {
                     debug_tris[num_newtris++] = new_tri;
-                    sprintf(fname,"%s-debug-%d.list",base_name, 
+                    sprintf(fname,"%s-debug-%d.list",base_name,
 				    num_newtris-num_null_sides);
                     file = fopen(fname,"w");
                     gview_show_box_tri(box,debug_tris,num_newtris,file);
@@ -2224,7 +2226,7 @@ LOCAL	boolean seal_strip_with_tris(
 		link_neighbor_tris(new_tri,in_tri);
 		link_neighbor_tris(new_tri,out_tri);
 		link_neighbor_tris(new_tri,base_tri);
-		
+
  		if (debugging("box_intfc"))
                 {
                     debug_tris[num_newtris++] = new_tri;
@@ -2248,10 +2250,10 @@ LOCAL	boolean seal_strip_with_tris(
 	return FUNCTION_SUCCEEDED;
 }	/* end seal_strip_with_tris */
 
-/*      
-	Note: Function find_nearest_tri_pair() is gonna replace by 
+/*
+	Note: Function find_nearest_tri_pair() is gonna replace by
              find_nearest_tri_pair_new()
-*/ 
+*/
 LOCAL	void find_nearest_tri_pair(
 	TRI **in_tris,
 	int num_in_tris,
@@ -2367,7 +2369,7 @@ LOCAL	void find_nearest_tri_pair_new(
 			        po = Coords(Point_of_tri(out_tris[i])[j]);
 				po1 = Coords(Point_of_tri(
 					out_tris[i])[Next_m3(j)]);
-				
+
 				if(debugging("new_tris") && the_tri1(in_tris[k]))
 				{
 				    printf("#in_tri check\n");
@@ -2397,9 +2399,9 @@ LOCAL	void find_nearest_tri_pair_new(
 				         distance_between_positions(pi1,po1,3) +
 					 distance_between_positions(pi,po1,3);
 				}
-				
+
 				/*Find suitable null sides pair*/
-				if (dist < min_dist) 
+				if (dist < min_dist)
 				{
 				    min_dist = dist;
 				    *out_tri = out_tris[i];
@@ -2434,29 +2436,29 @@ LOCAL   void find_nearest_tri_pair_crx(
         TRI **tri_list,
         int *num_tris,
         TRI **in_tri,
-        int *in_side,                                                                            
+        int *in_side,
         TRI **out_tri,
         int *out_side,
         TRI **crx_tri,
         RECT_BOX *box,
         INTERFACE *intfc)
-{       
+{
 	RECT_GRID gr = topological_grid(intfc);
         double *pi,*po, *pi1, *po1,*tp;
         int i,j,k,m,l,test1 = -1,test2,n,test;
         double dist=0.0,dist1=0.0,dist2=0.0;
         double min_dist = HUGE,min_dist_buffer = HUGE;
         double min_dist_buffer2 = HUGE;
-        RECT_GRID *rgr = box->grid; 
+        RECT_GRID *rgr = box->grid;
         int ipo[3],tipo[3],ipo1[3],*ipi,*tipi;
         double tol = 1.0e-5,*L,*h,crx_coord[2];
         boolean status = NO,crx_buffer2 = NO;
-    
+
         *in_tri = *out_tri = NULL;
         L = gr.L;
         h = gr.h;
 
-     
+
         test = -1;
         for (i = 0; i < *num_out_tris; ++i)
         {
@@ -2529,7 +2531,7 @@ LOCAL	void remove_crx_tri_on_edge(
 	    p = Coords(Point_of_tri(in_tri)[(in_side + i)%3]);
 	    if(!point_in_crx_tri(p, crx_tri))
 	        continue;
-	    
+
 	    //find all the tris in in_tris s.t. point p is in the tris.
 	    //p lies in the edge of in_tris[j] and crx_tri
 	    for(j=0; j<*num_in_tris; j++)
@@ -2549,8 +2551,8 @@ LOCAL  boolean  check_adjecant_constrain0(
 	POINT	*p0,
 	POINT	*p1,
 	POINT	*p2,
-	POINT	*p3, 
-	TRI	**new_tris, 
+	POINT	*p3,
+	TRI	**new_tris,
 	int	num_new_tris)
 {
 	int	i, j;
@@ -2581,7 +2583,7 @@ LOCAL  boolean  check_adjecant_constrain0(
 		    ((p3 == pt) && (p1 == ptn)) || ((p3 == pt) && (p1 == ptn)) )
 		    return YES;
 
-		//only the out_side or the in_side have common points with new_tris, 
+		//only the out_side or the in_side have common points with new_tris,
 		//this constraint can avoid tangled surface.
 		if(p0 == pt || p0 == ptn || p1 ==pt || p1 == ptn)
 		    status_out = YES;
@@ -2616,13 +2618,13 @@ LOCAL  boolean tri_in_box_pre(
 	       max_coord = L[i]+box->bmax[i]*h[i];
 	       p_coord = Coords(Point_of_tri(tri)[j])[i];
 	       if (p_coord >= min_coord && p_coord <= max_coord)
-	           count++;   
+	           count++;
 	   }
 	   if (count == 3)
 	       return YES;
 	   else
 	       count = 0;
-           
+
        }
 
        return NO;
@@ -2635,7 +2637,7 @@ LOCAL  boolean tri_in_box(
        RECT_BOX *box)
 {
 	RECT_GRID 	*gr = &topological_grid(intfc);
-	
+
 	return tri_in_grid_block(tri, box->bmin, box->bmax, gr);
 }
 
@@ -2652,9 +2654,9 @@ LOCAL   boolean crx_bnd_out_tris(
 {
         double *L,*h,min_coord,max_coord,p_coord;
         int i,j,k,m,count = 0;
-        boolean status; 
+        boolean status;
 	RECT_GRID gr = topological_grid(intfc);
-            
+
         L = gr.L;
         h = gr.h;
 
@@ -2682,7 +2684,7 @@ LOCAL   boolean crx_bnd_out_tris(
 
 } /* end  crx_bnd_out_tris */
 
-//make sure crx_tri has only one common point with out_tri, 
+//make sure crx_tri has only one common point with out_tri,
 //so perform find_nearest_tri_pair_crx in the following is valid.
 LOCAL   boolean crx_out_tris_twice(
         TRI **tri_list,		//out_tris
@@ -2711,7 +2713,7 @@ LOCAL   boolean crx_out_tris_twice(
 		    if (Point_of_tri(tri)[j] == Point_of_tri(tri_list[i])[k])
 		        break;
 	        if (k < 3)    //k==3 means tri is the out_tri, can not remove it
-		{    
+		{
 		    ++count;
 		    break;
 		}
@@ -2859,19 +2861,19 @@ LOCAL	void tecplot_show_box(
 	}
 
 	fprintf(file, "ZONE T=\"%s\" I=16\n", bname);
-	
+
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], lc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], rc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], rc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], lc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], lc[1], lc[2]);
-	
+
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], lc[1], rc[2]);
-	
+
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], rc[1], rc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], rc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], rc[1], rc[2]);
-	
+
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], rc[1], rc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], rc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], rc[1], rc[2]);
@@ -2880,7 +2882,7 @@ LOCAL	void tecplot_show_box(
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], lc[1], rc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], lc[1], lc[2]);
 	fprintf(file, "%-9g  %-9g  %-9g\n", rc[0], lc[1], rc[2]);
-	
+
 	fprintf(file, "%-9g  %-9g  %-9g\n", lc[0], lc[1], rc[2]);
 
 }
@@ -2921,7 +2923,7 @@ LOCAL	void tecplot_show_null_tris(
 int	i;
 
 	tecplot_show_tris("null_tris", tris, num_tris, file);
-	
+
 	fprintf(file, "ZONE T=\"pts\" I=%d\n", num_tris);
 	for (i = 0; i < num_tris; ++i)
 	{
@@ -2943,7 +2945,7 @@ LOCAL   boolean null_sides_sharing_same_vertex(
 	   {
 	       if (Tri_on_side(tri_list[i],l) == NULL && tri != tri_list[i])
 	       {
-	           if (Point_of_tri(tri)[side] == 
+	           if (Point_of_tri(tri)[side] ==
 		       Point_of_tri(tri_list[i])[Next_m3(l)] ||
 		       Point_of_tri(tri)[Next_m3(side)] ==
 		       Point_of_tri(tri_list[i])[l])
@@ -2952,7 +2954,7 @@ LOCAL   boolean null_sides_sharing_same_vertex(
 	   }
        return NO;
 
-       
+
 }  /*end null_sides_sharing_same_vertex*/
 
 LOCAL	double box_dist(
@@ -2988,7 +2990,7 @@ LOCAL	void	make_boxes_from_ips(
 	static	int	**ips = NULL;
 
 	DEBUG_ENTER(rm_bad_crxs_in_box)
-	
+
 	if(ips == NULL)
 	    stat_matrix(&ips,MAX_NUM_UNPHY_IP,3,INT);
 
@@ -2997,7 +2999,7 @@ LOCAL	void	make_boxes_from_ips(
 
 	Box.prev = Box.next = NULL;
 	box = &Box;
-	
+
 	i = 0;
 	while (i < num_ip)
 	{
@@ -3061,17 +3063,17 @@ LOCAL	void	copy_rect_boxes(
 	RECT_BOX	*boxes_in)
 {
 	RECT_BOX 	Box,*box,*box_in;
-	
+
 	Box.prev = Box.next = NULL;
 	box = &Box;
-	
+
 	for(box_in = boxes_in; box_in != NULL; box_in = box_in->next)
 	{
 	    box->next = (RECT_BOX *)store(sizeof(RECT_BOX));
 	    box->next->prev = box;
 	    box->next->next = NULL;
 	    box = box->next;
-	    
+
 	    ft_assign(box->bmin, box_in->bmin, 3*INT);
 	    ft_assign(box->bmax, box_in->bmax, 3*INT);
 	    ft_assign(box->smin, box_in->smin, 3*INT);
@@ -3114,7 +3116,7 @@ LOCAL	boolean	merge_adjacent_boxes(
 			//DEBUG_TMP print_int_vector("bmax1", box->bmax, 3, "\n");
 			//DEBUG_TMP print_int_vector("nbmin1", nbox->bmin, 3, "\n");
 			//DEBUG_TMP print_int_vector("nbmax1", nbox->bmax, 3, "\n");
-			
+
 			//merge nbox with box and delete nbox.
 			for (i = 0; i < 3; ++i)
 			{
@@ -3132,7 +3134,7 @@ LOCAL	boolean	merge_adjacent_boxes(
 		    break;
 	    }   //for(box=  )
 	}
-	
+
 	//DEBUG_TMP printf("merge boxes is finished.\n");
 	return YES;
 }
@@ -3140,7 +3142,7 @@ LOCAL	boolean	merge_adjacent_boxes(
 LOCAL   boolean    use_rect_tris = YES;
 boolean    set_use_rect_tris(boolean);
 boolean    set_use_rect_tris(boolean fg)
-{           
+{
 	use_rect_tris = fg;
 }
 
@@ -3168,9 +3170,9 @@ LOCAL	boolean  set_reconstruction_boxes(
 	{
 	    //DEBUG_TMP print_int_vector("bminp", box->bmin, 3, "\n");
 	    //DEBUG_TMP print_int_vector("bmaxp", box->bmax, 3, "\n");
-	    
+
 	    if(max3(box->bmax[2]-box->bmin[2],
-	    	    box->bmax[1]-box->bmin[1], 
+	    	    box->bmax[1]-box->bmin[1],
 //                    box->bmax[0]-box->bmin[0]) > 25)
 	    	    box->bmax[0]-box->bmin[0]) > 200)
 	    {
@@ -3188,11 +3190,11 @@ LOCAL	boolean  set_reconstruction_boxes(
 	if(use_rect_tris &&
 	  rect_boxes_from_tangled_tris(box0, intfc) == 0)
 	{
-	    
+
 	    // *boxes = NULL;
 	    //DEBUG_LEAVE(set_reconstruction_boxes)
 	    //return YES;
-	    
+
 	    printf("#no tangled tris in box.\n");
 	}
         */
@@ -3212,7 +3214,7 @@ LOCAL	boolean  set_reconstruction_boxes(
 		    box->bmin[i]--;
 		    box->bmax[i]++;
 		}
-		
+
 		if(box->bmax[i] - box->bmin[i] == 0)
 		{
 		    box->bmin[i]--;
@@ -3244,7 +3246,7 @@ LOCAL	boolean  set_reconstruction_boxes(
                     box->bmax[i] = box->bmin[i] + 7;
 	}
 	*boxes = box0;
-	
+
 	DEBUG_LEAVE(set_reconstruction_boxes)
 	return YES;
 }	/* end set_reconstruction_boxes */
@@ -3263,7 +3265,7 @@ LOCAL	boolean  rm_bad_crxs_in_box(
 	RECT_GRID	*gr = &topological_grid(intfc);
 
 	DEBUG_ENTER(rm_bad_crxs_in_box)
-	
+
 	make_boxes_from_ips(ips, num_ip, &box1);
 	for(box = box1; box != NULL; box = box->next)
 	{
@@ -3272,8 +3274,8 @@ LOCAL	boolean  rm_bad_crxs_in_box(
 	        box->smin[i] = smin[i];
 		box->smax[i] = smax[i];
 	    }
-	
-	    //bad ips are in the faces of [bmin, bmax], 
+
+	    //bad ips are in the faces of [bmin, bmax],
 	    //should increase by one to make consistent surf
 	    //in the face of the box.
 	    for (i = 0; i < 3; i++)
@@ -3288,15 +3290,15 @@ LOCAL	boolean  rm_bad_crxs_in_box(
 		last_box = box;
 	}
 	copy_rect_boxes(&box2, box0);
-	
+
 	//since num_ip != 0 box1 != NULL, but box2 can be NULL.
-	
+
 	last_box->next = box2;
 	if(box2 != NULL)
 	    box2->prev = last_box;
 
 	merge_adjacent_boxes(box1);
-	
+
 	i = 0;
 	//DEBUG_TMP printf("#rm_bad crxs begins\n");
 	for(box = box1; box != NULL; box = box->next)
@@ -3333,7 +3335,7 @@ LOCAL	boolean  set_tst_recon_boxes(
 	int		tmin[3], tmax[3];
 
 	DEBUG_ENTER(set_reconstruction_boxes)
-	
+
 	Box.prev = Box.next = NULL;
 	box = &Box;
 
@@ -3344,18 +3346,18 @@ LOCAL	boolean  set_tst_recon_boxes(
 	    box->next->prev = box;
 	    box->next->next = NULL;
 	    box = box->next;
-	    
+
 	    for (k = 0; k < 3; k++)
-	    	box->bmin[k] = box->bmax[k] = smin[k] + 
+	    	box->bmin[k] = box->bmax[k] = smin[k] +
 			    (int)((smax[k] - smin[k])*drand48());
 	    	//box->bmin[k] = box->bmax[k] = (smin[k] + smax[k])/2;
-	    printf("#randbx  %d %d %d\n ", 
+	    printf("#randbx  %d %d %d\n ",
 	    	box->bmin[0], box->bmin[1], box->bmin[2]);
 	    fflush(NULL);
 	}
 	printf("\n");
-	
-	//bad ips are in the faces of [bmin, bmax], 
+
+	//bad ips are in the faces of [bmin, bmax],
 	//should increase by one to make consistent surf
 	//in the face of the box.
 	for (box = Box.next; box != NULL; box = box->next)
@@ -3364,7 +3366,7 @@ LOCAL	boolean  set_tst_recon_boxes(
 	    {
 		box->smin[i] = smin[i];
 		box->smax[i] = smax[i];
-	
+
 		if(i == 0)
 		{
 		    box->bmin[i] -= 2;
@@ -3383,7 +3385,7 @@ LOCAL	boolean  set_tst_recon_boxes(
 
 		if (box->bmin[i] < smin[i]) box->bmin[i] = smin[i];
 		if (box->bmax[i] > smax[i]) box->bmax[i] = smax[i];
-		
+
 		//avoid boundary surfaces, assume box size is at least 2.
 		if(!buffered_boundary_type(rect_boundary_type(intfc,i,0)))
 		    if (box->bmin[i] == smin[i])
@@ -3394,7 +3396,7 @@ LOCAL	boolean  set_tst_recon_boxes(
 	    }
 	    box->grid = gr;
 	}
-	
+
 	// Merge overlapping boxes
 	boxes_merged = YES;
 	while (boxes_merged)
@@ -3414,16 +3416,16 @@ LOCAL	boolean  set_tst_recon_boxes(
 
 		for (nbox = box->next; nbox != NULL; nbox = nbox->next)
 		{
-		    if (overlapping_boxes(box, nbox) || 
-			boxes_sharing_tris(box, nbox, smax, intfc)) 
+		    if (overlapping_boxes(box, nbox) ||
+			boxes_sharing_tris(box, nbox, smax, intfc))
 		    {
 			//DEBUG_TMP print_int_vector("bmin1", box->bmin, 3, "\n");
 			//DEBUG_TMP print_int_vector("bmax1", box->bmax, 3, "\n");
 			//DEBUG_TMP print_int_vector("nbmin1", nbox->bmin, 3, "\n");
 			//DEBUG_TMP print_int_vector("nbmax1", nbox->bmax, 3, "\n");
-			
+
 			//DEBUG_TMP fflush(NULL);
-			
+
 			//merge nbox with box and delete nbox.
 			for (i = 0; i < 3; ++i)
 			{
@@ -3547,7 +3549,7 @@ LOCAL   boolean boxes_sharing_tris(
 		    {
 		        if (!tri_recorded(tris[l],tri_list1,num_tris1))
 			        tri_list1[num_tris1++] = tris[l];
-				
+
 		    }
 		}
 	    }
@@ -3654,11 +3656,11 @@ LOCAL   boolean boxes_sharing_tris(
 	//fflush(NULL);
 	if(num_tris1 > MAX_BOUND_TRIS || num_tris2 > MAX_BOUND_TRIS)
 	{
-	    printf("ERROR boxes_sharing_tris, num %d  %d\n", 
+	    printf("ERROR boxes_sharing_tris, num %d  %d\n",
 	    	   num_tris1, num_tris2);
 	    clean_up(ERROR);
 	}
-	
+
 	if (flag)
 	    printf("Two boxes are sharing tris, will be merged!\n");
 	return flag;
@@ -3701,7 +3703,7 @@ LOCAL   boolean boxes_crxing_same_boundary(
 	    {
 	        return YES;
 	    }
-	    
+
 	}
 
 	return NO;
@@ -3718,10 +3720,10 @@ LOCAL	boolean ip_connected(
 	    ni = na = 0;
 	    for (k = 0; k < 3; ++k)
 	    {
-	    	if (ips[i][k] == ip[k]) 
+	    	if (ips[i][k] == ip[k])
 		    ni++;
 		else if (ips[i][k] - ip[k] == 1 ||
-		         ips[i][k] - ip[k] == -1) 
+		         ips[i][k] - ip[k] == -1)
 		    na++;
 	    }
 	    if (ni == 2 && na == 1) return YES;
@@ -3757,10 +3759,10 @@ LOCAL   int  find_nearest_pts(
 	r0 = distance_between_positions(Coords(p0), Coords(p1), 3);
 	for (i = 0; i < 3; ++i)
 	    u0[i] = (Coords(p1)[i] - Coords(p0)[i])/r0;
-        
+
 	for (i = start_out_pts; i < end_out_pts; i++)
         {
-            
+
 	    p2 = sub_out_pts[i];
 	    p3 = sub_out_pts[i+1];
 	    r1 = distance_between_positions(Coords(p2), Coords(p3), 3);
@@ -3805,7 +3807,7 @@ LOCAL   int  find_nearest_pts(
                 }
             }
             if (!pts_in_match) continue;
-            dist = distance_between_positions(Coords(p0),Coords(p2),3) + 
+            dist = distance_between_positions(Coords(p0),Coords(p2),3) +
 	           distance_between_positions(Coords(p0),Coords(p3),3) +
 		   distance_between_positions(Coords(p1),Coords(p2),3) +
 		   distance_between_positions(Coords(p1),Coords(p3),3);
@@ -3837,7 +3839,7 @@ LOCAL   int  find_nearest_pts_pair(
 
 	L = rgr.L;
 	h = rgr.h;
-	
+
 	end_out_pts = 10000;
 
 	p0 = sub_in_pts[end_in_pts];
@@ -3911,7 +3913,7 @@ EXPORT	boolean	check_degenerated_loop(
 
 	if(num_tris > 3)
 	    return NO;
-	
+
 	if(num_tris < 3)
 	{
 	    printf("ERROR in check_degenerated_loops, num_tris = %d.\n", num_tris);
@@ -3919,20 +3921,20 @@ EXPORT	boolean	check_degenerated_loop(
 	}
 
 	surf = tris[0]->surf;
-	
+
 	if (tris[0] == tris[1] && tris[1] == tris[2])
 	{
 	    //DEBUG_TMP printf("#check_deg  a single triangle is removed.\n");
-	    
+
 	    remove_tri_from_surface(tris[0],surf,NO);
 	    tmp_n = 0;
         }
 	else
 	{
 	    //assume the null loop has POSITIVE_ORIENTATION
-	    
+
 	    //DEBUG_TMP printf("#check_deg, a hole with 3 null sides is sealed.\n");
-	    
+
 	    new_tri = make_tri(pts[0],pts[2],pts[1], NULL,NULL,NULL, NO);
 	    link_neighbor_tris(new_tri, tris[0]);
 	    link_neighbor_tris(new_tri, tris[1]);
@@ -3940,7 +3942,7 @@ EXPORT	boolean	check_degenerated_loop(
 
 	    tmp_tris[0] = new_tri;
 	    tmp_n = 1;
-	    
+
 	    insert_tri_at_tail_of_list(new_tri,surf);
 	}
 
@@ -3971,7 +3973,7 @@ EXPORT	boolean	check_degenerated_loop(
 
 	if (null_tris == NULL)
 	{
-	    
+
 	    uni_array(&null_tris,MAX_NULL_SIDE_LOOP,sizeof(TRI*));
 	    uni_array(&null_sides,MAX_NULL_SIDE_LOOP,INT);
 	    uni_array(&pts,MAX_NULL_SIDE_LOOP,sizeof(POINT*));
@@ -3980,7 +3982,7 @@ EXPORT	boolean	check_degenerated_loop(
 	*num_sides = 0;
 	pts[0] = (orient == POSITIVE_ORIENTATION) ? Point_of_tri(start)[side] :
 			Point_of_tri(start)[Next_m3(side)];
-	
+
 	do
 	{
 	    null_tris[*num_sides] = next_tri;
@@ -3994,7 +3996,7 @@ EXPORT	boolean	check_degenerated_loop(
 				Point_of_tri(next_tri)[Next_m3(side)]);
 		}
 		pts[*num_sides] = p = Point_of_tri(next_tri)[Next_m3(side)];
-		if (*num_sides > 300) 
+		if (*num_sides > 300)
 		{
 	    	    int i;
 	    	    for (i = 0; i < *num_sides; ++i)
@@ -4058,7 +4060,7 @@ EXPORT	boolean	check_degenerated_loop(
 		}
 	    }
 	}
-	
+
 
 	for (j = 0; j < 3; ++j) normal[j] = 0.0;
 	for (i = 0; i < *num_sides; ++i)
@@ -4076,7 +4078,7 @@ EXPORT	boolean	check_degenerated_loop(
 	*sides = null_sides;
 	*side_points = pts;
 	*tnor = normal;
-	
+
 	DEBUG_LEAVE(null_side_loop)
 	return YES;
 }	/* end null_side_loop */
@@ -4091,7 +4093,7 @@ LOCAL	boolean null_side_tri_in_list(
 	int i,j;
 	POINT **test;
 
-	
+
 	for (i = 0; i < num_tris; ++i)
 	{
 	    for (j = 0; j < 3; ++j)
@@ -4116,9 +4118,9 @@ LOCAL	boolean check_extension_of_surface(
 	TRI *tri1,*tri2,*t[2];
 	POINT *p1,*p2;
 	int i,j,k,count;
-	
+
 	printf("Entering check_extension_of_surface!\n");
-	
+
 	for (k = 0; k < num_tris; ++k)
 	{
 	    tri1 = tri_list[k];
@@ -4227,7 +4229,7 @@ LOCAL	boolean null_sides_with_suitable_angle(
 	double u2[3],u3[3],u4[3],u5[3];
 	int i,pi[3],po[3];
 	double lgbtol = 10*MACH_EPS,thres = -0.5;
-	
+
 	p0 = Coords(Point_of_tri(tri1)[side1]);
 	p1 = Coords(Point_of_tri(tri1)[Next_m3(side1)]);
 	q0 = Coords(Point_of_tri(tri2)[side2]);
@@ -4238,7 +4240,7 @@ LOCAL	boolean null_sides_with_suitable_angle(
 	r3 = distance_between_positions(p1, q0, 3);
 	r4 = distance_between_positions(q0, p0, 3);
 	r5 = distance_between_positions(q1, p0, 3);
-	
+
 	for (i=0; i<3; ++i)
 	{
 	    pm[i] = (p1[i] + p0[i])/2.0;
@@ -4256,7 +4258,7 @@ LOCAL	boolean null_sides_with_suitable_angle(
 	ke = Dot3d(tm, u1);
 	for (i=0; i<3; ++i)
 	    pq[i] = q0[i] + ke*u1[i];
-	
+
 	ke = Dot3d(u2,u1);
 	d2 = r2*sqrt(1-ke*ke);
 	ke = Dot3d(u3,u1);
@@ -4268,20 +4270,20 @@ LOCAL	boolean null_sides_with_suitable_angle(
 	d = min(d2,d3);
 	d = min(d,d4);
 	d = min(d,d5);
-	
+
 	/*dm is the distance between the midpoint of side2 and the projection
 	  of the mid point of side1 on side2*/
 	dm = distance_between_positions(pq, qm, 3);
-	
+
 	cosu = Dot3d(u0, u1);
-	
+
 	if (cosu <= -lgbtol)
 	    return YES;
 	else
 	    return NO;
 
 	/*cosu > 0 ? NO: YES;*/
-}	/* end null_sides_with_suitable_angle */	
+}	/* end null_sides_with_suitable_angle */
 
 LOCAL   boolean bifurcation_detected(
 	TRI **tri_list,
@@ -4295,7 +4297,7 @@ LOCAL   boolean bifurcation_detected(
 	static TRI **sub_list1 = NULL, **sub_list2 = NULL;
 	TRI **tmp_tris,**mom_list;
 	TRI *start_tri,**recorded_tris;
-	int i, start_side, num_null_sides, num_mom_tris,num_sub_list1, 
+	int i, start_side, num_null_sides, num_mom_tris,num_sub_list1,
 	    num_sub_list2, *null_sides=0,  count=0, min_num = 1000,
 	    max_num = -1000,num_tmp_tris=0;
 	int num_sub_tris[10],j,num_recorded_tris;
@@ -4303,7 +4305,7 @@ LOCAL   boolean bifurcation_detected(
 	double *tnor;
 	boolean bifurcation_found = NO;
 
-	
+
 	uni_array(&mom_list, 3*num_tris, sizeof(TRI*));
 	if (sub_list1 == NULL)
 	{
@@ -4324,11 +4326,11 @@ LOCAL   boolean bifurcation_detected(
 	while (null_side_tri_in_list(mom_list,num_mom_tris,
 				&start_tri,&start_side) )
 	{
-	    
+
 	    null_side_loop(start_tri,start_side,POSITIVE_ORIENTATION,
 	        &null_tris,&null_sides,&side_pts,&num_null_sides,&tnor);
-	    
-	    
+
+
 	    for (i = 0; i < num_null_sides; i++)
 	        if (!tri_recorded(null_tris[i],recorded_tris,num_recorded_tris))
 	            recorded_tris[num_recorded_tris++] = null_tris[i];
@@ -4347,7 +4349,7 @@ LOCAL   boolean bifurcation_detected(
 		max_num = num_null_sides;
 	    }
 	    count++;
-	    
+
 	    num_mom_tris = 0;
 	    for (i = 0; i < num_tris; i++)
 	    {
@@ -4358,7 +4360,7 @@ LOCAL   boolean bifurcation_detected(
 	    }
 	}
 
-	
+
 	printf("num_sub_tris2 = %d\n",num_sub_list2);
 	printf("num_sub_tris1 = %d\n",num_sub_list1);
 
@@ -4381,7 +4383,7 @@ LOCAL   boolean bifurcation_detected(
 	else if (count == 2)
 		bifurcation_found = YES;
 	else
-		bifurcation_found = NO;	
+		bifurcation_found = NO;
 	if (count >= 2)
 	    bifurcation_found = YES;
 	else
@@ -4395,7 +4397,7 @@ LOCAL   boolean bifurcation_detected(
 
 	free_these(3,recorded_tris,mom_list,tmp_tris);
 	return bifurcation_found;
-}	/* end bifurcation_detected */ 
+}	/* end bifurcation_detected */
 
 
 LOCAL   boolean    pts_in_cross_zone(
@@ -4407,7 +4409,7 @@ LOCAL   boolean    pts_in_cross_zone(
         double   min_coord,max_coord;
         double   crx_tol = 0.004*h;
         int     i;
-        
+
 	min_coord = max_coord = pt[dir];
 
         if (((min_coord - crx_coord) <= h+crx_tol) &&
@@ -4427,21 +4429,21 @@ LOCAL   boolean    tri_cross_zone(
 	int             dir)
 {
         double   min_coord,max_coord;
-        double   crx_tol = 0.004*h;	
+        double   crx_tol = 0.004*h;
         int     i;
-	
+
 	min_coord = max_coord = Coords(Point_of_tri(tri)[0])[dir];
 
 	if (min_coord > Coords(Point_of_tri(tri)[1])[dir])
 	    min_coord = Coords(Point_of_tri(tri)[1])[dir];
 	if (min_coord > Coords(Point_of_tri(tri)[2])[dir])
 	    min_coord = Coords(Point_of_tri(tri)[2])[dir];
-	
+
 	if (max_coord < Coords(Point_of_tri(tri)[1])[dir])
 	    max_coord = Coords(Point_of_tri(tri)[1])[dir];
 	if (max_coord < Coords(Point_of_tri(tri)[2])[dir])
 	    max_coord = Coords(Point_of_tri(tri)[2])[dir];
-	
+
 	if (((min_coord - crx_coord) <= h+crx_tol) &&
 	    ((crx_coord - max_coord) <= h+crx_tol))
 	    return YES;
@@ -4483,12 +4485,12 @@ LOCAL   boolean    tri_cross_line1(
 	    min_coord = Coords(Point_of_tri(tri)[1])[dir];
 	if (min_coord > Coords(Point_of_tri(tri)[2])[dir])
 	    min_coord = Coords(Point_of_tri(tri)[2])[dir];
-	
+
 	if (max_coord < Coords(Point_of_tri(tri)[1])[dir])
 	    max_coord = Coords(Point_of_tri(tri)[1])[dir];
 	if (max_coord < Coords(Point_of_tri(tri)[2])[dir])
 	    max_coord = Coords(Point_of_tri(tri)[2])[dir];
-        
+
         if (h > 0)
 	    return ((min_coord - crx_coord) >= h+crx_tol) ? YES : NO;
 	else
@@ -4500,7 +4502,7 @@ LOCAL   void    initialize_comm_box(
 	boolean             set_flag)
 {
 	int    inter=1000,i,j,k;
-	
+
 	for (i = 0; i < 4; i++)
 	    for (k = 0; k < 2; k++)
 	        for (j = 0; j < 3; j++)
@@ -4557,7 +4559,7 @@ LOCAL   void    find_comm_box(
 	if (check_crx_buffer >= 2 && check_crx_boundary >= 2)
             comm_box->flag = 1;
         */
-	
+
 	for (i = 0; i < 2; i++)
 	{
 	    min_coord = L[i] + box->bmin[i]*h[i];
@@ -4680,17 +4682,17 @@ LOCAL    boolean    compare_comm_box(
 		            (fabs(icoord - adj_box_u->U0) > 2-crx_tol &&
 			    fabs(icoord - adj_box_u->U0) < 2+crx_tol))
 		        {
-		            test_box = abs(adj_box_u->umax[0][0][1] - 
-				  box->bmax[1]) + abs(adj_box_u->umax[0][0][2] 
+		            test_box = abs(adj_box_u->umax[0][0][1] -
+				  box->bmax[1]) + abs(adj_box_u->umax[0][0][2]
 				  - box->bmax[2]);
 			    k = 0;
 		            for (j = 1; j < adj_box_u->ux; j++)
 			    {
-			        if (test_box > fabs(adj_box_u->umax[j][0][1] - 
-				  box->bmax[1]) + fabs(adj_box_u->umax[0][0][2] 
+			        if (test_box > fabs(adj_box_u->umax[j][0][1] -
+				  box->bmax[1]) + fabs(adj_box_u->umax[0][0][2]
 				  - box->bmax[2]))
 			        {
-			            test_box = abs(adj_box_u->umax[j][0][1] - 
+			            test_box = abs(adj_box_u->umax[j][0][1] -
 				 	box->bmax[1]) + abs(
 					adj_box_u->umax[0][0][2] - box->bmax[2]);
 				    k = j;
@@ -4900,7 +4902,7 @@ LOCAL    boolean    compare_comm_box(
 			    box->bmin[2] = min(box->bmin[2],adj_box_l->lmin[k][1][2]);
 			    box->bmax[2] = max(box->bmax[2],adj_box_l->lmax[k][1][2]);
 			}
-				
+
 		    }
 		}
 	    }
@@ -4926,7 +4928,7 @@ LOCAL  void  pp_send_box(
 
 	if (rect_boundary_type(interfa,dir,side) != SUBDOMAIN_BOUNDARY)
 	    return;
-	
+
 	myid = pp_mynode();
 	dst_id = neighbor_id(him, me, dir, side, pp_grid);
 
@@ -4993,10 +4995,10 @@ LOCAL  void  pp_send_box(
 	info = (POINTER) buf;
 	ft_assign(info, &(comm_box->flag),sizeof(int));
 	buf += sizeof(int);
-	
-	
-	
-	
+
+
+
+
 
         buf = storage + sizeof(COMM_BOX);
 
@@ -5028,14 +5030,14 @@ LOCAL    void    pp_receive_box(
 
 	if (myid == src_id)
 	    return;
-        
+
 	len = sizeof(COMM_BOX);
 	scalar(&storage, len);
 	pp_recv(0, src_id, (POINTER)(storage), len);
 
 	buf = storage;
-	
-        
+
+
 	for (i = 0; i < 4; i++)
 	    for (k = 0; k < 2; k++)
 	    for (j = 0; j < 3; j++)
@@ -5092,10 +5094,10 @@ LOCAL    void    pp_receive_box(
 	info = (POINTER) buf;
 	ft_assign(&(comm_box->flag), info, sizeof(int));
 	buf += sizeof(int);
-	
-	
-	
-	
+
+
+
+
 
 	buf = storage + sizeof(COMM_BOX);
 
@@ -5301,19 +5303,19 @@ LOCAL	boolean  set_reconstruction_boxes_prev(
 	double		dist1, dist2;
 
 	DEBUG_ENTER(set_reconstruction_boxes)
-	
+
 	Box.prev = Box.next = NULL;
 	box = &Box;
-	
+
 
 	//finding the actural box by checking tangled tris.
 	for (box = Box.next; box != NULL; box = box->next)
 	{
 	    print_int_vector("bminp", box->bmin, 3, "\n");
 	    print_int_vector("bmaxp", box->bmax, 3, "\n");
-	    
+
 	    if(max3(box->bmax[2]-box->bmin[2],
-	    	    box->bmax[1]-box->bmin[1], 
+	    	    box->bmax[1]-box->bmin[1],
 	    	    box->bmax[0]-box->bmin[0]) > 7)
 	    {
 		printf("ERROR set_reconstruction_boxes, too many bad ips");
@@ -5321,7 +5323,7 @@ LOCAL	boolean  set_reconstruction_boxes_prev(
 	    }
 
 	    /*
-	    status = tangled_tris_bound_box(tmin, tmax, box->bmin, 
+	    status = tangled_tris_bound_box(tmin, tmax, box->bmin,
 	    				    box->bmax, intfc);
 	    printf("#tangle status %d\n", status);
 
@@ -5348,7 +5350,7 @@ LOCAL	boolean  set_reconstruction_boxes_prev(
 	    return YES;
 	}
 
-	//bad ips are in the faces of [bmin, bmax], 
+	//bad ips are in the faces of [bmin, bmax],
 	//should increase by one to make consistent surf
 	//in the face of the box.
 	for (box = Box.next; box != NULL; box = box->next)
@@ -5390,14 +5392,14 @@ LOCAL	boolean  set_reconstruction_boxes_prev(
 		{
 		    //if (boxes_sect(box, nbox))
 		    if (overlapping_boxes(box, nbox))
-		    //if (overlapping_boxes(box, nbox) || 
-			//boxes_sharing_tris(box, nbox, smax, intfc)) 
+		    //if (overlapping_boxes(box, nbox) ||
+			//boxes_sharing_tris(box, nbox, smax, intfc))
 		    {
 			//DEBUG_TMP print_int_vector("bmin1", box->bmin, 3, "\n");
 			//DEBUG_TMP print_int_vector("bmax1", box->bmax, 3, "\n");
 			//DEBUG_TMP print_int_vector("nbmin1", nbox->bmin, 3, "\n");
 			//DEBUG_TMP print_int_vector("nbmax1", nbox->bmax, 3, "\n");
-			
+
 			//merge nbox with box and delete nbox.
 			for (i = 0; i < 3; ++i)
 			{
@@ -5449,7 +5451,7 @@ LOCAL	boolean  rm_bad_crxs_in_box_prev(
 	static	int	**ips = NULL;
 
 	DEBUG_ENTER(rm_bad_crxs_in_box)
-	
+
 	if(ips == NULL)
 	    stat_matrix(&ips,MAX_NUM_UNPHY_IP,3,INT);
 
@@ -5462,14 +5464,14 @@ LOCAL	boolean  rm_bad_crxs_in_box_prev(
 	{
 	    print_int_vector("bminp", box->bmin, 3, "\n");
 	    print_int_vector("bmaxp", box->bmax, 3, "\n");
-	    
+
 	    for (i = 0; i < 3; i++)
 	    {
 	        box->smin[i] = smin[i];
 		box->smax[i] = smax[i];
 	    }
-	
-	    //bad ips are in the faces of [bmin, bmax], 
+
+	    //bad ips are in the faces of [bmin, bmax],
 	    //should increase by one to make consistent surf
 	    //in the face of the box.
 	    for (i = 0; i < 3; i++)
@@ -5483,7 +5485,7 @@ LOCAL	boolean  rm_bad_crxs_in_box_prev(
 	}
 
 	merge_adjacent_boxes(box0);
-	
+
 	i = 0;
 	//DEBUG_TMP printf("#rm_bad crxs begins\n");
 	for(box=box0; box!=NULL; box=box->next)
@@ -5521,7 +5523,7 @@ void	make_ggrid(
 	//printf("Dgr = \n");
 	//print_rectangular_grid(&Dgr);
 	//print_rectangular_grid(tgr);
-	
+
 	ft_assign(ggr->h, Dgr.h, 3*FLOAT);
 	ft_assign(ggr->GL, Dgr.L, 3*FLOAT);
 	ft_assign(ggr->GU, Dgr.U, 3*FLOAT);
@@ -5535,7 +5537,7 @@ void	make_ggrid(
 	    rbox->fmin[i] = tgr->L[i];
 	    rbox->fmax[i] = tgr->U[i];
 	}
-	
+
 	//print_int_vector("rb bmin", rbox->bmin, 3, "\n");
 	//print_int_vector("rb bmax", rbox->bmax, 3, "\n");
 }
@@ -5565,7 +5567,7 @@ int	make_recon_boxes(
 	  rbox[i].flag = 0;
 	  rbox[i].proc = rbox[i].procs[0] = pp_mynode();
 	  rbox[i].np = 1;
-	  
+
 	  i++;
 	  if(i >= MAX_RBOX)
 	  {
@@ -5611,6 +5613,21 @@ boolean	rbox_same(
 	return YES;
 }
 
+//Dan
+boolean	rbox_same2(
+	RECON_BOX	b1,
+	RECON_BOX	b2)
+{
+	int	i;
+
+	for(i=0; i<3; i++)
+	  if(b1.bmin[i] != b2.bmin[i] ||
+	     b1.bmax[i] != b2.bmax[i])
+	    return NO;
+
+	return YES;
+}
+
 boolean	rbox_sect(
 	RECON_BOX	*b1,
 	RECON_BOX	*b2,
@@ -5647,7 +5664,7 @@ boolean	rbox_contain(
 	  if(b1->bmin[i] < b2->bmin[i] ||
 	     b1->bmax[i] > b2->bmax[i])
 	    return NO;
-  
+
 	return YES;
 }
 
@@ -5664,7 +5681,7 @@ int	rbox_add_one_proc(
 	    break;
 
 	//now b1->procs[j-1] > b2->procs[i] >= b1->procs[j]
-	  
+
 	// proc exist in b1
 	if(j<rbox->np && proc == rbox->procs[j])
 	  return -1;
@@ -5675,7 +5692,7 @@ int	rbox_add_one_proc(
 	  printf("ERROR rbox_add_one_proc, too many procs.\n");
 	  clean_up(ERROR);
 	}
-	  
+
 	// proc does not exist in b1
 	for(k=rbox->np-1; k>=j; k--)
 	{
@@ -5726,6 +5743,25 @@ void	rbox_merge(
 	b2->flag = -1;
 }
 
+//Dan
+void	rbox_merge2(
+	RECON_BOX	*b1,
+	RECON_BOX	*b2)
+{
+	int	i;
+/*
+	for(i=0; i<3; i++)
+	{
+	  b1->bmin[i] = min(b1->bmin[i], b2->bmin[i]);
+	  b1->bmax[i] = max(b1->bmax[i], b2->bmax[i]);
+	  b1->fmin[i] = min(b1->fmin[i], b2->fmin[i]);
+	  b1->fmax[i] = max(b1->fmax[i], b2->fmax[i]);
+	}
+*/
+	rbox_merge_procs(b1, b2);
+	b2->flag = -1;
+}
+
 void	rbox_shift(
 	RECON_BOX	*rbox,
 	int		st,
@@ -5740,20 +5776,117 @@ void	rbox_shift(
 
 	T = (gr->U[dir] - gr->L[dir])*sign;
 	Tc = gr->gmax[dir]*sign;
-	
+
 	for(i=st; i<st+ed; i++)
 	{
 	  b = &rbox[i];
-	  
+
 	  b->bmin[dir] += Tc;
 	  b->bmax[dir] += Tc;
 	  b->fmin[dir] += T;
 	  b->fmax[dir] += T;
-	  
+
 	  for(j=0; j<b->np; j++)
 	    b->shift[j][dir] += sign;
 	}
 }
+
+//Dan
+RECON_BOX rbox_shift2(
+	RECON_BOX	rbox,
+	RECT_GRID	*gr,
+	int		dir,
+	int		sign)
+{
+	RECON_BOX	b;
+	double		T;
+	int		Tc, i, j;
+
+	T = (gr->U[dir] - gr->L[dir])*sign;
+	Tc = gr->gmax[dir]*sign;
+
+//	for(i=st; i<st+ed; i++)
+	{
+//	  b = rbox[i];
+	  b = rbox;
+
+	  b.bmin[dir] += Tc;
+	  b.bmax[dir] += Tc;
+	  b.fmin[dir] += T;
+	  b.fmax[dir] += T;
+
+	  for(j=0; j<b.np; j++)
+	    b.shift[j][dir] += sign;
+	}
+
+	return b;
+}
+
+/*
+//original version
+//send rbox from 0 to nbox and recv from nbox to bst
+int	rbox_communication_in_dir(
+	RECON_BOX	*rbox,
+	int		nbox,
+	int		dir,
+	Front		*fr)
+{
+	RECT_GRID	*ggrid;
+	INTERFACE    	*intfc = fr->interf;
+	PP_GRID	     	*pp_grid = fr->pp_grid;
+	int	     	me[3], him[3];
+	int	     	dst_id;
+	int		*G, bst, nbr;
+	int		i, j, k, jp;
+
+	G = pp_grid->gmax;
+	find_Cartesian_coordinates(pp_mynode(),pp_grid,me);
+	ggrid = &pp_grid->Global_grid;
+
+	bst = nbox;
+
+	pp_gsync();
+
+	//send and recv boxes
+	for(j=0; j<2; j++)
+	{
+	  if(rect_boundary_type(intfc,dir,j) == SUBDOMAIN_BOUNDARY)
+	  {
+	    dst_id = neighbor_id(him, me, dir, j, pp_grid);
+
+	    pp_send(2*j, &nbox, INT, dst_id);
+	    if(nbox != 0)
+	      pp_send(2*j+1, rbox, nbox*sizeof(RECON_BOX), dst_id);
+	  }
+
+	  jp = (j+1)%2;
+	  if(rect_boundary_type(intfc,dir,jp) == SUBDOMAIN_BOUNDARY)
+	  {
+	    dst_id = neighbor_id(him, me, dir, jp, pp_grid);
+
+	    pp_recv(2*j, dst_id, &nbr, INT);
+	    if(nbr == 0)
+	      continue;
+	    if(bst + nbr >= MAX_RBOX)
+	    {
+	      printf("ERROR recon_box_communication, too many boxes\n");
+	      clean_up(ERROR);
+	    }
+	    pp_recv(2*j+1, dst_id, &rbox[bst], nbr*sizeof(RECON_BOX));
+
+	    //shift for periodic case
+	    if(me[dir] == 0 && jp == 0)
+	      rbox_shift(rbox, bst, nbr, ggrid, dir, -1);
+	    else if(me[dir] == G[dir]-1 && jp == 1)
+	      rbox_shift(rbox, bst, nbr, ggrid, dir, 1);
+
+	    bst += nbr;
+	  }
+	}
+
+	return bst;
+}
+*/
 
 //send rbox from 0 to nbox and recv from nbox to bst
 int	rbox_communication_in_dir(
@@ -5775,42 +5908,54 @@ int	rbox_communication_in_dir(
 	ggrid = &pp_grid->Global_grid;
 
 	bst = nbox;
-	
+	// fixed by Prao. don't send and recv from itself
+	int my_id = pp_mynode();
 	pp_gsync();
-	
+
 	//send and recv boxes
 	for(j=0; j<2; j++)
 	{
 	  if(rect_boundary_type(intfc,dir,j) == SUBDOMAIN_BOUNDARY)
 	  {
 	    dst_id = neighbor_id(him, me, dir, j, pp_grid);
-	      
-	    pp_send(2*j, &nbox, INT, dst_id);
-	    if(nbox != 0)
-	      pp_send(2*j+1, rbox, nbox*sizeof(RECON_BOX), dst_id);
+	    if (dst_id != my_id)
+	    {
+	      pp_send(2*j, &nbox, INT, dst_id);
+	      if(nbox != 0)
+	      {
+		pp_send(2*j+1, rbox, nbox*sizeof(RECON_BOX), dst_id);
+	      }
+	    }
 	  }
 
 	  jp = (j+1)%2;
 	  if(rect_boundary_type(intfc,dir,jp) == SUBDOMAIN_BOUNDARY)
 	  {
 	    dst_id = neighbor_id(him, me, dir, jp, pp_grid);
-	      
-	    pp_recv(2*j, dst_id, &nbr, INT);
-	    if(nbr == 0)
-	      continue;
-	    if(bst + nbr >= MAX_RBOX)
-	    {
-	      printf("ERROR recon_box_communication, too many boxes\n");
-	      clean_up(ERROR);
+	    if (dst_id != my_id)
+            {
+                pp_recv(2*j, dst_id, &nbr, INT);
+
+                if(nbr == 0)
+                    continue;
+                if(bst + nbr >= MAX_RBOX)
+                {
+                    printf("ERROR recon_box_communication, too many boxes\n");
+                    clean_up(ERROR);
+                }
+                pp_recv(2*j+1, dst_id, &rbox[bst], nbr*sizeof(RECON_BOX));
+            }
+	    else
+            {
+		nbr=0; //fixed by abigail
 	    }
-	    pp_recv(2*j+1, dst_id, &rbox[bst], nbr*sizeof(RECON_BOX));
-	      
+
 	    //shift for periodic case
 	    if(me[dir] == 0 && jp == 0)
 	      rbox_shift(rbox, bst, nbr, ggrid, dir, -1);
 	    else if(me[dir] == G[dir]-1 && jp == 1)
 	      rbox_shift(rbox, bst, nbr, ggrid, dir, 1);
-	      
+
 	    bst += nbr;
 	  }
 	}
@@ -5830,6 +5975,10 @@ int	recon_box_communication(
 	int		i, k, n;
 	static int	zv[] = {0,0,0};
 
+	//Added by Dan
+	PP_GRID	     	*pp_grid = fr->pp_grid;
+	RECT_GRID	*ggrid = &pp_grid->Global_grid;
+
 	DEBUG_ENTER(recon_box_communication)
 
 	for(i=0; i<3; i++)
@@ -5839,7 +5988,7 @@ int	recon_box_communication(
 	  //add my proc number to the procs list
 	  for(k=nbox; k<bst; k++)
 	    rbox_add_one_proc(&rbox[k], pp_mynode(), zv);
-  
+
 	  //remove outside boxes
 	  for(k=0; k<bst; k++)
 	    if(rbox_sect(&rbox[k], &ggr->rbox, YES) == NO)
@@ -5854,13 +6003,27 @@ int	recon_box_communication(
 	    {
 	      if(rbox[n].flag == -1)
 	        continue;
-	      if(rbox_same(&rbox[k],&rbox[n]))
-	        rbox_merge(&rbox[k], &rbox[n]);
+//	      if(rbox_same(&rbox[k],&rbox[n]))	//original
+//	        rbox_merge(&rbox[k], &rbox[n]);	//original
+	      //Modified by Dan
+	      if (pp_grid->gmax[i] == 1)
+	      {
+		  if(rbox_same(&rbox[k],&rbox[n]))
+		      rbox_merge(&rbox[k], &rbox[n]);
+	      }
+	      else
+	      {
+		  if(rbox_same(&rbox[k],&rbox[n]) ||
+		     rbox_same2(rbox[k],rbox_shift2(rbox[n],ggrid,i,1)) ||
+		     rbox_same2(rbox[k],rbox_shift2(rbox[n],ggrid,i,-1)))
+		      rbox_merge2(&rbox[k], &rbox[n]);
+	      }
+	      //Modified by Dan
 	    }
 	  }
 	  nbox = rbox_arrange(rbox, bst);
 	}
-	
+
 	DEBUG_LEAVE(recon_box_communication)
 	return nbox;
 }
@@ -5875,7 +6038,7 @@ void	rbox_copy(
 	ft_assign(b1->bmax, b2->bmax, 3*INT);
 	ft_assign(b1->fmin, b2->fmin, 3*FLOAT);
 	ft_assign(b1->fmax, b2->fmax, 3*FLOAT);
-	
+
 	np = b2->np;
 	b1->np = np;
 	ft_assign(b1->procs, b2->procs, np*INT);
@@ -5902,7 +6065,7 @@ void	rbox_buffer_box(
 	{
 	    b->bmin[k] -= RECON_BUFFER;
 	    b->bd_flag[k][0] = NO;
-	    
+
 	    //proc is in the left of the domain
 	    if(rbox->fmin[k] <= ggr->GL[k] + ggr->h[k]*tol)
 	    {
@@ -5912,10 +6075,10 @@ void	rbox_buffer_box(
 	        b->bmin[k] = rbox->bmin[k];
 	      }
 	    }
-	    
+
 	    b->bmax[k] += RECON_BUFFER;
 	    b->bd_flag[k][1] = NO;
-	    
+
 	    //proc is in the right of the domain
 	    if(rbox->fmax[k] >= ggr->GU[k] - ggr->h[k]*tol)
 	    {
@@ -5962,7 +6125,7 @@ boolean	rbox_one_box_communication(
 	  rbox_buffer_box(b, b1, ggr);
 	  nbox = 1;
 	}
-	
+
 	for(i=0; i<3; i++)
 	  nbox = rbox_communication_in_dir(rbox, nbox, i, fr);
 
@@ -5990,12 +6153,12 @@ boolean	rbox_one_box_communication(
 	nbox = recon_box_communication(rbox,nbox,ggr,fr);
 
 	//tecplot_rboxes("rbox0", ggr, rbox, nbox, NO);
-	
+
 	//must be called TWICE so that each box knows which procs it belongs to
 	nbox = recon_box_communication(rbox,nbox,ggr,fr);
 
 	//tecplot_rboxes("rbox", ggr, rbox, nbox, YES);
-	
+
 	if(recon)
 	  rbox_communication_interface(rbox, nbox, &rbox[0], ggr, fr);
 	else
@@ -6025,23 +6188,23 @@ void	tecplot_rboxes(
 	int	i, j;
 	char	fname[128];
 	FILE	*fp;
-	
+
 	printf("nbox = %d\n", nbox);
 	for(i=0; i<nbox; i++)
 	{
-	  printf("%s %2d number %2d proc %5d  procs (%2d):  ", 
+	  printf("%s %2d number %2d proc %5d  procs (%2d):  ",
 	        bname, i, rbox[i].number, rbox[i].proc, rbox[i].np);
-	  
+
 	  for(j=0; j<rbox[i].np; j++)
 	    printf("%5d(%2d%2d%2d) %3d", rbox[i].procs[j],
 	          rbox[i].shift[j][0], rbox[i].shift[j][1], rbox[i].shift[j][2],
 		  rbox[i].bd_sum[j]);
 	  printf("\n");
-	  
+
 	  print_int_vector("bmin", rbox[i].bmin, 3, "\n");
 	  print_int_vector("bmax", rbox[i].bmax, 3, "\n");
 	}
-	
+
 	if(info)
 	  return;
 
@@ -6063,7 +6226,7 @@ void	tecplot_rboxes(
 	tecplot_box(NULL, fp, ggr->rbox.fmin, ggr->rbox.fmax);
 	for(i=0; i<nbox; i++)
 	  tecplot_box(NULL, fp, rbox[i].fmin, rbox[i].fmax);
-	
+
 	fclose(fp);
 }
 
@@ -6090,18 +6253,18 @@ boolean	communicate_boxes(
 
 	//recon_box_communication must be called TWICE to make sure each rbox
 	//knows which procs it belongs to
-	//1. send rbox to other procs, after this call, each rbox knows 
+	//1. send rbox to other procs, after this call, each rbox knows
 	//which proc it comes from, but does not know if it also belongs to other
 	//procs
 	nbox = recon_box_communication(rbox, nbox, &ggr, fr);
-	
+
 	//2. each rbox will know which procs it belongs to
 	nbox = recon_box_communication(rbox, nbox, &ggr, fr);
 
 	//tecplot_rboxes("rbox", &ggr, rbox, nbox, NO);
-	
+
 	printf("#rbox one comm bf nbox = %d\n", nbox);
-	
+
 	clean_up(0);
 
 	max_nbox = 1;
@@ -6116,14 +6279,14 @@ boolean	communicate_boxes(
 	  if(rbox_contain(&rbox[i],&ggr.rbox))
 	    break;
 	}
-	
+
 	if(i == nbox)
 	  rbox_one_box_communication(NULL, &ggr, fr, rbox, nbox);
 	else
 	  rbox_one_box_communication(&rbox[i], &ggr, fr, rbox, nbox);
 
 	nbox = rbox_arrange(rbox, nbox);
-	
+
 	max_nbox = nbox;
 	pp_global_imax(&max_nbox, 1);
 	printf("#rbox one comm max_nbox = %d nbox = %d\n", max_nbox, nbox);
@@ -6132,7 +6295,7 @@ boolean	communicate_boxes(
 	}
 
 	//printf("#tol rbox_comm_intfc copy_intfc \n");
-	//printf("#comm boxes time %15.8e  %15.8e  %15.8e\n", 
+	//printf("#comm boxes time %15.8e  %15.8e  %15.8e\n",
 	//    add_time_get(11), add_time_get(12), add_time_get(13));
 
 	return YES;
@@ -6153,7 +6316,7 @@ int	rbox_set_buffer(
 	{
 	  tmp = rbox->bmin[i];
 	  rbox->bd_flag[i][0] = bdry ? tmp - max(gbox->bmin[i], tmp - buf) : buf;
-	  
+
 	  tmp = rbox->bmax[i];
 	  rbox->bd_flag[i][1] = bdry ? min(gbox->bmax[i], tmp + buf) - tmp : buf;
 	}
@@ -6170,7 +6333,7 @@ int	rbox_global_number(
         myid = pp_mynode();
 
         uni_array(&procs, nproc, INT);
-        
+
 	procs[myid] = nbox;
         pp_global_isum(procs, nproc);
 
@@ -6195,7 +6358,7 @@ void	rbox_set_buffer_box(
 	int		sign)
 {
 	int	i;
-	
+
 	for(i=0; i<3; i++)
 	{
 	  rbox->bmin[i] -= sign*rbox->bd_flag[i][0];
@@ -6225,7 +6388,7 @@ int	rbox_contain_communication(
 	  //add my proc number to the procs list
 	  //for(k=nbox; k<bst; k++)
 	  //  rbox_add_one_proc(&rbox[k], pp_mynode(), zv);
-  
+
 	  //remove outside boxes
 	  for(k=0; k<bst; k++)
 	    if(rbox_contain(&rbox[k], &ggr->rbox) == NO)
@@ -6246,7 +6409,7 @@ int	rbox_contain_communication(
 	  }
 	  nbox = rbox_arrange(rbox, bst);
 	}
-	
+
 	DEBUG_LEAVE(rbox_contain_communication)
 	return nbox;
 }
@@ -6272,7 +6435,7 @@ void	make_dtable(
 	    if(rbox == dbox && i == j)
 	      continue;
 
-	    if(rbox_sect(&rbox[i], &dbox[j], YES) && 
+	    if(rbox_sect(&rbox[i], &dbox[j], YES) &&
 	      ((dbox[j].proc != rbox[i].proc && dbox[j].proc > rbox[i].proc) ||
 	       (dbox[j].proc == rbox[i].proc && dbox[j].number < rbox[i].number)))
 	    {
@@ -6366,10 +6529,10 @@ INTERFACE	*rbox_wait_recv(
 
 	      set_tag_shift(TABFACTOR*b->number);
 	      intfc = receive_interface(b->proc);
-	      
+
 	      printf("#recv box %d from proc af\n", i);
 	      fflush(NULL);
-	      
+
 	      ind = rbox_proc_index(b->proc,b);
 	      rbox_shift_interface(intfc,b->shift[ind],gr);
 	      found = YES;
@@ -6409,15 +6572,15 @@ void	rbox_set_rect_box(
 	RECON_BOX	*gbox;
 
 	gbox = &ggr->rbox;
-	
+
 	for(i=0; i<3; i++)
 	{
 	  box->bmin[i] = rbox->bmin[i] + rbox->bd_flag[i][0] - gbox->bmin[i];
 	  box->bmax[i] = rbox->bmax[i] - rbox->bd_flag[i][1] - gbox->bmin[i];
 	  box->smin[i] = 0;
 	  box->smax[i] = gr->gmax[i];
-	  
-	  printf("%d %d   %d %d\n", box->bmin[i], box->bmax[i], 
+
+	  printf("%d %d   %d %d\n", box->bmin[i], box->bmax[i],
 	                            rbox->bd_flag[i][0], rbox->bd_flag[i][1]);
 	}
 	box->grid = gr;
@@ -6518,7 +6681,7 @@ boolean	recon_communication_intfc(
 	tol = 1.0e-4;
 
 	intfc = fr->interf;
-	
+
 	make_dtable(&dtab, rbox, nbox, dbox, ndbox);
 	make_dtable(&rtab, rbox, nbox, rbox, nbox);
 	make_dtable(&ddtab, dbox, ndbox, dbox, ndbox);
@@ -6529,9 +6692,9 @@ boolean	recon_communication_intfc(
 
 	assign_point_index(intfc, pp_mynode());
 	strip_subdomain_bdry_curves(intfc);
-	
+
 	//null_sides_are_consistent();
-	//check_print_intfc("After merge_buffer", "mgbf", 
+	//check_print_intfc("After merge_buffer", "mgbf",
 	//            's', intfc, fr->step, fr->step, NO);
 
 	while(rbox_active(rbox,nbox) || rbox_active(dbox,ndbox))
@@ -6544,8 +6707,8 @@ boolean	recon_communication_intfc(
 	      found = NO;
 	      for(i=0; i<nbox; i++)
 	      {
-	        if(rbox[i].flag != -1 && 
-		   check_dtable(&dtab, i, dbox) && 
+	        if(rbox[i].flag != -1 &&
+		   check_dtable(&dtab, i, dbox) &&
 		   check_dtable(&rtab, i, rbox))
 		{
 		  found = YES;
@@ -6560,24 +6723,24 @@ boolean	recon_communication_intfc(
 	      b->flag = -1;
 
 	      install_subdomain_bdry_curves(intfc);
-	        
+
 	      printf("#gb recon %d  number = %d\n", i, b->number);
 
 	      bbox_set(&bbox, b, ggr, tol);
 	      rbox_tag_recon_tris(intfc, &bbox);
 
 	      rbox_set_rect_box(&box, b, ggr, intfc);
-	      
+
 	      if(fr->step == 721)
 	        add_to_debug("box_intfc");
 	      grid_based_box_untangle(intfc, &box, YES);
-	        
+
 	      strip_subdomain_bdry_curves(intfc);
-	      
+
 	      rbox_copy_tris_index(intfc);
 
 	      send_intfc = bboxes_intfc_sect(&bbox, intfc, TRIFLAGA);
-	  
+
 	      //for(j=0; j<b->np; j++)
 	      for(j=b->np-1; j>=0; j--)
 	      {
@@ -6587,42 +6750,42 @@ boolean	recon_communication_intfc(
 
 		printf("#send intfc to proc %d bf\n", proc);
 		fflush(NULL);
-	          
+
 		set_tag_shift(TABFACTOR*b->number);
 		send_interface(send_intfc, proc);
-	          
+
 		printf("#send intfc to proc %d \n", proc);
 	        fflush(NULL);
 	      }
-	        
+
 	      delete_interface(send_intfc);
 	    } //while(1)
 	  } //rbox active
-	  
+
 	  if(rbox_active(dbox,ndbox))
 	  {
 	    recv_intfc = rbox_wait_recv(&ind, &ddtab, dbox, ndbox, gr);
 	    dbox[ind].flag = -1;
-	
+
 	    if(dbox[ind].number == 39)
 	    //if(NO)
 	    {
 	      null_sides_are_consistent();
-	      check_print_intfc("After merge_buffer", "mgbuffa", 
+	      check_print_intfc("After merge_buffer", "mgbuffa",
 	            's', intfc, fr->step, fr->step-1, NO);
-	      
+
 	      null_sides_are_consistent();
-	      check_print_intfc("After merge_buffer recv", "mgrecva", 
+	      check_print_intfc("After merge_buffer recv", "mgrecva",
 	            's', recv_intfc, fr->step, fr->step, NO);
 	    }
-    
+
 	    cut_intfc_in_grid(recv_intfc, computational_grid(intfc));
-	
+
 	    bbox_set(&bbox, &dbox[ind], ggr, tol);
 	    bboxes_intfc_cut(&bbox, intfc, TRIINSIDE);
-	    
+
 	    //printf("#merge recv_intfc %d number = %d\n", ind, dbox[ind].number);
-	    
+
 	    if(dbox[ind].number == 39)
 	    {
 	      INTERFACE	*intfcs[2];
@@ -6636,31 +6799,31 @@ boolean	recon_communication_intfc(
 	    if(NO)
 	    {
 	      null_sides_are_consistent();
-	      check_print_intfc("After merge_buffer", "mgbuff", 
+	      check_print_intfc("After merge_buffer", "mgbuff",
 	            's', intfc, fr->step, fr->step, NO);
 	    }
 
 	    delete_interface(recv_intfc);
 	  }
 	}
-	
+
 	install_subdomain_bdry_curves(intfc);
 
 	set_tag_shift(tg_shf);
-	
+
 	//printf("#                 recon  merge_tot  recv  cut  merge recv_intfc\n");
 	//printf("#recon comm intfc %15.8e  %15.8e  %15.8e  %15.8e  %15.8e  %15.8e\n",
 	//      add_time_get(320), add_time_get(321), add_time_get(322),
 	//      add_time_get(323), add_time_get(324), add_time_get(328));
-	
+
 	//printf("#                 pp_recv   recon_pts\n");
 	//printf("#merge intfc %15.8e  %15.8e  \n",
 	//      add_time_get(350), add_time_get(351));
-	
+
 	//printf("#                 point  tris  edge\n");
 	//printf("#merge intfc %15.8e  %15.8e  %15.8e  \n",
 	//      add_time_get(325), add_time_get(326), add_time_get(327));
-	
+
 	//printf("#                 count  sort  compare  rotate  replace\n");
 	//printf("#merge intfc %15.8e  %15.8e  %15.8e  %15.8e %15.8e\n",
 	//      add_time_get(331), add_time_get(332), add_time_get(333),
@@ -6720,7 +6883,7 @@ int	global_set_rbox(
 	//collect box info from other procs
 	nbox = recon_box_communication(rbox, nbox, ggr, fr);
 	nbox = recon_box_communication(rbox, nbox, ggr, fr);
-	
+
 	//printf("#nbox 1 = %d\n", nbox);
 	//fflush(NULL);
 
@@ -6730,7 +6893,7 @@ int	global_set_rbox(
 	    if(j != i && rbox_contain(&rbox[i], &rbox[j]))
 	      rbox[i].flag = -1;
 	nbox = rbox_arrange(rbox, nbox);
-	
+
 	//find all boxes in this proc from positions
 	for(i=0; i<nbox; i++)
 	  if(!rbox_contain(&rbox[i], &ggr->rbox))
@@ -6757,7 +6920,7 @@ int	global_set_rbox(
 	    rbox[i].flag = -1;
 	}
 	nbox = rbox_arrange(rbox, nbox);
-	
+
 	//printf("#nbox 3 = %d\n", nbox);
 	//fflush(NULL);
 
@@ -6820,7 +6983,7 @@ boolean	rbox_communication_boxes(
 	pp_gsync();
 	make_ggrid(&ggr, fr);
 	nbox = make_recon_boxes(rbox, boxes, &ggr);
-	
+
 	//box comm
 	j = 0;
 	status = YES;
@@ -6834,15 +6997,15 @@ boolean	rbox_communication_boxes(
 	  //printf("#merge j = %d status = %d merged = %d\n", j, status, merged);
 	  j++;
 	}
-	
+
 	for(i=0; i<nbox; i++)
 	  rbox_set_buffer_box(&rbox[i], &ggr, 1);
 
 	//global index of boxes
 	rbox_global_number(rbox, nbox);
-	
+
 	//tecplot_rboxes("rbox", &ggr, rbox, nbox, YES);
-	
+
 	//3. how many procs a box belongs to and get dbox
 	nbox = recon_box_communication(rbox, nbox, &ggr, fr);
 	nbox = recon_box_communication(rbox, nbox, &ggr, fr);
@@ -6856,19 +7019,19 @@ boolean	rbox_communication_boxes(
 	    rbox[i].flag = -1;
 	  }
 	nbox = rbox_arrange(rbox, nbox);
-	
+
 	//printf("#nbox 3 = %d ndbox = %d\n", nbox, ndbox);
-	
+
 	//tecplot_rboxes("rboxa", &ggr, rbox, nbox, NO);
 	//tecplot_rboxes("dbox", &ggr, dbox, ndbox, NO);
 	fflush(NULL);
-	
+
 	//print out box info
 	max_nbox = nbox;
 	pp_global_imax(&max_nbox, 1);
 	//if(max_nbox == nbox)
 	//  printf("#max nbox = %d is in proc %d\n", nbox, pp_mynode());
-	
+
 	max_ndbox = ndbox;
 	pp_global_imax(&max_ndbox, 1);
 	//if(max_ndbox == ndbox)
@@ -6878,19 +7041,19 @@ boolean	rbox_communication_boxes(
 	status = recon_communication_intfc(fr,&ggr,rbox,nbox,dbox,ndbox);
 
 	status = pp_min_status(status);
-	
+
 	//intfc = fr->interf;
-	
+
 	//set_size_of_intfc_state(fr->sizest);
 	//set_copy_intfc_states(YES);
 	//fr->interf = copy_interface(intfc);
 	//delete_interface(intfc);
-	
+
 	set_current_interface(fr->interf);
 	reset_normal_on_intfc(fr->interf);
 	install_subdomain_bdry_curves(fr->interf);
-	
-	//check_print_intfc("After rbox_communication_boxes", "rbcomm", 
+
+	//check_print_intfc("After rbox_communication_boxes", "rbcomm",
 	//            's', fr->interf, fr->step, fr->step-1, NO);
 
 	//printf("#comm boxes time %d %15.8e  %15.8e  %15.8e  %15.8e\n", pp_mynode(),
@@ -6920,24 +7083,24 @@ LOCAL	boolean rbox_repair_intfc_in_box(
 	    comp[i] = NO_COMP;
 
 	//status = track_comp_and_repair3d(smin,smax,gmax,intfc,front);
-	
+
 	adjust_crossings(smin,smax,intfc);
-	
+
 	fill_physical_comps(smin,smax,gmax,intfc);
 
 	fill_comp_with_component3d(smin,smax,gmax,intfc);
 
 	remove_unphysical_crossings3d(intfc, smin, smax);
-	
+
 	for(i=0; i<3; i++)
 	{
 	  box.smin[i] = smin[i];
 	  box.smax[i] = smax[i];
-	  
+
 	  box.bmin[i] = smin[i];
 	  if(!flag[i][0])
 	    box.bmin[i] += RECON_BUFFER;
-	  
+
 	  box.bmax[i] = smax[i];
 	  if(!flag[i][1])
 	    box.bmax[i] -= RECON_BUFFER;
@@ -6947,14 +7110,14 @@ LOCAL	boolean rbox_repair_intfc_in_box(
 
 	print_int_vector("bmin", box.bmin, 3, "\n");
 	print_int_vector("bmax", box.bmax, 3, "\n");
-	
+
 	set_current_interface(intfc);
 
 	if(NO)
 	{
 	    add_to_debug("box_intfc");
 	}
-	
+
 	box_index = 0;
 	if (!grid_based_box_untangle(intfc,&box,NO))
 	{
@@ -6963,7 +7126,7 @@ LOCAL	boolean rbox_repair_intfc_in_box(
 	  DEBUG_LEAVE(rbox_repair_intfc_in_box)
 	  return FUNCTION_FAILED;
 	}
-	    
+
 	if (debugging("box_intfc"))
 	{
 	    remove_from_debug("box_intfc");
@@ -6974,7 +7137,7 @@ LOCAL	boolean rbox_repair_intfc_in_box(
 	}
 
 	DEBUG_LEAVE(rbox_repair_intfc_in_box)
-	
+
 	return FUNCTION_SUCCEEDED;
 }
 
@@ -6994,7 +7157,7 @@ EXPORT	boolean	rbox_repair_intfc(
 
 	//printf("#front grid\n");
 	//print_rectangular_grid(comp_grid);
-	
+
 	//printf("#intfc grid\n");
 	//print_rectangular_grid(computational_grid(intfc));
 
@@ -7011,7 +7174,7 @@ EXPORT	boolean	rbox_repair_intfc(
 	    smin[i] = 0;
             smax[i] = topological_grid(intfc).gmax[i];
 	}
-	
+
 	start_clock("insert_grid_crossings3d");
 	interpolate_intfc_states(intfc) = YES;
 	insert_grid_intfc_crossings(intfc);
@@ -7020,14 +7183,14 @@ EXPORT	boolean	rbox_repair_intfc(
 	print_storage("After insert_grid_crossings3d","crx_store");
 
 	start_clock("reconstruct_intfc3d_in_box");
-	
+
 	if(!rbox_repair_intfc_in_box(intfc,smin,smax,flag))
 	{
 	    interpolate_intfc_states(intfc) = sav_intrp;
 	    DEBUG_LEAVE(rbox_repair_intfc)
 	    return NO;
 	}
-	
+
 	stop_clock("reconstruct_intfc3d_in_box");
 
 	interpolate_intfc_states(intfc) = sav_intrp;
@@ -7036,9 +7199,9 @@ EXPORT	boolean	rbox_repair_intfc(
 
 	reset_intfc_num_points(intfc);
         free_crx_storage(intfc);
-	
+
 	front->interf = copy_interface(intfc);
-	
+
 	delete_interface(intfc);
 	DEBUG_LEAVE(rbox_repair_intfc)
 	return YES;

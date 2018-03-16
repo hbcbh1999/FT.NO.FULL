@@ -1,11 +1,11 @@
 /************************************************************************************
 FronTier is a set of libraries that implements differnt types of Front Traking algorithms.
-Front Tracking is a numerical method for the solution of partial differential equations 
-whose solutions have discontinuities.  
+Front Tracking is a numerical method for the solution of partial differential equations
+whose solutions have discontinuities.
 
 
-Copyright (C) 1999 by The University at Stony Brook. 
- 
+Copyright (C) 1999 by The University at Stony Brook.
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ LOCAL 	boolean	rot_symmetry;
 * 		rect_grid_corner()
 *
 * 	For the specified RECT_GRID, sets fcoords to the
-*	floating point coordinates of the lower corner of the 
+*	floating point coordinates of the lower corner of the
 *	block with the given icoords.
 */
 
@@ -103,7 +103,7 @@ EXPORT  void  	rect_grid_center(
 	    fcoords[i] = cell_center(icoords[i],i,rect_grid);
 	}
 }		/* end rect_grid_center */
-  
+
 EXPORT	REMAP	*remap_info(void)
 {
 	return &Remap;
@@ -420,7 +420,7 @@ EXPORT	void	set_remap(
 	REMAP           *remap)
 {
 	remap->remap = remap_type;
-	switch (remap_type) 
+	switch (remap_type)
 	{
 	case IDENTITY_REMAP:
 	    remap->remap_name = "IDENTITY_REMAP";
@@ -550,7 +550,7 @@ LOCAL	double area_of_rect_grid(
 	int         i, dim = rect_grid->dim;
 
 	area = -HUGE_VAL;
-	switch (rect_grid->Remap.remap) 
+	switch (rect_grid->Remap.remap)
 	{
 	case IDENTITY_REMAP:
 	    area = U[0] - L[0];
@@ -623,6 +623,37 @@ EXPORT	void	set_dual_grid(
 	    dual_gr->h[i] = gr->h[i];
 }		/*end set_dual_grid*/
 
+//Dan    FIXME
+EXPORT	void	set_dual_grid2(
+	RECT_GRID       *dual_gr,
+	const RECT_GRID *gr)
+{
+	int		dlbuf[MAXD], dubuf[MAXD];
+	int		i;
+
+	if (dual_gr == NULL || gr == NULL)
+	    return;
+	dual_gr->dim = gr->dim;
+	for (i = 0; i < gr->dim; ++i)
+	{
+	    dlbuf[i] = gr->lbuf[i];
+	    if (dlbuf[i] < 0)
+	        dlbuf[i] = 0;
+	    dubuf[i] = gr->ubuf[i];
+	    if (dubuf[i] < 0)
+	        dubuf[i] = 0;
+	    dual_gr->gmax[i] = gr->gmax[i];
+	    dual_gr->L[i] = gr->L[i];
+	    dual_gr->U[i] = gr->U[i];
+	    /*This is wrong */
+	    dual_gr->GL[i] = gr->GL[i];
+	    dual_gr->GU[i] = gr->GU[i];
+	}
+	set_rect_grid(dual_gr->L,dual_gr->U,gr->GL,gr->GU,dlbuf,dubuf,
+		      dual_gr->gmax,gr->dim,&gr->Remap,dual_gr);
+	for (i = 0; i < gr->dim; ++i)
+	    dual_gr->h[i] = gr->h[i];
+}		/*end set_dual_grid2*/
 /*
 *			copy_rect_grid():
 *
@@ -809,7 +840,7 @@ EXPORT	int set_grid_lines(
 	static const	int	EXTRA_BUF = 2;
 
 	if (rgr == NULL)
-	{ 
+	{
 	    return NO;
 	}
 
@@ -866,7 +897,7 @@ EXPORT	void free_grid_lines(
 	int		i, dim;
 
 	if (rgr == NULL)
-	{ 
+	{
 	    return;
 	}
 	dim = rgr->dim;
@@ -1220,7 +1251,7 @@ EXPORT boolean rect_in_which(
 	return status;
 }		/*end rect_in_which*/
 
-/*	
+/*
 *			point_in_buffer():
 *
 *	Is the point in the buffer zone?  Return YES if so, NO otherwise
@@ -1335,7 +1366,7 @@ LOCAL	double cylin_Volume(
 {
 	const double *h = rgr->h;
 	double       r = coords[0];
-	
+
 	if (r < 0.0)
 	{
 	    r = fabs(r + h[0]);
@@ -1350,7 +1381,7 @@ LOCAL	double cylin_Area(
 {
 	double	dr = rgr->h[0];
 	double   r = coords[0];
-	
+
 	if (r < 0.0)
 	{
 	    r = fabs(r + dr);
@@ -1365,7 +1396,7 @@ LOCAL	double spherical_Volume(
 {
 	double	dr = rgr->h[0];
 	double   r = coords[0];
-	
+
 	if (r < 0.0)
 	{
 	    r = fabs(r + dr);

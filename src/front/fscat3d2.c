@@ -46,7 +46,11 @@ LOCAL	boolean      buffer_extension3d2(INTERFACE*,INTERFACE*,int,int,boolean);
 LOCAL	boolean      tri_in_matching_strip(TRI*,double,double,int);
 LOCAL	boolean      append_reflected_surface(SURFACE*,SURFACE*,RECT_GRID*,
 				           RECT_GRID*,int,int,P_LINK*,int);
+LOCAL	boolean      append_reflected_surface2(SURFACE*,SURFACE*,RECT_GRID*,
+				           RECT_GRID*,int,int,P_LINK*,int);
 LOCAL	boolean      append_rfl_intfc_to_buffer(INTERFACE*,INTERFACE*,
+				    	     RECT_GRID*,RECT_GRID*,int,int);
+LOCAL	boolean      append_rfl_intfc_to_buffer2(INTERFACE*,INTERFACE*,
 				    	     RECT_GRID*,RECT_GRID*,int,int);
 LOCAL	boolean      is_reflected_tri(TRI*,TRI*,int,int,RECT_GRID*,int,int*);
 LOCAL	boolean      match_tris_in_block(SURFACE*,SURFACE*,RECT_GRID*,TRI**,TRI**,
@@ -55,13 +59,18 @@ LOCAL	boolean      matching_tris(TRI*,TRI*,int*,double*);
 LOCAL	boolean      point_on_same_edge(POINT*,POINT*,double*);
 LOCAL	boolean      reconstruct_tris_in_rfl_block(SURFACE*,TRI**,TRI**,int*,
 	 				        RECT_GRID*,int,int);
+LOCAL	boolean      reconstruct_tris_in_rfl_block2(SURFACE*,TRI**,TRI**,int*,
+	 				        RECT_GRID*,int,int);
 LOCAL	boolean      reflect_buffer_interface(INTERFACE*,int,int,boolean);
+//LOCAL	boolean      reflect_buffer_interface2(INTERFACE*,int,int,boolean);
 LOCAL	boolean      tri_on_bound(TRI*,double,int);
 LOCAL	boolean      tri_out_domain2(TRI*,double*,double*,int,int);
 LOCAL	boolean      tri_side_on_bound(TRI*,double,int,int*);
+LOCAL	boolean      tri_vertex_on_bound(TRI*,double,int,int*);
 LOCAL	double     dist2_between_tris(TRI*,TRI*,int*);
 LOCAL	void      clip_intfc_at_grid_bdry2(INTERFACE*);
 LOCAL	void      open_null_sides2(INTERFACE*,double*,double*,int,int);
+LOCAL	void      open_null_sides3(INTERFACE*,double*,double*,int,int,boolean);
 LOCAL	void      set_floating_point_tolerance2(RECT_GRID*);
 LOCAL	void      detach_tri_side(TRI*,int);
 LOCAL	void      merge_block_tris(SURFACE*,TRI**,TRI**,int);
@@ -131,7 +140,9 @@ EXPORT boolean f_intfc_communication3d2(
 	        }
 		else if (rect_boundary_type(intfc,i,j) == REFLECTION_BOUNDARY)
 		{
-		    status = reflect_buffer_interface(intfc,i,j,status);
+		    //status = reflect_buffer_interface(intfc,i,j,status);
+            //For Hao's simulation only. by Dan    FIXME
+		    status = reflect_buffer_interface2(intfc,i,j,status);
 		    set_current_interface(intfc);
 		}
 
@@ -215,6 +226,11 @@ stat_comm:
 	    reset_intfc_num_points(intfc);
 	}
 
+    //debugdan FIXME
+	//reset_intfc_num_points(intfc);
+	//vtk_interface_plot("testdan", intfc, NO, 0, 66, 'r');
+    //exit(-1);
+    //debugdan FIXME
 
 exit_comm:
 	if (status == FUNCTION_SUCCEEDED)
@@ -1341,6 +1357,7 @@ LOCAL void open_null_sides2(
 {
 	TRI		*tri;
 	SURFACE 	**s;
+    int i;
 
 	DEBUG_ENTER(open_null_sides2)
 	if (DEBUG)
@@ -1360,6 +1377,17 @@ LOCAL void open_null_sides2(
 	    	    remove_out_domain_tri(tri,*s);
 	    	}
 	    }
+        // TODO ** FIXME, Dan
+        /*
+	    for (tri=first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+	            if(Coords(Point_of_tri(tri)[i])[dir] < 0.000001)
+                    exit(0);
+            }
+        }
+        */
 	}
 	for (s = intfc->surfaces; s && *s; ++s)
 	{
@@ -1371,6 +1399,220 @@ LOCAL void open_null_sides2(
 	}
 	DEBUG_LEAVE(open_null_sides2)
 }		/*end open_null_sides2*/
+
+LOCAL void open_null_sides3(
+	INTERFACE	*intfc,
+	double		*L,
+	double		*U,
+	int		dir,
+	int		nb,
+    boolean move)
+{
+	TRI		*tri;
+	SURFACE 	**s;
+    int i, j, k;
+    double p0[3], p1[3];
+    double tol = 1e-12;
+
+	DEBUG_ENTER(open_null_sides3)
+	if (DEBUG)
+	{
+	    static const char *xyz[] = { "x", "y", "z"};
+	    static const char *sname[] = { "lower", "upper"};
+	    (void) printf("Clipping interface in at %s %s side\n",
+			  sname[nb],xyz[dir]);
+	}
+
+    //debugdan    FIXME
+    /*
+    printf("Enter open_null_sides3. dir = %d, nb = %d, L = %lf, U = %lf.\n",
+            dir, nb, L[dir], U[dir]);
+    boolean debugdan = NO;
+    if (check_pt_ds(intfc,0.09316,0.00813,9.74036,0))
+        debugdan = YES;
+    */
+    //debugdan    FIXME
+
+	for (s = intfc->surfaces; s && *s; ++s)
+	{
+	    for (tri=first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
+	    {
+            //debugdan    FIXME
+            /*
+            boolean found = NO;
+            if (debugdan)
+            {
+            for (i = 0; i < 3; i++)
+            {
+                p0[0] = 0.093162;
+                //p0[1] = 0.008128;
+                p0[1] = 0.133130;
+                p0[2] = 9.740360;
+                for (j = 0; j < 3; j++)
+                    p1[j] = Coords(Point_of_tri(tri)[i])[j];
+                if (compare_pts_ds(p0,p1))
+                {
+                    found = YES;
+                    break;
+                }
+            }
+            if (found)
+            {
+                    printf("Found point with related tri:\n");
+                    printf("(%lf, %lf, %lf), (%lf, %lf, %lf), (%lf, %lf, %lf).\n",
+                            Coords(Point_of_tri(tri)[0])[0], Coords(Point_of_tri(tri)[0])[1], Coords(Point_of_tri(tri)[0])[2],
+                            Coords(Point_of_tri(tri)[1])[0], Coords(Point_of_tri(tri)[1])[1], Coords(Point_of_tri(tri)[1])[2],
+                            Coords(Point_of_tri(tri)[2])[0], Coords(Point_of_tri(tri)[2])[1], Coords(Point_of_tri(tri)[2])[2]);
+            }
+            }
+            */
+            //debugdan    FIXME
+	    	if (tri_out_domain2(tri,L,U,dir,nb))
+	    	{
+                //debugdan    FIXME
+                /*
+                if (found)
+                {
+                    printf("tri will be removed.\n");
+                }
+                */
+                //debugdan    FIXME
+                for (i = 0; i < 3; i++)
+                {
+                    if (move)
+                    {
+                    if (nb == 0)
+                    {
+                        if (Coords(Point_of_tri(tri)[i])[dir] > L[dir] + tol)
+                        {
+                            Coords(Point_of_tri(tri)[i])[dir] = L[dir];
+                        }
+                    }
+                    else
+                    {
+                        if (Coords(Point_of_tri(tri)[i])[dir] < U[dir] - tol)
+                        {
+                            Coords(Point_of_tri(tri)[i])[dir] = U[dir];
+                        }
+                    }
+                    }
+                }
+	    	    remove_out_domain_tri(tri,*s);
+	    	}
+	    }
+        //debugdan    FIXME
+        //printf("\nAfter first loop.\n");
+        //debugdan    FIXME
+        //loop again
+	    for (tri=first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
+	    {
+            //debugdan    FIXME
+            /*
+            boolean found = NO;
+            if (debugdan)
+            {
+            for (i = 0; i < 3; i++)
+            {
+                p0[0] = 0.093162;
+                //p0[1] = 0.008128;
+                p0[1] = 0.133130;
+                p0[2] = 9.740360;
+                for (j = 0; j < 3; j++)
+                    p1[j] = Coords(Point_of_tri(tri)[i])[j];
+                if (compare_pts_ds(p0,p1))
+                {
+                    found = YES;
+                    break;
+                }
+            }
+            if (found)
+            {
+                    printf("Found point with related tri:\n");
+                    printf("(%lf, %lf, %lf), (%lf, %lf, %lf), (%lf, %lf, %lf).\n",
+                            Coords(Point_of_tri(tri)[0])[0], Coords(Point_of_tri(tri)[0])[1], Coords(Point_of_tri(tri)[0])[2],
+                            Coords(Point_of_tri(tri)[1])[0], Coords(Point_of_tri(tri)[1])[1], Coords(Point_of_tri(tri)[1])[2],
+                            Coords(Point_of_tri(tri)[2])[0], Coords(Point_of_tri(tri)[2])[1], Coords(Point_of_tri(tri)[2])[2]);
+            }
+            }
+            */
+            //debugdan    FIXME
+	    	if (tri_out_domain2(tri,L,U,dir,nb))
+	    	{
+                //debugdan    FIXME
+                /*
+                if (found)
+                {
+                    printf("tri will be removed.\n");
+                }
+                */
+                //debugdan    FIXME
+	    	    remove_out_domain_tri(tri,*s);
+	    	}
+	    }
+        //debugdan    FIXME
+        //printf("End of second loop.\n\n");
+        //debugdan    FIXME
+	}
+	for (s = intfc->surfaces; s && *s; ++s)
+	{
+	    if (no_tris_on_surface(*s))
+	    {
+	    	(void) delete_surface(*s);
+		--s;
+	    }
+	}
+
+    if (move)
+    {
+    for (s = intfc->surfaces; s && *s; ++s)
+    {
+	    for (tri=first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
+        {
+            for (i = 0; i < 3; ++i)
+            {
+                if (nb == 0)
+                {
+                    if (Coords(Point_of_tri(tri)[i])[dir] < L[dir] - tol)
+                    {
+                        //debugdan    FIXME
+                        /*
+                        if (debugdan)
+                        {
+                            printf("Point (%lf, %lf, %lf) is moved to LB.\n",
+                                    Coords(Point_of_tri(tri)[i])[0],
+                                    Coords(Point_of_tri(tri)[i])[1],
+                                    Coords(Point_of_tri(tri)[i])[2]);
+                        }
+                        */
+                        //debugdan    FIXME
+                        Coords(Point_of_tri(tri)[i])[dir] = L[dir];
+                    }
+                }
+                else
+                {
+                    if (Coords(Point_of_tri(tri)[i])[dir] > U[dir] + tol)
+                    {
+                        //debugdan    FIXME
+                        /*
+                        if (debugdan)
+                        {
+                            printf("Point (%lf, %lf, %lf) is moved to UB.\n",
+                                    Coords(Point_of_tri(tri)[i])[0],
+                                    Coords(Point_of_tri(tri)[i])[1],
+                                    Coords(Point_of_tri(tri)[i])[2]);
+                        }
+                        */
+                        //debugdan    FIXME
+                        Coords(Point_of_tri(tri)[i])[dir] = U[dir];
+                    }
+                }
+            }
+        }
+    }
+    }
+
+	DEBUG_LEAVE(open_null_sides3)
+}		/*end open_null_sides3*/
 
 LOCAL boolean tri_out_domain2(
 	TRI		*tri,
@@ -1388,16 +1630,19 @@ LOCAL boolean tri_out_domain2(
 	tri_center /= 3.0;
 	if (nb == 0)
 	{
-	    LB = L[dir] - ltol[dir];
+	    //LB = L[dir] - ltol[dir];
+	    LB = L[dir] + ltol[dir];    //Dan
 	    if (tri_center <= LB)
 		return YES;
 	}
 	else
 	{
-	    UB = U[dir] + ltol[dir];
+	    //UB = U[dir] + ltol[dir];
+	    UB = U[dir] - ltol[dir];    //Dan
 	    if (tri_center >= UB)
 		return YES;
 	}
+    //If a tri is on boundary, it's out of the domain.    Dan
 	return NO;
 }	/* end tri_out_domain2 */
 
@@ -1508,13 +1753,167 @@ LOCAL	INTERFACE  *cut_buf_interface2(
 
 }		/*end cut_buf_interface2*/
 
+//For Hao's simulation only. by Dan    FIXME
+EXPORT	boolean  reflect_buffer_interface2(
+	INTERFACE *intfc,
+	int dir,
+	int nb,
+	boolean status)
+{
+    //TODO ** FIXME
+	//vtk_interface_plot("rightafter", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    INTERFACE	*rfl_intfc,*sav_intfc;
+	RECT_GRID       *gr = computational_grid(intfc);
+	RECT_GRID       dual_gr;
+	double           L[3],U[3];
+	boolean         sav_copy = copy_intfc_states();
+	double		nor[3],posn[3];
+	int		i,dim = intfc->dim;
+
+	DEBUG_ENTER(reflect_buffer_interface)
+
+	set_copy_intfc_states(YES);
+	sav_intfc = current_interface();
+	set_size_of_intfc_state(size_of_state(intfc));
+	//set_dual_grid(&dual_gr,gr);
+	set_dual_grid2(&dual_gr,gr);    //Dan    FIXME
+	rfl_intfc = copy_interface(intfc);
+	if (nb == 0)
+	{
+	    L[dir] = dual_gr.L[dir];
+	    //L[dir] = dual_gr.L[dir] - dual_gr.h[dir];    //Dan
+	    //U[dir] = dual_gr.L[dir] + (dual_gr.ubuf[dir] + 2)*dual_gr.h[dir];
+	    U[dir] = dual_gr.L[dir] + (dual_gr.ubuf[dir])*dual_gr.h[dir];    //Dan
+	}
+	else
+	{
+	    //L[dir] = dual_gr.U[dir] - (dual_gr.lbuf[dir] + 2)*dual_gr.h[dir];
+	    L[dir] = dual_gr.U[dir] - (dual_gr.lbuf[dir])*dual_gr.h[dir];    //Dan
+	    U[dir] = dual_gr.U[dir];
+	    //U[dir] = dual_gr.U[dir] + dual_gr.h[dir];    //Dan
+	}
+    //debugdan FIXME
+	//reset_intfc_num_points(rfl_intfc);
+	//vtk_interface_plot("testdan-bf", rfl_intfc, NO, 0, 0, 'r');
+	//vtk_interface_plot("testdan", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //printf("DEBUGDAN: check intfc before open_null_sides3:\n");
+    //check_pt_ds(intfc,0.09316,0.00813,9.74036,0);
+    //check_pt_ds(intfc,0.09316,0.13313,9.74036,3);
+    //check_pt_ds(intfc,0.10000,0.13313,9.74036,66);
+    //debugdan FIXME
+	open_null_sides3(intfc,L,U,dir,nb,YES);
+    //based on the assumption that boundary is constructed by edges of triangle. Dan
+	reset_intfc_num_points(intfc);    //Dan
+	open_null_sides3(rfl_intfc,L,U,dir,nb,YES);    //Dan
+    //debugdan    FIXME
+    //printf("\nDEBUGDAN\n");
+    //check_pt_ds(rfl_intfc,0.10000,0.13313,9.74036,66);
+    //debugdan    FIXME
+	open_null_sides3(rfl_intfc,L,U,dir,(nb+1)%2,NO);
+    //debugdan FIXME
+	reset_intfc_num_points(rfl_intfc);
+	//vtk_interface_plot("testdan-af", rfl_intfc, NO, 0, 0, 'r');
+	//vtk_interface_plot("testdan", intfc, NO, 0, 1, 'r');
+    //exit(-1);
+    //printf("DEBUGDAN: check rfl_intfc after open_null_sides3:\n");
+    //check_pt_ds(rfl_intfc,0.09316,0.00813,9.74036,0);
+    //check_pt_ds(rfl_intfc,0.09316,0.13313,9.74036,3);
+    //check_pt_ds(rfl_intfc,0.10000,0.13313,9.74036,66);
+/*
+    TRI *tri;
+    SURFACE **s;
+    printf("DEBUGDAN: check tris after open_null_sides3:\n");
+    for (s = rfl_intfc->surfaces; s && *s; ++s)
+    {
+        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+        {
+            if (the_tri(tri))
+            {
+                printf("Found the tri on rfl_intfc.\n");
+                clean_up(ERROR);
+            }
+        }
+    }
+*/
+    //debugdan FIXME
+	if (rfl_intfc->surfaces == NULL)
+	{
+	    delete_interface(rfl_intfc);
+	    set_copy_intfc_states(sav_copy);
+	    set_current_interface(sav_intfc);
+	    DEBUG_LEAVE(reflect_buffer_interface);
+	    return FUNCTION_SUCCEEDED;
+	}
+
+	reset_intfc_num_points(rfl_intfc);
+
+	/* Reflect buffer interface */
+
+	for (i = 0; i < dim; ++i)
+	    nor[i] = posn[i] = 0.0;
+
+	/* Reflect buffer interface */
+
+	nor[dir] = 1.0;
+	posn[dir] = (nb == 0) ? gr->L[dir] : gr->U[dir];
+    rfl_intfc->contactangle = intfc->contactangle;
+	reflect_interface(rfl_intfc,posn,nor);
+    //debugdan FIXME
+	//reset_intfc_num_points(rfl_intfc);
+	//vtk_interface_plot("testdan", rfl_intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //printf("DEBUGDAN: check rfl_intfc after open_null_sides3:\n");
+    //check_pt_ds(rfl_intfc,-0.09316,0.00813,9.74036,0);
+    //check_pt_ds(rfl_intfc,-0.09316,0.13313,9.74036,3);
+    //TRI *tri;
+    //SURFACE **s;
+/*
+    printf("DEBUGDAN: check tris after reflect_interface:\n");
+    for (s = rfl_intfc->surfaces; s && *s; ++s)
+    {
+        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+        {
+            if (the_tri(tri))
+            {
+                printf("Found the tri on rfl_intfc.\n");
+            }
+        }
+    }
+*/
+    //debugdan FIXME
+	//if (!append_rfl_intfc_to_buffer(intfc,rfl_intfc,gr,&dual_gr,dir,nb))
+	if (!append_rfl_intfc_to_buffer2(intfc,rfl_intfc,gr,&dual_gr,dir,nb))    //Dan
+	{
+	    status = FUNCTION_FAILED;
+	    (void) printf("WARNING in reflect_buffer_interface(), "
+	                  "append_rfl_intfc_to_buffer() failed\n");
+	    return status;
+	}
+	delete_interface(rfl_intfc);
+	set_copy_intfc_states(sav_copy);
+	set_current_interface(sav_intfc);
+
+    //debugdan FIXME
+	//reset_intfc_num_points(intfc);
+	//vtk_interface_plot("testdan", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
+	DEBUG_LEAVE(reflect_buffer_interface)
+	return status;
+}	/* end reflect_buffer_interface2 */
+
 LOCAL	boolean  reflect_buffer_interface(
 	INTERFACE *intfc,
 	int dir,
 	int nb,
 	boolean status)
 {
-	INTERFACE	*rfl_intfc,*sav_intfc;
+    //TODO ** FIXME
+	//vtk_interface_plot("rightafter", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    INTERFACE	*rfl_intfc,*sav_intfc;
 	RECT_GRID       *gr = computational_grid(intfc);
 	RECT_GRID       dual_gr;
 	double           L[3],U[3];
@@ -1539,7 +1938,18 @@ LOCAL	boolean  reflect_buffer_interface(
 	    L[dir] = dual_gr.U[dir] - (dual_gr.lbuf[dir] + 2)*dual_gr.h[dir];
 	    U[dir] = dual_gr.U[dir];
 	}
+    //debugdan FIXME
+	//reset_intfc_num_points(rfl_intfc);
+	//vtk_interface_plot("testdan-bf", rfl_intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
+	//open_null_sides2(rfl_intfc,L,U,dir,nb);    //Dan
 	open_null_sides2(rfl_intfc,L,U,dir,(nb+1)%2);
+    //debugdan FIXME
+	//reset_intfc_num_points(rfl_intfc);
+	//vtk_interface_plot("testdan-af", rfl_intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
 	if (rfl_intfc->surfaces == NULL)
 	{
 	    delete_interface(rfl_intfc);
@@ -1562,11 +1972,21 @@ LOCAL	boolean  reflect_buffer_interface(
 	posn[dir] = (nb == 0) ? gr->L[dir] : gr->U[dir];
     rfl_intfc->contactangle = intfc->contactangle;
 	reflect_interface(rfl_intfc,posn,nor);
+    //debugdan FIXME
+	//reset_intfc_num_points(rfl_intfc);
+	//vtk_interface_plot("testdan", rfl_intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
     // TODO && FIXME:
     /*
     char *out_name = "rfl_intfc";
-    vtk_interface_plot(out_name, rfl_intfc, NO, 0, 0, 'R');
+    //vtk_interface_plot(out_name, rfl_intfc, NO, 0, 0, 'R');
     */
+    //debugdan FIXME
+	//reset_intfc_num_points(intfc);
+	//vtk_interface_plot("testdan-bf", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
 	if (!append_rfl_intfc_to_buffer(intfc,rfl_intfc,gr,&dual_gr,dir,nb))
 	{
 	    status = FUNCTION_FAILED;
@@ -1578,6 +1998,11 @@ LOCAL	boolean  reflect_buffer_interface(
 	set_copy_intfc_states(sav_copy);
 	set_current_interface(sav_intfc);
 
+    //debugdan FIXME
+	//reset_intfc_num_points(intfc);
+	//vtk_interface_plot("testdan", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
 	DEBUG_LEAVE(reflect_buffer_interface)
 	return status;
 }	/* end reflect_buffer_interface */
@@ -1637,6 +2062,305 @@ LOCAL	boolean append_rfl_intfc_to_buffer(
 	DEBUG_LEAVE(append_rfl_intfc_to_buffer)
 	return FUNCTION_SUCCEEDED;
 }	/* end append_rfl_intfc_to_buffer */
+
+//Dan
+LOCAL	boolean append_rfl_intfc_to_buffer2(
+	INTERFACE *intfc,
+	INTERFACE *rfl_intfc,
+	RECT_GRID *gr,
+	RECT_GRID *dual_gr,
+	int	  dir,
+	int	  nb)
+{
+	INTERFACE	*cur_intfc;
+	P_LINK		*p_table;	/* Table of matching points on intfc
+					 * and rfl_intfc*/
+	SURFACE		**s, **rs;
+	int		p_size;		/*Size of space allocated for p_table*/
+
+	DEBUG_ENTER(append_rfl_intfc_to_buffer)
+
+	cur_intfc = current_interface();
+	set_current_interface(intfc);
+
+	p_size = 4*(rfl_intfc->num_points) + 1;
+	uni_array(&p_table,p_size,sizeof(P_LINK));
+	reset_hash_table(p_table,p_size);
+
+	/* Begin patching rfl_intfc to current interface */
+	for (s = intfc->surfaces; s && *s; ++s)
+	{
+	    for (rs = rfl_intfc->surfaces; rs && *rs; ++rs)
+	    {
+		/*
+		*	COMMENT -
+		*	The Hyper_surf_index() function is not
+		*	fully supported.  This will fail in the
+		*	presences of interface changes in topology
+		*	TODO: FULLY SUPPORT THIS OBJECT
+		*/
+		if (Hyper_surf_index(*s) == Hyper_surf_index(*rs))
+		{
+		    //if (!append_reflected_surface(*s,*rs,gr,dual_gr,dir,nb,
+			//		p_table,p_size))
+		    if (!append_reflected_surface2(*s,*rs,gr,dual_gr,dir,nb,
+					p_table,p_size))    //Dan
+		    {
+			set_current_interface(cur_intfc);
+			(void) printf("WARNING in ");
+			(void) printf("append_rfl_intfc_to_buffer(), ");
+			(void) printf("append surface failed\n");
+			DEBUG_LEAVE(append_rfl_intfc_to_buffer)
+			return FUNCTION_FAILED;
+		    }
+		}
+	    }
+	}
+	free(p_table);
+	set_current_interface(cur_intfc);
+	DEBUG_LEAVE(append_rfl_intfc_to_buffer)
+    //debugdan FIXME
+	//reset_intfc_num_points(intfc);
+	//vtk_interface_plot("testdan", intfc, NO, 0, 0, 'r');
+    //exit(-1);
+    //debugdan FIXME
+	return FUNCTION_SUCCEEDED;
+}	/* end append_rfl_intfc_to_buffer2 */
+
+LOCAL	boolean append_reflected_surface2(
+	SURFACE		*surf,
+	SURFACE         *rfl_surf,
+	RECT_GRID       *gr,
+	RECT_GRID       *dual_gr,
+	int             dir,
+	int             nb,
+	P_LINK          *p_table,
+	int             p_size)
+{
+	TRI             **tris_s,**tris_r;
+	TRI             *tri;
+	int             i,ns,nr,gmax[MAXD];
+	double           crx_l,crx_u;
+	int		idir1,idir2;
+	int		i1,i2;
+	int		**nbt_s,**nbt_r;
+	int		*lbuf = dual_gr->lbuf;
+	int		*ubuf = dual_gr->ubuf;
+	TRI		**tri_store_s,**tri_store_r;
+	TRI		****blk_tri_s,****blk_tri_r;
+	TRI     *tris1[8],*tris2[8];
+
+	DEBUG_ENTER(append_reflected_surface)
+
+	idir1 = (dir+1)%3;
+	idir2 = (dir+2)%3;
+	gmax[dir] = dual_gr->gmax[dir];
+	gmax[idir1] = dual_gr->gmax[idir1] + lbuf[idir1] + ubuf[idir1] + 2;
+	gmax[idir2] = dual_gr->gmax[idir2] + lbuf[idir2] + ubuf[idir2] + 2;
+
+	uni_array(&tris_s,rfl_surf->num_tri,sizeof(TRI *));
+	uni_array(&tris_r,rfl_surf->num_tri,sizeof(TRI *));
+	bi_array(&nbt_s,gmax[idir1],gmax[idir2],INT);
+	bi_array(&nbt_r,gmax[idir1],gmax[idir2],INT);
+	bi_array(&blk_tri_s,gmax[idir1],gmax[idir2],sizeof(TRI**));
+	bi_array(&blk_tri_r,gmax[idir1],gmax[idir2],sizeof(TRI**));
+
+//	crx_l = (nb == 0) ? gr->L[dir] - 0.5*gr->h[dir] :
+//			gr->U[dir] - 0.5*gr->h[dir];
+//	crx_u = (nb == 0) ? gr->L[dir] + 0.5*gr->h[dir] :
+//			gr->U[dir] + 0.5*gr->h[dir];
+	crx_l = (nb == 0) ? gr->L[dir] - gr->h[dir] : gr->U[dir] - gr->h[dir];    //Dan
+	crx_u = (nb == 0) ? gr->L[dir] + gr->h[dir] : gr->U[dir] + gr->h[dir];    //Dan
+
+	rfl_surf = copy_buffer_surface(rfl_surf,p_table,p_size);
+
+	ns = 0;
+	for (tri = first_tri(surf); !at_end_of_tri_list(tri,surf);
+			tri = tri->next)
+	{
+	    if (tri_in_matching_strip(tri,crx_l,crx_u,dir))
+	    {
+		tris_s[ns++] = tri;
+		assign_tri_icoords(dual_gr,tri);
+		i1 = Tri_icoords(tri)[idir1] + lbuf[idir1] + 1;
+		i2 = Tri_icoords(tri)[idir2] + lbuf[idir2] + 1;
+	    	i1 = (i1 < 0) ? 0 : i1;
+	    	i2 = (i2 < 0) ? 0 : i2;
+	    	i1 = (i1 >= gmax[idir1]) ? gmax[idir1] - 1 : i1;
+	    	i2 = (i2 >= gmax[idir2]) ? gmax[idir2] - 1 : i2;
+		++nbt_s[i1][i2];
+	    }
+	}
+	nr = 0;
+	for (tri = first_tri(rfl_surf); !at_end_of_tri_list(tri,rfl_surf);
+			tri = tri->next)
+	{
+	    if (tri_in_matching_strip(tri,crx_l,crx_u,dir))
+	    {
+		tris_r[nr++] = tri;
+		assign_tri_icoords(dual_gr,tri);
+		i1 = Tri_icoords(tri)[idir1] + lbuf[idir1] + 1;
+		i2 = Tri_icoords(tri)[idir2] + lbuf[idir2] + 1;
+	    	i1 = (i1 < 0) ? 0 : i1;
+	    	i2 = (i2 < 0) ? 0 : i2;
+	    	i1 = (i1 >= gmax[idir1]) ? gmax[idir1] - 1 : i1;
+	    	i2 = (i2 >= gmax[idir2]) ? gmax[idir2] - 1 : i2;
+		++nbt_r[i1][i2];
+	    }
+	}
+	uni_array(&tri_store_s,ns,sizeof(TRI*));
+	uni_array(&tri_store_r,nr,sizeof(TRI*));
+
+	/* adjoin rfl_surf tri list to surf tri list */
+
+    /*
+    //Dan
+    TRI *tri_s, *tri_r;
+    int i, side;
+    double bs;
+
+	bs = (nb == 0) ? gr->L[dir]  : gr->U[dir];    //Dan    FIXME
+
+	for (tri_s = first_tri(surf); !at_end_of_tri_list(tri_s,surf); tri_s = tri_s->next)
+    {
+        //if tri edge on boundary
+	    if (tri_side_on_bound(tri_s,bs,dir,&side))
+        {
+            for (tri_r = first_tri(rfl_surf); !at_end_of_tri_list(tri_r,rfl_surf);
+                    tri_r = tri_r->next)
+            {
+                //link_neighbor_tris(tri_s,tri_r);
+                for (i = 0; i < 3; ++i)
+                {
+                    //if same edge
+                    //replace points
+                    //set neighbor
+                }
+            }
+        }
+    }
+    */
+
+	last_tri(surf)->next = first_tri(rfl_surf);
+	first_tri(rfl_surf)->prev = last_tri(surf);
+	link_tri_list_to_surface(first_tri(surf),last_tri(rfl_surf),surf);
+	rfl_surf->pos_curves = rfl_surf->neg_curves = NULL;
+	(void) delete_surface(rfl_surf);
+	rfl_surf = NULL;
+
+	ns = nr = 0;
+	for (i1 = 0; i1 < gmax[idir1]; ++i1)
+	{
+	    for (i2 = 0; i2 < gmax[idir2]; ++i2)
+	    {
+		if (nbt_s[i1][i2] != 0)
+		{
+		    blk_tri_s[i1][i2] = &tri_store_s[ns];
+		    ns += nbt_s[i1][i2];
+		    nbt_s[i1][i2] = 0;
+		}
+		if (nbt_r[i1][i2] != 0)
+		{
+		    blk_tri_r[i1][i2] = &tri_store_r[nr];
+		    nr += nbt_r[i1][i2];
+		    nbt_r[i1][i2] = 0;
+		}
+	    }
+	}
+	for (i = 0; i < ns; ++i)
+	{
+	    i1 = Tri_icoords(tris_s[i])[idir1] + lbuf[idir1] + 1;
+	    i2 = Tri_icoords(tris_s[i])[idir2] + lbuf[idir2] + 1;
+	    i1 = (i1 < 0) ? 0 : i1;
+	    i2 = (i2 < 0) ? 0 : i2;
+	    i1 = (i1 >= gmax[idir1]) ? gmax[idir1] - 1 : i1;
+	    i2 = (i2 >= gmax[idir2]) ? gmax[idir2] - 1 : i2;
+	    blk_tri_s[i1][i2][nbt_s[i1][i2]] = tris_s[i];
+	    ++nbt_s[i1][i2];
+	}
+	for (i = 0; i < nr; ++i)
+	{
+	    i1 = Tri_icoords(tris_r[i])[idir1] + lbuf[idir1] + 1;
+	    i2 = Tri_icoords(tris_r[i])[idir2] + lbuf[idir2] + 1;
+	    i1 = (i1 < 0) ? 0 : i1;
+	    i2 = (i2 < 0) ? 0 : i2;
+	    i1 = (i1 >= gmax[idir1]) ? gmax[idir1] - 1 : i1;
+	    i2 = (i2 >= gmax[idir2]) ? gmax[idir2] - 1 : i2;
+	    blk_tri_r[i1][i2][nbt_r[i1][i2]] = tris_r[i];
+	    ++nbt_r[i1][i2];
+	}
+
+	for (i1 = 0; i1 < gmax[idir1]; ++i1)
+	{
+	    for (i2 = 0; i2 < gmax[idir2]; ++i2)
+	    {
+		if (nbt_s[i1][i2] != nbt_r[i1][i2])
+		{
+		    (void) printf("WARNING in append_reflected_surface(), "
+				  "local and reflected sides have "
+		                  "different number of tris\n");
+		    return FUNCTION_FAILED;
+		}
+		if (nbt_s[i1][i2] == 0) continue;
+		//if (!reconstruct_tris_in_rfl_block(surf,blk_tri_s[i1][i2],
+		//	blk_tri_r[i1][i2],&nbt_s[i1][i2],gr,dir,nb))
+		if (!reconstruct_tris_in_rfl_block2(surf,blk_tri_s[i1][i2],
+			blk_tri_r[i1][i2],&nbt_s[i1][i2],gr,dir,nb))    //Dan
+		{
+		    (void) printf("WARNING in append_reflected_surface(), "
+				  "reconstruct_tris_in_rfl_block() failed\n");
+		    return FUNCTION_FAILED;
+		}
+	    }
+	}
+
+/*
+	for (i1 = 0; i1 < gmax[idir1]; ++i1)
+	{
+	    for (i2 = 0; i2 < gmax[idir2]; ++i2)
+	    {
+		if (nbt_s[i1][i2] == 0) continue;
+		if ((i1 != gmax[idir1] -1) && (nbt_s[i1+1][i2] != 0))
+		{
+		    ns = 0;
+		    for (i = 0; i < nbt_s[i1][i2]; ++i)
+		    {
+			tris1[ns++] = blk_tri_s[i1][i2][i];
+			tris1[ns++] = blk_tri_r[i1][i2][i];
+		    }
+		    nr = 0;
+		    for (i = 0; i < nbt_s[i1+1][i2]; ++i)
+		    {
+			tris2[nr++] = blk_tri_s[i1+1][i2][i];
+			tris2[nr++] = blk_tri_r[i1+1][i2][i];
+		    }
+		    stitch_blocks(tris1,ns,tris2,nr);
+		}
+		if ((i2 != gmax[idir2] -1) && (nbt_s[i1][i2+1] != 0))
+		{
+		    ns = 0;
+		    for (i = 0; i < nbt_s[i1][i2]; ++i)
+		    {
+			tris1[ns++] = blk_tri_s[i1][i2][i];
+			tris1[ns++] = blk_tri_r[i1][i2][i];
+		    }
+		    nr = 0;
+		    for (i = 0; i < nbt_s[i1][i2+1]; ++i)
+		    {
+			tris2[nr++] = blk_tri_s[i1][i2+1][i];
+			tris2[nr++] = blk_tri_r[i1][i2+1][i];
+		    }
+		    stitch_blocks(tris1,ns,tris2,nr);
+		}
+	    }
+	}
+*/
+	free_these(8,nbt_s,nbt_r,blk_tri_s,blk_tri_r,tris_s,tris_r,
+			tri_store_s,tri_store_r);
+
+	DEBUG_LEAVE(append_reflected_surface)
+	return FUNCTION_SUCCEEDED;
+}	/* end append_reflected_surface2 */
 
 LOCAL	boolean append_reflected_surface(
 	SURFACE		*surf,
@@ -1839,6 +2563,123 @@ LOCAL	boolean append_reflected_surface(
 	return FUNCTION_SUCCEEDED;
 }	/* end append_reflected_surface */
 
+LOCAL	boolean reconstruct_tris_in_rfl_block2(
+	SURFACE	*surf,
+	TRI **tris_s,
+	TRI **tris_r,
+	int *nt,
+	RECT_GRID *gr,
+	int dir,
+	int nb)
+{
+	TRI   *ts, *tr;
+	POINT **ps, **pr;
+	double bs;
+	int   side, rside;
+	int   i, j, j1, j2;
+
+	//bs = (nb == 0) ? gr->L[dir] + 0.5*gr->h[dir] :
+	//		 gr->U[dir] - 0.5*gr->h[dir];
+	bs = (nb == 0) ? gr->L[dir]  : gr->U[dir];    //Dan    FIXME
+
+	for (i = 0; i < *nt; ++i)
+	{
+	    ts = tris_s[i];
+	    if (ts == NULL)
+            continue;
+	    ps = Point_of_tri(ts);
+	    if (tri_on_bound(ts,bs,dir))
+            continue;
+	    else if (tri_side_on_bound(ts,bs,dir,&side))
+	    {
+            for (j = 0; j < *nt; ++j)
+            {
+                tr = tris_r[j];
+                if (tr == NULL)
+                    continue;
+                pr = Point_of_tri(tr);
+                if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
+                {
+                    //ps[(side+2)%3]  = pr[(rside+1)%3];
+                    //pr[(rside+2)%3] = ps[(side+1)%3];
+                    //ps[(side)%3]  = pr[(rside+1)%3];    //Dan
+                    pr[(rside+1)%3] = ps[side];    //Dan
+                    pr[rside] = ps[(side+1)%3];    //Dan
+                    //Tri_on_side(ts,( side+1)%3) = tr;
+                    //Tri_on_side(tr,(rside+1)%3) = ts;
+                    Tri_on_side(ts,side) = tr;    //Dan
+                    Tri_on_side(tr,rside) = ts;    //Dan
+                    //detach_tri_side(ts,(side+2)%3);
+                    //detach_tri_side(tr,(rside+2)%3);
+                    set_normal_of_tri(ts);
+                    set_normal_of_tri(tr);
+                    break;
+                }
+            }
+	    }
+        else if (tri_vertex_on_bound(ts,bs,dir,&side))
+        {
+            for (j = 0; j < *nt; ++j)
+            {
+                tr = tris_r[j];
+                if (tr == NULL)
+                    continue;
+                pr = Point_of_tri(tr);
+                if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
+                {
+                    pr[(rside+1)%3] = ps[side];
+                    break;
+                }
+            }
+        }
+        /*
+	    else
+	    {
+            for (j = 0; j < *nt; ++j)
+            {
+                tr = tris_r[j];
+                if (tr == NULL) continue;
+                if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
+                {
+                    remove_tri_from_surface(tr,surf,NO);
+                    tris_r[j] = NULL;
+                    break;
+                }
+            }
+            //remove_tri_from_surface(ts,surf,NO);    //Dan
+            //tris_s[i] = NULL;    //Dan
+	    }
+        */
+	}
+/*
+	j1 = 0;
+	for (i = 0; i < *nt; ++i)
+	{
+	    if (tris_s[i] != NULL)
+	    {
+            tris_s[j1++] = tris_s[i];
+	    }
+	}
+	j2 = 0;
+	for (i = 0; i < *nt; ++i)
+	{
+	    if (tris_r[i] != NULL)
+	    {
+	    	tris_r[j2++] = tris_r[i];
+	    }
+	}
+	if (j1 != j2)
+	{
+	    (void) printf("WARNING in reconstruct_tris_in_rfl_block(), "
+	                  "Final number of triangles do not match "
+	                  "j1 = %d  j2 = %d\n",j1,j2);
+	    return FUNCTION_FAILED;
+	}
+	*nt = j1;
+*/
+	return FUNCTION_SUCCEEDED;
+}	/* end reconstruct_tris_in_rfl_block2 */
+
 LOCAL	boolean reconstruct_tris_in_rfl_block(
 	SURFACE	*surf,
 	TRI **tris_s,
@@ -1856,52 +2697,53 @@ LOCAL	boolean reconstruct_tris_in_rfl_block(
 
 	bs = (nb == 0) ? gr->L[dir] + 0.5*gr->h[dir] :
 			 gr->U[dir] - 0.5*gr->h[dir];
+	//bs = (nb == 0) ? gr->L[dir]  : gr->U[dir];    //Dan    FIXME
 
 	for (i = 0; i < *nt; ++i)
 	{
 	    ts = tris_s[i];
 	    if (ts == NULL)
-		continue;
+            continue;
 	    ps = Point_of_tri(ts);
 	    if (tri_on_bound(ts,bs,dir))
-		continue;
+            continue;
 	    else if (tri_side_on_bound(ts,bs,dir,&side))
 	    {
-		for (j = 0; j < *nt; ++j)
-		{
-		    tr = tris_r[j];
-		    if (tr == NULL)
-			continue;
-	            pr = Point_of_tri(tr);
-		    if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
-		    {
-			ps[(side+2)%3]  = pr[(rside+1)%3];
-			pr[(rside+2)%3] = ps[(side+1)%3];
-			Tri_on_side(ts,( side+1)%3) = tr;
-			Tri_on_side(tr,(rside+1)%3) = ts;
-			detach_tri_side(ts,(side+2)%3);
-			detach_tri_side(tr,(rside+2)%3);
-			set_normal_of_tri(ts);
-			set_normal_of_tri(tr);
-			break;
-		    }
-		}
+            for (j = 0; j < *nt; ++j)
+            {
+                tr = tris_r[j];
+                if (tr == NULL)
+                    continue;
+                pr = Point_of_tri(tr);
+                if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
+                {
+                    ps[(side+2)%3]  = pr[(rside+1)%3];
+                    pr[(rside+2)%3] = ps[(side+1)%3];
+                    Tri_on_side(ts,( side+1)%3) = tr;
+                    Tri_on_side(tr,(rside+1)%3) = ts;
+                    detach_tri_side(ts,(side+2)%3);
+                    detach_tri_side(tr,(rside+2)%3);
+                    set_normal_of_tri(ts);
+                    set_normal_of_tri(tr);
+                    break;
+                }
+            }
 	    }
 	    else
 	    {
-		for (j = 0; j < *nt; ++j)
-		{
-		    tr = tris_r[j];
-		    if (tr == NULL) continue;
-		    if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
-		    {
-			remove_tri_from_surface(tr,surf,NO);
-			tris_r[j] = NULL;
-			break;
-		    }
-		}
-		remove_tri_from_surface(ts,surf,NO);
-		tris_s[i] = NULL;
+            for (j = 0; j < *nt; ++j)
+            {
+                tr = tris_r[j];
+                if (tr == NULL) continue;
+                if (is_reflected_tri(ts,tr,dir,nb,gr,side,&rside))
+                {
+                    remove_tri_from_surface(tr,surf,NO);
+                    tris_r[j] = NULL;
+                    break;
+                }
+            }
+            remove_tri_from_surface(ts,surf,NO);    //Dan
+            tris_s[i] = NULL;    //Dan
 	    }
 	}
 	j1 = 0;
@@ -1909,7 +2751,7 @@ LOCAL	boolean reconstruct_tris_in_rfl_block(
 	{
 	    if (tris_s[i] != NULL)
 	    {
-		tris_s[j1++] = tris_s[i];
+            tris_s[j1++] = tris_s[i];
 	    }
 	}
 	j2 = 0;
@@ -1973,6 +2815,36 @@ LOCAL	boolean tri_side_on_bound(
 	*side = 0;
 	return NO;
 }	/* end tri_side_on_bound */
+
+LOCAL	boolean tri_vertex_on_bound(
+	TRI *tri,
+	double line,
+	int dir,
+	int *side)
+{
+	POINT *p[3];
+	int i;
+
+	p[0] = Point_of_tri(tri)[0];
+	p[1] = Point_of_tri(tri)[1];
+	p[2] = Point_of_tri(tri)[2];
+	for (i = 0; i < 3; ++i)
+	{
+        if (fabs(Coords(p[i])[dir] - line) < ltol[dir])
+	    {
+		if (fabs(Coords(p[(i+1)%3])[dir]-line) < ltol[dir] ||
+            fabs(Coords(p[(i+2)%3])[dir]-line) < ltol[dir])
+		    return NO;	/* parallel triangle */
+		else
+		{
+		    *side = i;
+		    return YES;
+		}
+	    }
+	}
+	*side = 0;
+	return NO;
+}	/* end tri_vertex_on_bound */
 
 LOCAL	boolean is_reflected_tri(
 	TRI *ts,

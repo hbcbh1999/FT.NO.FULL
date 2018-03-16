@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #include <front/fdecs.h>		/* includes int.h, table.h */
-
+#include <front/fredist3d.c>
 
 	/* LOCAL Function Declarations */
 LOCAL	boolean	f_read_print_FlowSpecifiedRegion_data(INIT_DATA*,const IO_TYPE*,
@@ -2129,17 +2129,29 @@ LOCAL   void FT_InitIntfc3d(
 	else if (level_func_pack->is_RS_SY && level_func_pack->func != NULL)
 	{
 	    double (*func)(POINTER,double*);
+	    double (*func1)(POINTER,double*);
 	    POINTER func_params;
 	    neg_comp = level_func_pack->neg_component;
 	    pos_comp = level_func_pack->pos_component;
 	    func = level_func_pack->func;
+	    func1 = level_func_pack->func1;
 	    func_params = level_func_pack->func_params;
-	    if (!make_level_surface(gr,intfc,neg_comp,pos_comp,func,
+	    // TODO ** FIXME: This section was commented for the purpose of avoiding duplication
+        // since make_level_surface() was called at the end of the if-state for RSSY simulation.
+        if (!make_level_surface(gr,intfc,neg_comp,pos_comp,func,
 			func_params,&surf))
 	    {
 		screen("make_level_surface() failed!\n");
 		clean_up(ERROR);
 	    }
+
+        //START INTERFACE REVAMP
+        //loopingTris(intfc,gr);
+        movingPointMeniscus(intfc,func_params);
+
+        // Redo the components **TODO ** FIXME, HAO
+        redoComponent(gr, intfc,neg_comp,pos_comp,func1,func_params,&surf);
+        //END INTERFACE REVAMP
 	}
 	else
 	{
@@ -2169,6 +2181,10 @@ LOCAL   void FT_InitIntfc3d(
 			front->interf->default_comp,eps);
 	    /* call f_set_boundary3d */
 	}
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,666,'r');
+    //exit(-1);
+    //debugdan    FIXME
 }	/* end FT_InitIntfc3d */
 
 

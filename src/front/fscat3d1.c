@@ -156,6 +156,7 @@ void    sep_common_pt_for_ref_bdry(INTERFACE *intfc, int, int);
 void    make_ref_strip(double*, double*, INTERFACE*);
 void    extend_long_ref_side(double*,double*,int, INTERFACE*,Front*);
 void    cut_intfc_along_bdry(int, int, INTERFACE*);
+void    cut_intfc_along_bdry2(int, int, INTERFACE*);
 void    flag_buffer_tris(int, int, INTERFACE*);
 void   clip_intfc_in_dir(INTERFACE*, int, int);
 void    reflect_curves_on_intfc(INTERFACE*,double*,double*);
@@ -180,6 +181,168 @@ LOCAL   boolean    cut_ref_fail = NO; /* NEEDS DOCUMENT */
 EXPORT  void    set_cut_ref_fail(boolean flag)
 {
         cut_ref_fail = flag;
+}
+
+//For Hao's simulation only. Dan
+boolean  construct_reflect_bdry2(
+        Front           *fr)
+{
+        INTERFACE    *intfc = fr->interf, *buf_intfc;
+        INTERFACE    *cur_intfc = current_interface();
+        RECT_GRID    *gr = fr->rect_grid;
+        SURFACE      **s;
+        double        *U = gr->U, *L = gr->L;
+        double        *nor, p[3];
+        int          me[MAXD], him[MAXD];
+        int          i, j, k;
+        int          dim = intfc->dim;
+        boolean         status;
+        static double nors[] = { 1.0,  0.0,  0.0,
+                                 0.0,  1.0,  0.0,
+                                 0.0,  0.0,  1.0,
+                                -1.0,  0.0,  0.0,
+                                 0.0, -1.0,  0.0,
+                                 0.0,  0.0, -1.0};
+
+        DEBUG_ENTER(construct_reflect_bdry)
+
+        set_current_interface(intfc);
+        strip_subdomain_bdry_curves(intfc);
+
+
+        for (i = 0; i < dim; ++i)
+        {
+            for (j = 0; j < 2; ++j)
+            {
+                for (k = 0; k < dim; ++k)
+                    him[k] = me[k] = pp_mynode();
+
+                if (rect_boundary_type(intfc,i,j) != REFLECTION_BOUNDARY)
+                    continue;
+
+                status = FUNCTION_SUCCEEDED;
+                status = reflect_buffer_interface2(intfc,i,j,status);
+/*
+                //debugdan    FIXME
+                vtk_interface_plot("testdan",intfc,NO,0,71,'r');
+                //debugdan    FIXME
+                clip_intfc_in_dir(intfc, i, j);
+                buf_intfc = cut_buf_interface1(intfc,i,j,me,him);
+                buf_intfc->contactangle = intfc->contactangle;
+                //debugdan    FIXME
+                vtk_interface_plot("testdan",intfc,NO,0,72,'r');
+                //debugdan    FIXME
+
+                nor = nors + 3*i + 9*j;
+                p[i] = (j > 0) ? U[i] : L[i];
+                for(k = 1; k < dim; ++k)
+                    p[(k+i)%dim] = 0.5*(U[(k+i)%dim] + L[(k+i)%dim]);
+
+                if(use_cut_ref == YES)
+                {
+                    //debugdan    FIXME
+                    vtk_interface_plot("testdan",intfc,NO,0,73,'r');
+                    //debugdan    FIXME
+                    //cut_intfc_along_bdry(i, j, intfc);
+                    cut_intfc_along_bdry2(i, j, intfc);    //Dan
+                    //debugdan    FIXME
+                    vtk_interface_plot("testdan",intfc,NO,0,74,'r');
+                    //debugdan    FIXME
+                    //debugdan    FIXME
+                    vtk_interface_plot("testdan-ri",buf_intfc,NO,0,1,'r');
+                    //debugdan    FIXME
+                    //cut_intfc_along_bdry(i, j, buf_intfc);
+                    cut_intfc_along_bdry2(i, j, buf_intfc);    //Dan
+                    //debugdan    FIXME
+                    vtk_interface_plot("testdan-ri",buf_intfc,NO,0,2,'r');
+                    //debugdan    FIXME
+
+                    flag_buffer_tris(i, j, intfc);
+                    printf("#cut_ref  buf_intfc\n");
+                    flag_buffer_tris(i, j, buf_intfc);
+                }
+                else
+                {
+                    cut_buffer_tris_from_intfc(intfc, i, j);
+                    cut_buffer_tris_from_intfc(buf_intfc, i, j);
+                }
+
+                sep_common_pt_for_ref_bdry(intfc, i, j);
+                sep_common_pt_for_ref_bdry(buf_intfc, i, j);
+
+                //extend_long_ref_side(p,nor,i,intfc,fr);
+                //extend_long_ref_side(p,nor,i,buf_intfc,fr);
+
+                reflect_interface(buf_intfc, p, nor);
+                reflect_curves_on_intfc(buf_intfc, p, nor);
+
+                //debugdan    FIXME
+                vtk_interface_plot("testdan",intfc,NO,0,75,'r');
+                //debugdan    FIXME
+                make_ref_strip(p, nor, intfc);
+                //debugdan    FIXME
+                vtk_interface_plot("testdan",intfc,NO,0,76,'r');
+                //debugdan    FIXME
+                make_ref_strip(p, nor, buf_intfc);
+
+                set_current_interface(intfc);
+
+                //debugdan    FIXME
+                vtk_interface_plot("testdan",intfc,NO,0,77,'r');
+                //debugdan    FIXME
+                status = FUNCTION_SUCCEEDED;
+                set_ref_append(YES);
+                status = buffer_extension3d1(intfc,buf_intfc,i,j,status);
+                set_ref_append(NO);
+*/
+                //debugdan    FIXME
+                //vtk_interface_plot("testdan",intfc,NO,0,78,'r');
+                //exit(0);
+                //debugdan    FIXME
+
+                if (!status)
+                {
+                    (void) printf("WARNING in construct_reflect_bdry "
+                              "buffer_extension3d1 failed for "
+                              "i = %d, j = %d \n", i, j);
+                    return FUNCTION_FAILED;
+                    //clean_up(ERROR);
+                }
+
+//                (void) delete_interface(buf_intfc);
+                set_current_interface(intfc);
+
+                for (s = intfc->surfaces; s && *s; ++s)
+                {
+                    if (no_tris_on_surface(*s))
+                    {
+                        (void) delete_surface(*s);
+                        --s;
+                    }
+                }
+                if(intfc->surfaces != NULL && *(intfc->surfaces) == NULL)
+                    intfc->surfaces = NULL;
+                if(intfc->surfaces == NULL)
+                {
+                    //printf("no tris, exit construct_reflect_bdry.\n");
+                    goto exit_ref;
+                }
+
+            }   //for j=0, 1, two direction communication.
+            reset_intfc_num_points(intfc);
+        }
+
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,79,'r');
+    //exit(0);
+    //debugdan    FIXME
+
+exit_ref:
+        set_open_bdry_flag(NO);
+
+        return FUNCTION_SUCCEEDED;
+        set_current_interface(cur_intfc);
+        DEBUG_LEAVE(construct_reflect_bdry)
 }
 
 boolean  construct_reflect_bdry(
@@ -231,9 +394,19 @@ else
                 set_open_bdry_flag(NO);
 }
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,71,'r');
+    //exit(0);
+    //debugdan    FIXME
+
                 clip_intfc_in_dir(intfc, i, j);
                 buf_intfc = cut_buf_interface1(intfc,i,j,me,him);
                 buf_intfc->contactangle = intfc->contactangle;
+
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,72,'r');
+    //exit(0);
+    //debugdan    FIXME
 
                     if(NO && i == 0 && j ==0 && pp_mynode() == 44)
                     {
@@ -256,7 +429,15 @@ else
                         //tecplot_interface("cut_ref_buf_intfc.plt", buf_intfc);
                     }
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,73,'r');
+    //exit(0);
+    //debugdan    FIXME
                     cut_intfc_along_bdry(i, j, intfc);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,74,'r');
+    //exit(0);
+    //debugdan    FIXME
                     cut_intfc_along_bdry(i, j, buf_intfc);
 
                     if(NO && i == 0 && j ==1 && pp_mynode() == 1)
@@ -317,7 +498,15 @@ else
                                           buf_intfc, 1, -1, YES);
                     }
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,75,'r');
+    //exit(0);
+    //debugdan    FIXME
                 make_ref_strip(p, nor, intfc);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,76,'r');
+    //exit(0);
+    //debugdan    FIXME
                 //printf("ref_strip intfc\n");
                 make_ref_strip(p, nor, buf_intfc);
 
@@ -339,10 +528,18 @@ else
                 set_current_interface(intfc);
 
 
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,77,'r');
+    //exit(0);
+    //debugdan    FIXME
                 status = FUNCTION_SUCCEEDED;
                 set_ref_append(YES);
                 status = buffer_extension3d1(intfc,buf_intfc,i,j,status);
                 set_ref_append(NO);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,78,'r');
+    //exit(0);
+    //debugdan    FIXME
 
                     if(NO && i == 0 && j ==0 && pp_mynode() == 4)
                     {
@@ -385,6 +582,11 @@ else
             }   //for j=0, 1, two direction communication.
             reset_intfc_num_points(intfc);
         }
+
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,79,'r');
+    //exit(0);
+    //debugdan    FIXME
 
 exit_ref:
         set_open_bdry_flag(NO);
@@ -900,7 +1102,72 @@ void	cut_surf_along_line(
 
 }
 
+void	cut_intfc_along_bdry2(int, int, INTERFACE*);
 void	cut_intfc_along_bdry(int, int, INTERFACE*);
+
+void	cut_intfc_along_bdry2(
+	int		dir,
+	int		nb,
+	INTERFACE	*intfc)
+{
+	static EDGE_CUT	**edge_cut = NULL;
+	double		plane, tol;
+	RECT_GRID	*gr = computational_grid(intfc);
+	SURFACE		**s;
+	INTERFACE	*sav_intfc = current_interface();
+
+	DEBUG_ENTER(cut_intfc_along_bdry)
+
+	set_current_interface(intfc);
+
+	if(edge_cut == NULL)
+	    bi_array(&edge_cut, MAX_EDGE_CUT,3,sizeof(EDGE_CUT));
+
+	if(nb == 0)
+	    //plane = gr->L[dir] + 0.5*gr->h[dir];
+	    plane = gr->L[dir];    //Dan
+	else
+	    //plane = gr->U[dir] - 0.5*gr->h[dir];
+	    plane = gr->U[dir];    //Dan
+
+	cut_curve_along_line(dir, nb, plane, intfc);
+
+	for(s = intfc->surfaces; s && *s; ++s)
+	{
+	    set_surf_edge_cut(edge_cut,plane,dir,nb,*s,intfc);
+	    cut_surf_along_line(*s, edge_cut);
+	}
+
+	{
+	CURVE	**c;
+	BOND	*bs;
+	BOND_TRI	**btris;
+
+	for (c = intfc->curves; c && *c; ++c)
+	{
+	    //printf("#cut_intfc c = %d\n", *c);
+	    for (bs = (*c)->first; bs != NULL; bs = bs->next)
+	    {
+		btris = Btris(bs);
+	        //printf("btris %d  %d  | ", bs, btris);
+		if(btris != NULL && *btris == NULL)
+		{
+		    printf(" #  ");
+		    Btris(bs) = NULL;
+		}
+		//for(btris = Btris(bs); btris && *btris; btris++)
+		    //printf(" %d ", *btris);
+		//printf("\n");
+	    }
+	}
+	}
+
+	cut_out_curves_in_buffer(intfc);
+
+	set_current_interface(sav_intfc);
+
+	DEBUG_LEAVE(cut_intfc_along_bdry)
+}
 
 void	cut_intfc_along_bdry(
 	int		dir,
@@ -1770,6 +2037,11 @@ LOCAL	boolean f_intfc_communication3d1(
 	G = pp_grid->gmax;
 	find_Cartesian_coordinates(myid,pp_grid,me);
 
+    //debugdan    FIXME
+    //reset_intfc_num_points(intfc);
+    //vtk_interface_plot("testdan",intfc,NO,0,0,'r');
+    //debugdan    FIXME
+
 	if (DEBUG)
 	{
 	    (void) printf("myid = %d, ",myid);
@@ -1790,7 +2062,61 @@ LOCAL	boolean f_intfc_communication3d1(
             else
                 set_cut_ref(NO);
         }
-        status = construct_reflect_bdry(fr);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",fr->interf,NO,0,60,'r');
+    //exit(0);
+    //printf("DEBUGDAN: check intfc before construct_reflect_bdry2:\n", i, j);
+    //check_pt_ds(fr->interf,-0.09316,0.00813,9.74036,0);
+    //check_pt_ds(fr->interf,0.09316,0.00813,9.74036,1);
+    //check_pt_ds(fr->interf,-0.10000,0.13313,9.74036,2);
+    //check_pt_ds(fr->interf,0.10000,0.13313,9.74036,3);
+    //check_pt_ds(fr->interf,0.09316,0.13313,9.74036,3);
+/*
+    TRI *tri;
+    SURFACE **s, **as;
+    printf("DEBUGDAN: check tris before construct_reflect_bdry:\n");
+    for (s = intfc->surfaces; s && *s; ++s)
+    {
+        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+        {
+            for (i = 0; i < 3; i++)
+                if (!pt_on_intfc(Point_of_tri(tri)[i], intfc))
+                {
+                    printf("Point is not on intfc.\n");
+                    clean_up(ERROR);
+                }
+            //if (the_tri(tri))
+            //{
+            //    printf("Found the tri on intfc.\n");
+            //}
+        }
+    }
+    printf("All clear.\n");
+*/
+    //debugdan    FIXME
+        //status = construct_reflect_bdry(fr);
+        status = construct_reflect_bdry2(fr);    //For Hao's simulation only. Dan
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",fr->interf,NO,0,61,'r');
+    //exit(0);
+    //printf("DEBUGDAN: check intfc after construct_reflect_bdry2:\n", i, j);
+    //check_pt_ds(fr->interf,-0.09316,0.00813,9.74036,0);
+    //check_pt_ds(fr->interf,-0.10000,0.13313,9.74036,3);
+    //check_pt_ds(fr->interf,-0.09316,0.13313,9.74036,3);
+/*
+    printf("DEBUGDAN: check tris after construct_reflect_bdry:\n");
+    for (s = intfc->surfaces; s && *s; ++s)
+    {
+        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+        {
+            if (the_tri(tri))
+            {
+                printf("Found the tri on intfc.\n");
+            }
+        }
+    }
+*/
+    //debugdan    FIXME
         status = pp_min_status(status);
         if(!status)
         {
@@ -1814,6 +2140,23 @@ LOCAL	boolean f_intfc_communication3d1(
             }
 
 	clip_intfc_at_grid_bdry1(intfc);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,62,'r');
+    //exit(0);
+/*
+    printf("DEBUGDAN: check tris after clip_intfc_at_grid_bdry1:\n");
+    for (s = intfc->surfaces; s && *s; ++s)
+    {
+        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+        {
+            if (the_tri(tri))
+            {
+                printf("Found the tri on intfc.\n");
+            }
+        }
+    }
+*/
+    //debugdan    FIXME
 
             if (debugging("storage"))
             {
@@ -1845,6 +2188,34 @@ LOCAL	boolean f_intfc_communication3d1(
 		    him[i] = (me[i] + 2*j - 1 + G[i])%G[i];
 		    dst_id = domain_id(him,G,dim);
 		    buf_intfc = cut_buf_interface1(intfc,i,j,me,him);
+            //debugdan    FIXME
+            //printf("DEBUGDAN: check buf_intfc %d %d:\n", i, j);
+            //check_pt_ds(buf_intfc,-0.09316,0.00813,9.74036,0);
+            //check_pt_ds(buf_intfc,-0.10000,0.00813,9.74036,1);
+            //check_pt_ds(buf_intfc,-0.09316,0.13313,9.74036,2);
+            //check_pt_ds(buf_intfc,-0.10000,0.13313,9.74036,3);
+            /*
+            TRI *tri;
+            SURFACE **s, **as;
+            double tmp[3];
+            printf("DEBUGDAN: print tris on buf_intfc:\n");
+            printf("\nStart of tri list.\n");
+            for (s = buf_intfc->surfaces; s && *s; ++s)
+            {
+                for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+                {
+                    for (int tmpi = 0; tmpi < 3; tmpi++)
+                        tmp[tmpi] = (Coords(Point_of_tri(tri)[0])[tmpi] + Coords(Point_of_tri(tri)[1])[tmpi] + Coords(Point_of_tri(tri)[2])[tmpi])/3.0;
+                    if (tmp[0] < -0.08 && tmp[2] < 9.8)
+                printf("DEBUGDAN: tri - (%lf, %lf, %lf), (%lf, %lf, %lf), (%lf, %lf, %lf).\n",
+                    Coords(Point_of_tri(tri)[0])[0], Coords(Point_of_tri(tri)[0])[1], Coords(Point_of_tri(tri)[0])[2],
+                    Coords(Point_of_tri(tri)[1])[0], Coords(Point_of_tri(tri)[1])[1], Coords(Point_of_tri(tri)[1])[2],
+                    Coords(Point_of_tri(tri)[2])[0], Coords(Point_of_tri(tri)[2])[1], Coords(Point_of_tri(tri)[2])[2]);
+                }
+            }
+            printf("End of tri list.\n\n");
+            */
+            //debugdan    FIXME
 		    if ((j == 0) && (me[i] == 0))
 		    {
 			T = gr->GU[i] - gr->GL[i];
@@ -1855,6 +2226,13 @@ LOCAL	boolean f_intfc_communication3d1(
 			T = gr->GL[i] - gr->GU[i];
 	                shift_interface(buf_intfc,T,i);
 		    }
+            //debugdan    FIXME
+            //printf("DEBUGDAN: check buf_intfc %d %d after shift:\n", i, j);
+            //check_pt_ds(buf_intfc,-0.09316,0.00813,9.74036,4);
+            //check_pt_ds(buf_intfc,-0.10000,0.00813,9.74036,5);
+            //check_pt_ds(buf_intfc,-0.09316,0.13313,9.74036,6);
+            //check_pt_ds(buf_intfc,-0.10000,0.13313,9.74036,7);
+            //debugdan    FIXME
 		    if (dst_id != myid)
 		    {
 		    	send_interface(buf_intfc,dst_id);
@@ -1877,8 +2255,16 @@ LOCAL	boolean f_intfc_communication3d1(
                 */
                 else if (rect_boundary_type(intfc,i,j) == REFLECTION_BOUNDARY)
                 {
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,63,'r');
+    //exit(0);
+    //debugdan    FIXME
                     adj_intfc[j] = NULL;
                     set_current_interface(intfc);
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,64,'r');
+    //exit(0);
+    //debugdan    FIXME
                 }
 		if (rect_boundary_type(intfc,i,(j+1)%2) == SUBDOMAIN_BOUNDARY)
 		{
@@ -1910,6 +2296,40 @@ LOCAL	boolean f_intfc_communication3d1(
 		status = FUNCTION_SUCCEEDED;
 		if (adj_intfc[j] != NULL)
 		{
+            //debugdan    FIXME
+            //reset_intfc_num_points(intfc);
+            //vtk_interface_plot("testdan",intfc,NO,0,10,'r');
+            //reset_intfc_num_points(adj_intfc[j]);
+            //vtk_interface_plot("testdan",adj_intfc[j],NO,0,21,'r');
+            //printf("i = %d, j = %d.\n", i, j);
+            //check_pt_ds(intfc,-0.09316,0.00813,9.74036,0);
+            //check_pt_ds(adj_intfc[j],-0.10000,0.00813,9.74036,1);
+            //TRI *tri;
+            //SURFACE **s, **as;
+            /*
+            printf("DEBUGDAN: check tris:\n");
+            for (s = intfc->surfaces; s && *s; ++s)
+            {
+                for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri = tri->next)
+                {
+                    if (the_tri(tri))
+                    {
+                        printf("Found the tri on intfc.\n");
+                    }
+                }
+            }
+            for (as = adj_intfc[j]->surfaces; as && *as; ++as)
+            {
+                for (tri = first_tri(*as); !at_end_of_tri_list(tri,*as); tri = tri->next)
+                {
+                    if (the_tri(tri))
+                    {
+                        printf("Found the tri on adj_intfc.\n");
+                    }
+                }
+            }
+            */
+            //debugdan    FIXME
 		    status = buffer_extension3d1(intfc,adj_intfc[j],i,j,status);
 
 	            if (debugging("storage"))
@@ -1978,6 +2398,10 @@ LOCAL	boolean f_intfc_communication3d1(
 	    	print_interface(intfc);
 	    }
 	}
+    //debugdan    FIXME
+    //vtk_interface_plot("testdan",intfc,NO,0,65,'r');
+    //exit(0);
+    //debugdan    FIXME
 
 comm_exit:
 
@@ -2399,6 +2823,9 @@ LOCAL boolean buffer_extension3d1(
 	    status = FUNCTION_FAILED;
 	    (void) printf("WARNING in buffer_extension3d1(), "
 	                  "append_adj_intfc_to_buffer1() failed\n");
+        //debugdan    FIXME
+        //clean_up(ERROR);
+        //debugdan    FIXME
 	}
 
 	DEBUG_LEAVE(buffer_extension3d1)
@@ -2479,6 +2906,16 @@ LOCAL 	int append_adj_intfc_to_buffer1(
 	boolean      	corr_surf_found;
 
 	DEBUG_ENTER(append_adj_intfc_to_buffer1)
+
+    //debugdan    FIXME
+    /*
+    printf("In append_adj_intfc_to_buffer1:\n");
+    check_pt_ds(intfc,-0.09316,0.00813,9.74036,2);
+    check_pt_ds(intfc,-0.10000,0.00813,9.74036,3);
+    check_pt_ds(adj_intfc,-0.09316,0.00813,9.74036,4);
+    check_pt_ds(adj_intfc,-0.10000,0.00813,9.74036,5);
+    */
+    //debugdan    FIXME
 
 	if (DEBUG)
 	{
@@ -2745,6 +3182,16 @@ LOCAL int append_buffer_surface1(
 
 	DEBUG_ENTER(append_buffer_surface1)
 
+    //debugdan    FIXME
+    /*
+    printf("In append_buffer_surface1:\n");
+    check_pt_ds(surf->interface,-0.09316,0.00813,9.74036,6);
+    check_pt_ds(surf->interface,-0.10000,0.00813,9.74036,7);
+    check_pt_ds(adj_surf->interface,-0.09316,0.00813,9.74036,8);
+    check_pt_ds(adj_surf->interface,-0.10000,0.00813,9.74036,9);
+    */
+    //debugdan    FIXME
+
 	if (DEBUG)
 	{
 	    (void) printf("dir = %d,nb = %d\n",dir,nb);
@@ -2786,6 +3233,11 @@ LOCAL int append_buffer_surface1(
 
 	crx_coord = (nb == 0) ? grid->L[dir] : grid->U[dir];
 
+    //debugdan
+    //printf("DEBUGDAN: in append_buffer_surface1(), nb = %d, crx_cood = %lf in dir %d.\n",
+    //        nb, crx_coord, dir);
+    //debugdan
+
 	ns = na = 0;
 	for (tri=first_tri(surf); !at_end_of_tri_list(tri,surf); tri=tri->next)
 	{
@@ -2823,6 +3275,25 @@ LOCAL int append_buffer_surface1(
 	{
 	    screen("WARNING in append_buffer_surface1(), can't match "
 	           "tris on with buffer surface\n");
+        //debugdan    FIXME
+/*
+        for (tri = first_tri(surf); !at_end_of_tri_list(tri,surf); tri = tri->next)
+            if (tri_cross_line(tri,crx_coord,dir) == YES ||
+                tri_bond_cross_test(tri,crx_coord,dir) == YES)
+                printf("DEBUGDAN: tri - (%lf, %lf, %lf), (%lf, %lf, %lf), (%lf, %lf, %lf).\n",
+                    Coords(Point_of_tri(tri)[0])[0], Coords(Point_of_tri(tri)[0])[1], Coords(Point_of_tri(tri)[0])[2],
+                    Coords(Point_of_tri(tri)[1])[0], Coords(Point_of_tri(tri)[1])[1], Coords(Point_of_tri(tri)[1])[2],
+                    Coords(Point_of_tri(tri)[2])[0], Coords(Point_of_tri(tri)[2])[1], Coords(Point_of_tri(tri)[2])[2]);
+        for (tri = first_tri(adj_surf); !at_end_of_tri_list(tri,adj_surf); tri = tri->next)
+            if (tri_cross_line(tri,crx_coord,dir) == YES ||
+                tri_bond_cross_test(tri,crx_coord,dir) == YES)
+                printf("DEBUGDAN: adj_tri - (%lf, %lf, %lf), (%lf, %lf, %lf), (%lf, %lf, %lf).\n",
+                    Coords(Point_of_tri(tri)[0])[0], Coords(Point_of_tri(tri)[0])[1], Coords(Point_of_tri(tri)[0])[2],
+                    Coords(Point_of_tri(tri)[1])[0], Coords(Point_of_tri(tri)[1])[1], Coords(Point_of_tri(tri)[1])[2],
+                    Coords(Point_of_tri(tri)[2])[0], Coords(Point_of_tri(tri)[2])[1], Coords(Point_of_tri(tri)[2])[2]);
+        clean_up(ERROR);
+*/
+        //debugdan    FIXME
 	    /*
 	    FILE  *fp;
 	    char  s[50];
@@ -3357,9 +3828,19 @@ LOCAL boolean add_matching_pt_to_hash_table(
 	    //just set status = NO.
 	    if (pla == NULL)
 	        status = NO;
+        //debugdan    FIXME
+        if (pla == NULL)
+            printf("DEBUGDAN: can't find matching point for point: (%lf, %lf, %lf).\n",
+                    Coords(pls->p)[0], Coords(pls->p)[1], Coords(pls->p)[2]);
+        //debugdan    FIXME
 	}
 	if (plista != NULL)
 	    status = NO;
+
+    //debugdan    FIXME
+    //if (plista == NULL)
+    //    printf("DEBUGDAN: ns = %d, na = %d. plista is NULL.\n", ns, na);
+    //debugdan    FIXME
 
 	if(status == NO)
 	{

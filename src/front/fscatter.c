@@ -69,6 +69,11 @@ EXPORT boolean scatter_front(
 	int		i, dim = gr->dim;
 	DEBUG_ENTER(scatter_front)
 
+    //debugdan    FIXME
+    printf("DEBUGDAN: in scatter_front(), ");
+    check_num_of_tris(front->interf);
+    //debugdan    FIXME
+
 	if ((dim == 3) && debugging("consistency"))
 	{
 	    (void) printf("Check consistency of interface "
@@ -156,6 +161,11 @@ EXPORT boolean scatter_front(
 	    printf("In scatter_front() status = FAILED mynode = %d\n",
 		    pp_mynode());
 	DEBUG_LEAVE(scatter_front)
+
+    //debugdan    FIXME
+    printf("DEBUGDAN: after scatter_front(), ");
+    check_num_of_tris(front->interf);
+    //debugdan    FIXME
 
 	return pp_min_status(status);
 }		/*end scatter_front*/
@@ -1985,3 +1995,95 @@ EXPORT	void	clip_front_to_rect_boundary_type(
 	}
 }		/*end clip_front_to_rect_boundary_type*/
 
+//Dan
+EXPORT void check_num_of_tris(INTERFACE *intfc)
+{
+    SURFACE **s;
+    TRI *tri;
+    int nt = 0;
+    for (s = intfc->surfaces; s && *s; ++s)
+        for (tri = first_tri(*s); !at_end_of_tri_list(tri,*s); tri=tri->next)
+            nt++;
+    printf("num of tris is %d.\n", nt);
+}
+
+//Dan
+EXPORT boolean check_pt_ds(
+        INTERFACE *intfc,
+        const double x,
+        const double y,
+        const double z,
+        const int flag)
+{
+    HYPER_SURF_ELEMENT *hse;
+    HYPER_SURF *hs;
+    POINT *p;
+    int i, np;
+    double tol = 1e-4;
+
+    //debugdan    FIXME
+    /*
+    np = 0;
+    (void) next_point(intfc,NULL,NULL,NULL);
+    while (next_point(intfc,&p,&hse,&hs))
+    {
+        np++;
+        if (Coords(p)[0] < -0.09 && Coords(p)[2] < 9.8)
+            printf("point: (%lf, %lf, %lf).\n",
+                    Coords(p)[0], Coords(p)[1], Coords(p)[2]);
+    }
+    printf("DEBUGDAN: number of points on intfc: %d.\n", np);
+    */
+    //debugdan    FIXME
+
+    printf("DEBUGDAN: flag %d, point (%lf, %lf, %lf) ", flag, x, y, z);
+    (void) next_point(intfc,NULL,NULL,NULL);
+    while (next_point(intfc,&p,&hse,&hs))
+    {
+        if (fabs(Coords(p)[0] - x) < tol &&
+            fabs(Coords(p)[1] - y) < tol &&
+            fabs(Coords(p)[2] - z) < tol)
+        {
+            printf("is here.\n");
+            return YES;
+        }
+    }
+
+    printf("is NOT here.\n");
+    return NO;
+}
+
+//Dan
+EXPORT boolean compare_pts_ds(
+        double *p1,
+        double *p2)
+{
+    int i;
+    double tol = 1e-4;
+
+    for (i = 0; i < 3; i++)
+    {
+        if (fabs(p1[i]-p2[i]) > tol)
+            return NO;
+    }
+    return YES;
+}
+
+//Dan
+EXPORT boolean pt_on_intfc(
+        POINT *p,
+        INTERFACE *intfc)
+{
+    HYPER_SURF_ELEMENT *hse;
+    HYPER_SURF *hs;
+    POINT *p1;
+
+    (void) next_point(intfc,NULL,NULL,NULL);
+    while (next_point(intfc,&p1,&hse,&hs))
+    {
+        if (p == p1)
+            return YES;
+    }
+
+    return NO;
+}
