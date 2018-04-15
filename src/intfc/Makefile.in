@@ -45,6 +45,7 @@ trisurf.$(OBJEXT) \
 userhooks.$(OBJEXT) \
 zoom.$(OBJEXT) \
 imkcurve.$(OBJEXT) \
+meniscusUtils.$(OBJEXT) \
 iwallsurf.$(OBJEXT) \
 itrisset.$(OBJEXT) \
 iMesh.$(OBJEXT) \

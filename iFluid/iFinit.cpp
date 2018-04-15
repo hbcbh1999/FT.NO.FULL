@@ -267,6 +267,10 @@ static void initRSSYIntfc(
         front->contactangle = level_func_params.contact_angle;
         printf("in function %s Contact Angle is %24.24f\n", __func__, front->contactangle);
 
+        // This is where to read exact meniscus profile
+        // TODO: flexibility scale: take contact angle as arg for the function
+        // TODO: 105 should be an argument that gets passed in
+        readMeniscusFromTxtFile(level_func_params.contact_angle,105);
 
         // TODO && FIXME: This was missing.
         if (CursorAfterStringOpt(infile,"Enter volume fraction threshold:"))

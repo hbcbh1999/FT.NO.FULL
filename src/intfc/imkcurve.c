@@ -38,9 +38,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // VERSIONTWO will be used eventually. VERSIONONE will be dropped.
 // Another way to clean up this section is to simply delete the rest versions and keep VERSIONTWO.
 // VERSIONTWO has more complicated geometry
+// VERSIONFOUR is the one with the exact meniscus
 #define VERSIONONE NO
 #define VERSIONTWO NO
-#define VERSIONTHREE YES
+#define VERSIONTHREE NO
+#define VERSIONFOUR YES
 #define DEBUG_STRING "i_make_curve"
 
 #include <intfc/int.h>
@@ -1893,11 +1895,15 @@ EXPORT double level_wave_func_Meniscus(
         dim = wave_params->dim;
         z = wave_params->z0;
         // this is for meniscus profile
+        // second note: This block is for the approximate meniscus, which is VERSIONTHREE
         double grav1 = 0.000981;
         double rhod = wave_params->rhodiff;
         double surfT = wave_params->surfTen;
         double C = rhod * grav1 / surfT;
         double l_c = 1.0 / sqrt(C);
+
+        // This is for VERSIONFOUR
+        double spacing = 0.025; // TODO: this grid spacing value was hardwired
 
         // if introduced here, perturbed boundary condition which makes adjustment of coordinates will produce errors on interface.
 /*
@@ -2046,6 +2052,21 @@ if (min_n != 0 && max_n != 0)
                     //dist = dist - dist_line_meniscus2Dlike(angle, meniscus, x);
                     dist = dist - fabs(l_c * 1.0 / tan(angle*PI/180.0) * exp(-x/l_c));
                     return dist;
+            }
+            else if (VERSIONFOUR)
+            {
+                // update dist:
+                if (checkNumericalMeniscusforZ(x, L[0], spacing))
+                {
+                    //TODO: a little redundant calculation
+                    //This snippet is straight copied over from checkNumericalMeniscusforZ()
+                    int q_index = (int)(round((x-L[0])/ spacing)); // TODO: still testing here
+                    dist = dist - search(q_index)->data;
+                    //printf("VERSIONFOUR dist = %f when x = %f y = %f z = %f hash_z = %f\n",dist, x, y, coords[2],search(q_index)->data);
+                }
+                else
+                    dist = dist - fabs(l_c * 1.0 / tan(angle*PI/180.0) * exp(-x/l_c));
+                return dist;
             }
         }
         else

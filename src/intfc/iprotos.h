@@ -740,6 +740,21 @@ IMPORT	void  	equi_redist_curve_seg_o2(CURVE*,BOND*,BOND*,int,double,double,
 					RECT_GRID*);
 IMPORT	boolean  	redistribute_surface_o2(SURFACE*,RECT_GRID*,TRI_REDIST_PARAMS);
 
+/*      meniscusUtils.c */
+// Construct a Hash Table for matching up coordinates
+#define MSIZE 12345
+#define MN    76
+struct DataItem {
+   double data;
+   int key;
+};
+
+IMPORT void readMeniscusFromTxtFile(int, int);
+IMPORT void display();
+IMPORT boolean checkNumericalMeniscusforZ(double, double, double);
+IMPORT int hashCode(int);
+IMPORT struct DataItem *search(int);
+IMPORT void insert(int, double);
 
 /*      imkcurve.c */
 IMPORT	CURVE	*make_elliptic_curve(ELLIP_PARAMS*,COMPONENT,COMPONENT,double);
